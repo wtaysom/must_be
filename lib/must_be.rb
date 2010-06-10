@@ -26,7 +26,7 @@ module MustBe
     end
   end
   
-  notifier = RaiseNotifier = lambda {|note| true }
+  self.notifier = RaiseNotifier = lambda {|note| true }
   
   def must_just_return(*args)
     self
@@ -48,14 +48,14 @@ module MustBe
       end
     end
     
-    def message
+    def to_s
       if @assertion
         "#{receiver.inspect}.#{assertion}#{format_args_and_block}"
       else
         super
       end
     end
-    
+        
     alias complete_backtrace backtrace
     
     def backtrace
@@ -262,8 +262,8 @@ module MustBe
       each_pair do |key, value|
         unless MustBe.check_pair_against_hash_cases(key, value, cases)
           #! better message
-          must_notify("pair #{{key => value}} does not match "\
-            "#{cases} in #{inspect}")
+          must_notify("pair #{{key => value}.inspect} does not match "\
+            "#{cases.inspect} in #{inspect}")
         end
       end
     else
@@ -296,8 +296,8 @@ module MustBe
           unless MustBe.check_pair_against_hash_cases(key, value,
               must_only_ever_contain_cases)
             #! better message
-            must_notify("pair #{{key => value}} does not match "\
-              "#{must_only_ever_contain_cases} in #{inspect}")
+            must_notify("pair #{{key => value}.inspect} does not match "\
+              "#{must_only_ever_contain_cases.inspect} in #{inspect}")
           end
           super
         end

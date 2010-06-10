@@ -103,6 +103,9 @@ describe MustBe do
 
 ### Note ###
   
+  #!! check that Note#{inspect,to_s} does right thing
+  #!! also check raising Note -- got stack level too deep at one point
+  
   describe "#must_notify" do
     class <<self
       def it_should_notify(message)
