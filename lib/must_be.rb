@@ -230,6 +230,7 @@ module MustBe
     end
   end
   
+  #!! should take &block -- need an example showing this
   def must_not(message = nil)
     if block_given?
       if yield(self, message)
@@ -284,6 +285,7 @@ module MustBe
     must_only_contain(cases)
     
     if instance_of? Hash
+      #!! why not just include a module?
       class <<self
         attr_accessor :must_only_ever_contain_cases
         

@@ -869,6 +869,8 @@ seperate into multiple files, refactor, remove excess duplication
   let for providing differences to use in shared behaviors
   put more things in spec_helper?
   learn rSpec better before diving into this stuff
+    read tRSb chapter 17 specifically Custom Matchers and Macros
+    use a double (perhaps as_nul_object) or some other object as the MustBe.notifier (with should_receive method) -- then we don't need that @note instance variable
 
 icing
   rdoc (focus on examples), check out rcov <http://eigenclass.org/hiki.rb?rcov>
