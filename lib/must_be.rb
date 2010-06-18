@@ -242,7 +242,7 @@ module MustBe
       end
       self
     else
-      Proxy.new(self, :must)
+      Proxy.new(self, :must_not) #!! test it
     end
   end
 
@@ -282,7 +282,7 @@ module MustBe
   #! spec that the installation depends on the class
   #! be able to register new classes (e.g. Set)
   def must_only_ever_contain(*cases)
-    must_only_contain(cases)
+    must_only_contain(cases) #!!! should be *cases -- need a test
     
     if instance_of? Hash
       #!! why not just include a module?
