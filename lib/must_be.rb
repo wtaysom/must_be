@@ -293,7 +293,7 @@ module MustBe
   #! be able to register new classes (e.g. Set)
   def must_only_ever_contain(*cases)    
     if instance_of? Hash
-      #!! why not just include a module?
+      #!!! why not just include a module?
       class <<self
         attr_accessor :must_only_ever_contain_cases
         
@@ -317,7 +317,7 @@ module MustBe
       #!! array case: lots of methods to override to be useful
       raise "Array receiver unimplemented"
     else
-      #!! complain
+      #! complain
       raise "decide on the right error to raise: TypeError?"
     end
     self

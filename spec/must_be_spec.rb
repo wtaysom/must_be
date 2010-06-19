@@ -103,9 +103,6 @@ describe MustBe do
 
 ### Note ###
   
-  #!! check that Note#{inspect,to_s} does right thing
-  #!! also check raising Note -- got stack level too deep at one point
-  
   describe "#must_notify" do
     class <<self
       def it_should_notify(message)
@@ -361,8 +358,31 @@ describe MustBe do
         end
       end
       
-      #!! other `===' examples:
-      # 71.must_be(lambda &:zero?, lambda &:odd?)
+      context "when called with blocks" do
+        let(:zerop) { lambda &:zero? }
+        let(:oddp) { lambda &:odd? }
+        
+        context "when called with zerop" do
+          it "should notify" do
+            51.must_be(zerop).should == 51
+            should notify
+          end
+        end
+        
+        context "when called with oddp" do
+          it "should not notify" do
+            51.must_be(oddp).should == 51
+            should_not notify
+          end
+        end
+        
+        context "when called with zerop, oddp" do
+          it "should not notify" do
+            51.must_be(zerop, oddp).should == 51
+            should_not notify
+          end
+        end
+      end
     end
   end
   
@@ -433,6 +453,32 @@ describe MustBe do
         it "should notify" do
           51.must_not_be([1, 51]).should == 51
           should_not notify
+        end
+      end
+      
+      context "when called with blocks" do
+        let(:zerop) { lambda &:zero? }
+        let(:oddp) { lambda &:odd? }
+        
+        context "when called with zerop" do
+          it "should not notify" do
+            51.must_not_be(zerop).should == 51
+            should_not notify
+          end
+        end
+        
+        context "when called with oddp" do
+          it "should notify" do
+            51.must_not_be(oddp).should == 51
+            should notify
+          end
+        end
+        
+        context "when called with zerop, oddp" do
+          it "should notify" do
+            51.must_not_be(zerop, oddp).should == 51
+            should notify
+          end
         end
       end
     end
@@ -749,13 +795,13 @@ describe MustBe do
     
       it "should notify when any member matches none of the cases" do
         subject.must_only_contain(Symbol, Numeric).should == subject
-        should notify #!! check format of the message
+        should notify #! check format of the message
       end
     
       context "when there are no cases" do
         it "should notify if any member is conditionally false" do
           [false, nil].must_only_contain
-          should notify #!! check format of the message
+          should notify #! check format of the message
         end
       
         it "should not notify if each member is conditionally true" do
@@ -778,7 +824,7 @@ describe MustBe do
       it "should notify when any pair match none of the cases" do
         subject.must_only_contain(Symbol => Symbol, Symbol => String,
           Numeric => Numeric).should == subject
-        should notify #!! message?
+        should notify #! message?
       end
       
       describe "given an array case" do
@@ -791,7 +837,7 @@ describe MustBe do
         it "should notify when any pair does not match" do
           subject.must_only_contain([Symbol, Numeric] => [Symbol, 
             Numeric]).should == subject
-          should notify #!! message?
+          should notify #! message?
         end
       end
     end
@@ -799,8 +845,8 @@ describe MustBe do
   
   describe "#must_only_ever_contain" do
     #!! be more serious about your examples -- what should raise errors?
-    #!! should check that the initial contents are okay
-    #!! update must_only_ever_contain_cases should check all contents again
+    #!!! should check that the initial contents are okay -- doesn't it already?
+    #!!! update must_only_ever_contain_cases should check all contents again -- doesn't it already
     describe Hash do
       #!! note that the Hash cases can only specify one value per key
       # (just like normal hashes) e.g. {Symbol => Integer, Symbol => Float} is
@@ -830,7 +876,7 @@ describe MustBe do
         #! rSpec has some way to automatically generate descriptions for
         # methods like this
         it "should notify" do
-          should notify #!! specify the message
+          should notify #! specify the message
         end
       
         it "should insert the value (unless MustBe.notifier raises error)" do
@@ -849,7 +895,7 @@ describe MustBe do
         
         it "should notify when cases do not match" do
           subject.must_only_ever_contain(Symbol => String)
-          should notify #!! message
+          should notify #! message
         end
       end
     end
