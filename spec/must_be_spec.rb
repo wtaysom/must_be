@@ -340,6 +340,13 @@ describe MustBe do
         end
       end
       
+      context "when called with [1, 51]" do
+        it "should notify" do
+          51.must_be([1, 51]).should == 51
+          should notify("51.must_be([1, 51])")
+        end
+      end
+      
       #!! other `===' examples:
       # 71.must_be(lambda &:zero?, lambda &:odd?)
     end
@@ -737,6 +744,7 @@ describe MustBe do
       end
     end
     
+    #!! better structure here
     describe Hash do
       subject { {:key => :value, :another => 'thing', 12 => 43} }
       
@@ -751,6 +759,20 @@ describe MustBe do
           Numeric => Numeric).should == subject
         should notify #!! message?
       end
+      
+      describe "given an array case" do
+        it "should not notify when each pair matches" do
+          subject.must_only_contain([Symbol, Numeric] => [Symbol, String, 
+            Numeric]).should == subject
+          should_not notify
+        end
+        
+        it "should notify when any pair does not match" do
+          subject.must_only_contain([Symbol, Numeric] => [Symbol, 
+            Numeric]).should == subject
+          should notify #!! message?
+        end
+      end
     end
   end
   
@@ -764,8 +786,8 @@ describe MustBe do
       # the same as {Symbol => Float} instead use two cases:
       # {Symbol => Integer}, {Symbol => Float}
       #!! spec Hash receiver when cases is empty
-      subject { {}.must_only_ever_contain Symbol => Integer,
-        Integer => Symbol }
+      subject { {}.must_only_ever_contain(Symbol => Integer,
+        Integer => Symbol) }
     
       its(:must_only_ever_contain_cases) do
         should == [{Symbol => Integer, Integer => Symbol}]
@@ -792,6 +814,21 @@ describe MustBe do
       
         it "should insert the value (unless MustBe.notifier raises error)" do
           subject[:bad].should == 4.5
+        end
+      end
+      
+      #!! organize case
+      describe "when it is non-empty" do
+        subject { {:hello => :world} }
+        
+        it "should not notify when cases match" do
+          subject.must_only_ever_contain(Symbol => Symbol)
+          should_not notify
+        end
+        
+        it "should notify when cases do not match" do
+          subject.must_only_ever_contain(Symbol => String)
+          should notify #!! message
         end
       end
     end
@@ -825,9 +862,8 @@ end
 
 == Main things ==
 
-#!!! 5.must_be(String) should say `5.must_be(String), but is a Numeric` -- also watch out for large .inspect strings.
-
-check 4.must_be(1, 4) vs 4.must_be([1, 4])
+#!!! 5.must_be(String) should say `5.must_be(String), but is a Numeric`
+#!!! watch out for large .inspect strings.
 
 #must_only_ever_contain
   Array unimplemented

@@ -252,7 +252,6 @@ module MustBe
 
 ### Containers ###
 
-  #!! check the {[String, Symbol] => [Numeric, Symcol]} form
   def self.check_pair_against_hash_cases(key, value, cases)    
     if cases.empty?
       key and value
@@ -288,9 +287,7 @@ module MustBe
   #! should raise when there are already singleton methods defined on self
   #! spec that the installation depends on the class
   #! be able to register new classes (e.g. Set)
-  def must_only_ever_contain(*cases)
-    must_only_contain(cases) #!!! should be *cases -- need a test
-    
+  def must_only_ever_contain(*cases)    
     if instance_of? Hash
       #!! why not just include a module?
       class <<self
@@ -298,7 +295,7 @@ module MustBe
         
         def must_only_ever_contain_cases=(cases)
           @must_only_ever_contain_cases = cases
-          must_only_contain(cases)
+          must_only_contain(*cases)
         end
         
         def []=(key, value)
