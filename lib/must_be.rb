@@ -288,30 +288,38 @@ module MustBe
     self
   end
   
+  #! other modules, rename, etc
+  module MustOnlyEverContain
+    module Base
+      attr_accessor :must_only_ever_contain_cases
+
+      def must_only_ever_contain_cases=(cases)
+        @must_only_ever_contain_cases = cases
+        must_only_contain(*cases)
+      end
+    end
+    
+    module Hash
+      include Base
+      
+      def []=(key, value)      
+        unless MustBe.check_pair_against_hash_cases(key, value,
+            must_only_ever_contain_cases)
+          #! better message
+          must_notify("pair #{{key => value}.inspect} does not match "\
+            "#{must_only_ever_contain_cases.inspect} in #{inspect}")
+        end
+        super
+      end
+    end
+  end
+  
   #! should raise when there are already singleton methods defined on self
   #! spec that the installation depends on the class
   #! be able to register new classes (e.g. Set)
   def must_only_ever_contain(*cases)    
     if instance_of? Hash
-      #!!! why not just include a module?
-      class <<self
-        attr_accessor :must_only_ever_contain_cases
-        
-        def must_only_ever_contain_cases=(cases)
-          @must_only_ever_contain_cases = cases
-          must_only_contain(*cases)
-        end
-        
-        def []=(key, value)
-          unless MustBe.check_pair_against_hash_cases(key, value,
-              must_only_ever_contain_cases)
-            #! better message
-            must_notify("pair #{{key => value}.inspect} does not match "\
-              "#{must_only_ever_contain_cases.inspect} in #{inspect}")
-          end
-          super
-        end
-      end
+      extend MustOnlyEverContain::Hash
       self.must_only_ever_contain_cases = cases
     elsif instance_of? Array
       #!! array case: lots of methods to override to be useful
