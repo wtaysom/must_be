@@ -56,7 +56,7 @@ describe MustBe do
       
       it "#must_be should notify" do
         5799.must_be(:lolly).should == 5799
-        should notify("5799.must_be(:lolly)")
+        should notify("5799.must_be(:lolly), but is Fixnum")
       end
 
       it "#must_notify should return a note" do
@@ -118,6 +118,7 @@ describe MustBe do
         its(:assertion) { should be_nil }
         its(:args) { should be_nil }
         its(:block) { should be_nil }
+        its(:additional_message) { should be_nil }
       end
     end
     
@@ -188,6 +189,19 @@ describe MustBe do
       its(:assertion) { should == :must_be_silly }
       its(:args) { should == [57, 71] }
       its(:block) { should == block }
+    end
+    
+    context "with #additional_message" do
+      subject do
+        must_notify(5, :must_be, [String], nil, ", but is Fixnum")
+      end
+      
+      it_should_notify("5.must_be(String), but is Fixnum")
+      its(:receiver) { should == 5 }
+      its(:assertion) { should == :must_be }
+      its(:args) { should == [String] }
+      its(:block) { should be_nil }
+      its(:additional_message) { should == ", but is Fixnum"}
     end
   end
   
@@ -281,12 +295,12 @@ describe MustBe do
     context "when called with no arguments" do
       it "should notify if receiver is nil" do
         nil.must_be.should == nil
-        should notify("nil.must_be")
+        should notify("nil.must_be, but is NilClass")
       end
       
       it "should notify if receiver is false" do
         false.must_be.should == false
-        should notify("false.must_be")
+        should notify("false.must_be, but is FalseClass")
       end
     end
     
@@ -308,7 +322,7 @@ describe MustBe do
       context "when called with Float" do
         it "should notify" do
           51.must_be(Float).should == 51
-          should notify("51.must_be(Float)")
+          should notify("51.must_be(Float), but is Fixnum")
         end
       end
       
@@ -322,7 +336,7 @@ describe MustBe do
       context "when called with Enumerable" do
         it "should notify" do
           51.must_be(Enumerable).should == 51
-          should notify("51.must_be(Enumerable)")
+          should notify("51.must_be(Enumerable), but is Fixnum")
         end
       end
       
@@ -336,14 +350,14 @@ describe MustBe do
       context "when called with String, Time, Array" do
         it "should notify" do
           51.must_be(String, Time, Array).should == 51
-          should notify("51.must_be(String, Time, Array)")
+          should notify("51.must_be(String, Time, Array), but is Fixnum")
         end
       end
       
       context "when called with [1, 51]" do
         it "should notify" do
           51.must_be([1, 51]).should == 51
-          should notify("51.must_be([1, 51])")
+          should notify("51.must_be([1, 51]), but is Fixnum")
         end
       end
       
@@ -411,6 +425,13 @@ describe MustBe do
       context "when called with String, Time, Array" do
         it "should not notify" do
           51.must_not_be(String, Time, Array).should == 51
+          should_not notify
+        end
+      end
+      
+      context "when called with [1, 51]" do
+        it "should notify" do
+          51.must_not_be([1, 51]).should == 51
           should_not notify
         end
       end
@@ -862,8 +883,7 @@ end
 
 == Main things ==
 
-#!!! 5.must_be(String) should say `5.must_be(String), but is a Numeric`
-#!!! watch out for large .inspect strings.
+#!!! regular_usage_spec.rb
 
 #must_only_ever_contain
   Array unimplemented
@@ -902,7 +922,7 @@ spec Note
 
 spec ENV["MUST_BE__SHOULD_NOT_AUTOMATICALLY_BE_INCLUDED_IN_OBJECT"]
 
-spec usage examples at the top
+handle large .inspect strings gracefully -- omit the middle break at words if sensible
 
 seperate into multiple files, refactor, remove excess duplication
   see <http://pure-rspec-rubynation.heroku.com/> shared behaviors (30-32)

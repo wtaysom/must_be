@@ -35,14 +35,16 @@ module MustBe
 ### Note ###
   
   class Note < StandardError
-    attr_accessor :receiver, :assertion, :args, :block
+    attr_accessor :receiver, :assertion, :args, :block, :additional_message
     
-    def initialize(receiver, assertion = nil, args = nil, block = nil)
+    def initialize(receiver, assertion = nil, args = nil, block = nil,
+        additional_message = nil)
       if assertion
         @receiver = receiver
         @assertion = assertion
         @args = args
         @block = block
+        @additional_message = additional_message
       else
         super(receiver)
       end
@@ -50,7 +52,8 @@ module MustBe
     
     def to_s
       if @assertion
-        "#{receiver.inspect}.#{assertion}#{format_args_and_block}"
+        "#{receiver.inspect}.#{assertion}#{format_args_and_block}"\
+          "#{additional_message}"
       else
         super
       end
@@ -84,9 +87,10 @@ module MustBe
     end
   end
   
-  def must_notify(receiver = nil, assertion= nil, args = nil, block = nil)
+  def must_notify(receiver = nil, assertion= nil, args = nil, block = nil,
+      additional_message = nil)
     note = Note === receiver ? receiver :
-      Note.new(receiver, assertion, args, block)
+      Note.new(receiver, assertion, args, block, additional_message)
     if $must_check__is_checking
       $must_check__found = note
     else
@@ -119,7 +123,7 @@ module MustBe
   
   def must_be(*cases)
     unless cases.empty? ? self : MustBe.match_any_case?(self, *cases)
-      must_notify(self, __method__, cases)
+      must_notify(self, __method__, cases, nil, ", but is #{self.class}")
     end
     self
   end
