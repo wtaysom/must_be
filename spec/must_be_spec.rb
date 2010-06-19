@@ -827,6 +827,8 @@ end
 
 #!!! 5.must_be(String) should say `5.must_be(String), but is a Numeric` -- also watch out for large .inspect strings.
 
+check 4.must_be(1, 4) vs 4.must_be([1, 4])
+
 #must_only_ever_contain
   Array unimplemented
   Hash only checks when you use `[]='

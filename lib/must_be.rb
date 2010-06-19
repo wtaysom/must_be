@@ -113,15 +113,19 @@ module MustBe
 
 ### Basic Assertions ###
   
+  def self.match_any_case?(v, *cases)
+    cases.any? {|c| c === v }
+  end
+  
   def must_be(*cases)
-    if cases.empty? ? !self : cases.none? {|c| c === self }
+    unless cases.empty? ? self : MustBe.match_any_case?(self, *cases)
       must_notify(self, __method__, cases)
     end
     self
   end
 
   def must_not_be(*cases)
-    unless cases.empty? ? !self : cases.none? {|c| c === self }
+    if cases.empty? ? self : MustBe.match_any_case?(self, *cases)
       must_notify(self, __method__, cases)
     end
     self 
@@ -248,11 +252,14 @@ module MustBe
 
 ### Containers ###
 
-  def self.check_pair_against_hash_cases(key, value, cases)
-    cases.empty? ? key && value : cases.any? do |c|
-      not c.each_pair do |k, v|
-        if k === key and v === value
-          break
+  #!! check the {[String, Symbol] => [Numeric, Symcol]} form
+  def self.check_pair_against_hash_cases(key, value, cases)    
+    if cases.empty?
+      key and value
+    else
+      cases.any? do |c|
+        c.any? do |k, v|
+          match_any_case?(key, *k) and match_any_case?(value, *v)
         end
       end
     end
