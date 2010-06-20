@@ -811,7 +811,7 @@ describe MustBe do
       end
     end
     
-    #!! better structure here
+    #!!! better structure here
     describe Hash do
       subject { {:key => :value, :another => 'thing', 12 => 43} }
       
@@ -844,49 +844,115 @@ describe MustBe do
   end
   
   describe "#must_only_ever_contain" do
-    #!! be more serious about your examples -- what should raise errors?
-    #!!! should check that the initial contents are okay -- doesn't it already?
-    #!!! update must_only_ever_contain_cases should check all contents again -- doesn't it already
     describe Hash do
-      #!! note that the Hash cases can only specify one value per key
-      # (just like normal hashes) e.g. {Symbol => Integer, Symbol => Float} is
-      # the same as {Symbol => Float} instead use two cases:
-      # {Symbol => Integer}, {Symbol => Float}
-      #!! spec Hash receiver when cases is empty
-      subject { {}.must_only_ever_contain(Symbol => Integer,
-        Integer => Symbol) }
-    
-      its(:must_only_ever_contain_cases) do
-        should == [{Symbol => Integer, Integer => Symbol}]
-      end
-    
-      it "should not notify when cases match" do
-        subject[:good] = 34
-        subject[34] = :also_good
-        should_not notify
-        subject[:good].should == 34
-        subject[34].should == :also_good
-      end
-    
-      context "when cases do not match" do
+      subject { {} }
+      
+      describe "when called with no arguments" do
         before do
-          subject[:bad] = 4.5
+          subject.must_only_ever_contain
         end
-      
-        #! rSpec has some way to automatically generate descriptions for
-        # methods like this
-        it "should notify" do
-          should notify #! specify the message
+        
+        example "must_only_ever_contain_cases should == []" do
+          subject.must_only_ever_contain_cases.should == []
         end
-      
-        it "should insert the value (unless MustBe.notifier raises error)" do
-          subject[:bad].should == 4.5
+        
+        it "should notify when inserting a nil value" do
+          subject[:nil] = nil
+          should notify #! message
+        end
+        
+        it "should notify when inserting a false key" do
+          subject[false] = :false
+          should notify #! message
+        end
+        
+        it "should not notify when inserting a regular pair" do
+          subject[:key] = :value
+          should_not notify
         end
       end
       
-      #!! organize case
-      describe "when it is non-empty" do
-        subject { {:hello => :world} }
+      describe "when called with a hash" do
+        before do
+          subject.must_only_ever_contain(Symbol => Integer, Integer => Symbol)
+        end
+        
+        it "should notify when inserting an invalid key" do
+          subject["six"] = 6
+          subject["six"].should == 6
+          should notify #! message
+        end
+        
+        it "should notify when inserting an invalid value" do
+          subject[:six] = :six
+          subject[:six].should == :six
+          should notify #! message
+        end
+        
+        it "should not notify when inserting a valid pair" do
+          subject[:six] = 6
+          subject[:six].should == 6
+          should_not notify
+        end
+      end
+      
+      describe "#must_only_ever_contain_cases" do
+        before do
+          subject.must_only_ever_contain(Symbol => Symbol)
+        end
+        
+        example "must_only_ever_contain_cases should == [{Symbol => Symbol}]" do
+          subject.must_only_ever_contain_cases.should == [{Symbol => Symbol}]
+        end
+                
+        it "should not notify when inserting Symbol => Symbol pair" do
+          subject[:hello] = :granny
+          should_not notify
+        end
+        
+        it "should notify when inserting Symbol => Integer pair" do
+          subject[:hello] = 970
+          should notify #! message
+        end
+        
+        it "should notify when inserting Integer => Integer pair" do
+          subject[3984] = 970
+          should notify #! message
+        end
+        
+        describe "when #must_only_ever_contain_cases is updated" do
+          let(:cases) { [{Symbol => Symbol}, {Symbol => Integer}] }
+          
+          before do
+            subject.must_only_ever_contain_cases = cases
+          end
+          
+          example "must_only_ever_contain_cases should == "\
+              "[{Symbol => Symbol}, {Symbol => Integer}]" do
+            subject.must_only_ever_contain_cases.should == cases
+          end
+          
+          it "should not notify when inserting Symbol => Symbol pair" do
+            subject[:hello] = :granny
+            should_not notify
+          end
+
+          it "should not notify when inserting Symbol => Integer pair" do
+            subject[:hello] = 970
+            should_not notify #! message
+          end
+
+          it "should notify when inserting Integer => Integer pair" do
+            subject[3984] = 970
+            should notify #! message
+          end
+        end
+      end
+      
+      describe "when it is initially non-empty" do
+        before {
+          subject[:hello] = :world
+        }
         
         it "should not notify when cases match" do
           subject.must_only_ever_contain(Symbol => Symbol)

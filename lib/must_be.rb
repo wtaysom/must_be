@@ -117,19 +117,20 @@ module MustBe
 
 ### Basic Assertions ###
   
-  def self.match_any_case?(v, *cases)
+  def self.match_any_case?(v, cases)
+    cases = [cases] unless cases.is_a? Array
     cases.any? {|c| c === v }
   end
   
   def must_be(*cases)
-    unless cases.empty? ? self : MustBe.match_any_case?(self, *cases)
+    unless cases.empty? ? self : MustBe.match_any_case?(self, cases)
       must_notify(self, __method__, cases, nil, ", but is #{self.class}")
     end
     self
   end
 
   def must_not_be(*cases)
-    if cases.empty? ? self : MustBe.match_any_case?(self, *cases)
+    if cases.empty? ? self : MustBe.match_any_case?(self, cases)
       must_notify(self, __method__, cases)
     end
     self 
@@ -256,13 +257,13 @@ module MustBe
 
 ### Containers ###
 
-  def self.check_pair_against_hash_cases(key, value, cases)    
+  def self.check_pair_against_hash_cases(key, value, cases)
     if cases.empty?
       key and value
     else
       cases.any? do |c|
         c.any? do |k, v|
-          match_any_case?(key, *k) and match_any_case?(value, *v)
+          match_any_case?(key, k) and match_any_case?(value, v)
         end
       end
     end
@@ -294,6 +295,7 @@ module MustBe
       attr_accessor :must_only_ever_contain_cases
 
       def must_only_ever_contain_cases=(cases)
+        cases = [cases] unless cases.is_a? Array
         @must_only_ever_contain_cases = cases
         must_only_contain(*cases)
       end
@@ -302,7 +304,7 @@ module MustBe
     module Hash
       include Base
       
-      def []=(key, value)      
+      def []=(key, value)
         unless MustBe.check_pair_against_hash_cases(key, value,
             must_only_ever_contain_cases)
           #! better message
