@@ -784,7 +784,6 @@ describe MustBe do
 ### Containers ###
   
   describe "#must_only_contain" do
-    #!! be serious about your examples
     describe Array do
       subject { [11, :sin, 'cos'] }
       
@@ -811,23 +810,38 @@ describe MustBe do
       end
     end
     
-    #!!! better structure here
     describe Hash do
       subject { {:key => :value, :another => 'thing', 12 => 43} }
       
-      it "should not notify when each pair matches one of the cases" do
-        subject.must_only_contain({Symbol => Symbol}, {Symbol => String,
-          Numeric => Numeric}).should == subject
-        should_not notify
+      describe "when called with a single hash" do
+        it "should not notify when each pair matches one of the cases" do
+          subject.must_only_contain(Symbol => [Symbol, String],
+            Numeric => Numeric).should == subject
+          should_not notify
+        end
+        
+        it "should notify when any pair matches none of the cases" do
+          subject.must_only_contain(Symbol => Symbol, Symbol => String,
+            String => Numeric).should == subject
+          should notify #! message?
+        end
       end
       
-      it "should notify when any pair match none of the cases" do
-        subject.must_only_contain(Symbol => Symbol, Symbol => String,
-          Numeric => Numeric).should == subject
-        should notify #! message?
+      describe "when called with multiple hashes" do
+        it "should not notify when each pair matches one of the cases" do
+          subject.must_only_contain({Symbol => Symbol}, {Symbol => String},
+            {Numeric => Numeric}).should == subject
+          should_not notify
+        end
+        
+        it "should notify when any pair matches none of the cases" do
+          subject.must_only_contain({Symbol => Symbol}, {Symbol => String},
+            {String => Numeric}).should == subject
+          should notify #! message?
+        end
       end
       
-      describe "given an array case" do
+      describe "when called with array keys and values" do
         it "should not notify when each pair matches" do
           subject.must_only_contain([Symbol, Numeric] => [Symbol, String, 
             Numeric]).should == subject
