@@ -274,8 +274,8 @@ module MustBe
       each_pair do |key, value|
         unless MustBe.check_pair_against_hash_cases(key, value, cases)
           #! better message
-          must_notify("pair #{{key => value}.inspect} does not match "\
-            "#{cases.inspect} in #{inspect}")
+          must_notify("pair #{{key => value}.inspect} does not match"\
+            " #{cases.inspect} in #{inspect}")
         end
       end
     else
@@ -308,8 +308,8 @@ module MustBe
         unless MustBe.check_pair_against_hash_cases(key, value,
             must_only_ever_contain_cases)
           #! better message
-          must_notify("pair #{{key => value}.inspect} does not match "\
-            "#{must_only_ever_contain_cases.inspect} in #{inspect}")
+          must_notify("pair #{{key => value}.inspect} does not match"\
+            " #{must_only_ever_contain_cases.inspect} in #{inspect}")
         end
         super
       end

@@ -599,8 +599,8 @@ describe MustBe do
       end.should raise_error ArgumentError
     end
     
-    it "should raise TypeError if expected cannot be subtracted from "\
-        "receiver" do
+    it "should raise TypeError if expected cannot be subtracted from"\
+        " receiver" do
       expect do
         200.0.send(the_method_name, :some)
       end.should raise_error TypeError
@@ -612,8 +612,8 @@ describe MustBe do
       end.should raise_error NoMethodError
     end
 
-    it "should rasie NoMethodError if `receiver - expected' does not "\
-        "respond to `abs'" do
+    it "should rasie NoMethodError if `receiver - expected' does not"\
+        " respond to `abs'" do
       expect do
         Time.new.send(the_method_name, 2.0, :five)
       end.should raise_error NoMethodError
@@ -941,8 +941,8 @@ describe MustBe do
             subject.must_only_ever_contain_cases = cases
           end
           
-          example "must_only_ever_contain_cases should == "\
-              "[{Symbol => Symbol}, {Symbol => Integer}]" do
+          example "must_only_ever_contain_cases should =="\
+              " [{Symbol => Symbol}, {Symbol => Integer}]" do
             subject.must_only_ever_contain_cases.should == cases
           end
           
@@ -1008,8 +1008,6 @@ end
 =begin
 
 == Main things ==
-
-#!!! regular_usage_spec.rb
 
 #must_only_ever_contain
   Array unimplemented
