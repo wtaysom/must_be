@@ -239,8 +239,7 @@ module MustBe
     end
   end
   
-  #!! should take &block -- need an example showing this
-  def must_not(message = nil)
+  def must_not(message = nil, &block)
     if block_given?
       if yield(self, message)
         if message
@@ -251,7 +250,7 @@ module MustBe
       end
       self
     else
-      Proxy.new(self, :must_not) #!! test it
+      Proxy.new(self, :must_not)
     end
   end
 

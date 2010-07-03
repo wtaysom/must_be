@@ -697,22 +697,24 @@ describe MustBe do
     end
   end
   
-  describe "#must" do
-    class <<self
-      def it_should_notify(message, &implementation)
-        it "`#{message}' should notify" do
-          instance_eval &implementation
-          should notify(message)
-        end
-      end
-    
-      def it_should_not_notify(message, &implementation)
-        it "`#{message}' should not notify" do
-          instance_eval &implementation
-          should_not notify
-        end
+  module ItShouldNotifyExpectations
+    def it_should_notify(message, &implementation)
+      it "`#{message}' should notify" do
+        instance_eval &implementation
+        should notify(message)
       end
     end
+  
+    def it_should_not_notify(message, &implementation)
+      it "`#{message}' should not notify" do
+        instance_eval &implementation
+        should_not notify
+      end
+    end
+  end
+  
+  describe "#must" do
+    extend ItShouldNotifyExpectations
     
     context "when called with a block" do
       it "should return the receiver" do
@@ -724,7 +726,7 @@ describe MustBe do
         should notify(":helm.must {}")
       end
       
-      it "shoud notify with message if provided" do
+      it "should notify with message if provided" do
         :ice.must("ice must be icy") do |receiver, message|
           receiver == :icy
         end.should == :ice
@@ -739,6 +741,7 @@ describe MustBe do
       it "should allow nested #must_notify" do
         :keys.must("electrify kites") do |receiver, message|
           must_notify("#{receiver} must #{message}")
+          true
         end.should == :keys
         should notify("keys must electrify kites")
       end
@@ -767,7 +770,7 @@ describe MustBe do
         subject.respond_to? :finite?
       end
       
-      it_should_not_notify("#{0xabaca_facade}.must.instance_of(Fixnum)") do
+      it_should_not_notify("#{0xabaca_facade}.must.instance_of?(Fixnum)") do
         subject.instance_of? Fixnum
       end
       
@@ -777,8 +780,73 @@ describe MustBe do
     end
   end
   
-  describe "#must_not" do
-    #!! dual of #must
+  describe "#must_not" do    
+    extend ItShouldNotifyExpectations
+        
+    context "when called with a block" do
+      it "should return the receiver" do
+        0xdad.must_not{}.should == 0xdad
+      end
+      
+      it "should notify if block returns true" do
+        :helm.must_not{|receiver, message| receiver == :helm }.should == :helm        
+        should notify(":helm.must_not {}")
+      end
+      
+      it "should notify with message if provided" do
+        :ice.must_not("ice must not be ice") do |receiver, message|
+          receiver == :ice
+        end.should == :ice
+        should notify("ice must not be ice")
+      end
+      
+      it "should not notify if block returns false" do
+        :jinn.must_not{|receiver, message| receiver == :gem }.should == :jinn
+        should_not notify
+      end
+      
+      it "should allow nested #must_notify" do
+        :keys.must_not("electrify kites") do |receiver, message|
+          must_notify("#{receiver} must not #{message}")
+          false
+        end.should == :keys
+        should notify("keys must not electrify kites")
+      end
+    end
+    
+    context "when used to proxy" do      
+      subject { 0xabaca_facade.must_not }
+      
+      it_should_not_notify("#{0xabaca_facade}.must_not.==(#{0xdefaced})") do
+        subject == 0xdefaced
+      end
+        
+      it_should_notify("#{0xabaca_facade}.must_not.>(#{0xfaded})") do
+        subject > 0xfaded
+      end
+      
+      it_should_notify("#{0xabaca_facade}.must_not.even?") do
+        subject.even?
+      end
+      
+      it_should_not_notify("#{0xabaca_facade}.must_not.between?(-4, 4)") do
+        subject.between?(-4, 4)
+      end
+      
+      it_should_not_notify(
+          "#{0xabaca_facade}.must_not.respond_to?(:finite?)") do
+        subject.respond_to? :finite?
+      end
+      
+      it_should_notify("#{0xabaca_facade}.must_not.instance_of?(Fixnum)") do
+        subject.instance_of? Fixnum
+      end
+      
+      it_should_not_notify(
+          "#{0xabaca_facade}.must_not.instance_of?(Integer)") do
+        subject.instance_of? Integer
+      end    
+    end
   end
   
 ### Containers ###
