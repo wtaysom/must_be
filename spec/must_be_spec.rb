@@ -89,9 +89,7 @@ describe MustBe do
     before do
       MustBe.notifier = RaiseNotifier
     end
-    
-    #!! spec other backtraces
-    
+        
     it "should raise Note" do      
       expect do
           must_notify("funny bunny")
@@ -685,15 +683,23 @@ describe MustBe do
   describe Proxy do
     subject { Proxy.new(:moxie) }
     
-    #!! spec its initialize method
-    
-    context "when it forwards" do
-      #!! just an example or two
+    context "when initialized with invalid method" do
+      it "should raise ArgumentError" do
+        expect do
+          Proxy.new(:moxie, :must_could)
+        end.should raise_error(ArgumentError,
+          "assertion (:must_could) must be :must or :must_not")
+      end
     end
     
-    context "when it does not forward" do
-      #!! a few methods should not forward, which ones?
-      #     __id__, object_id, __send__ and all the private_instance_methods
+    context "when it should not forward" do
+      example "#__id__" do
+        subject.__id__.should_not == :moxie.__id__
+      end
+      
+      example "#object_id" do
+        subject.object_id.should_not == :moxie.object_id
+      end      
     end
   end
   
