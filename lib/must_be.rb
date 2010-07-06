@@ -316,6 +316,11 @@ module MustBe
         end
       end
       
+      def must_check_contents
+        #! better message
+        must_only_contain(*must_only_ever_contain_cases)
+      end
+      
       #!! a method for checking each -- relates to must_only_contain
     end
     
@@ -340,6 +345,34 @@ module MustBe
       def []=(key, value)
         must_check_pair(key, value)
         super
+      end
+      
+      #!! spec all of the methods
+      
+      def store(key, value)
+        must_check_pair(key, value)
+        super
+      end
+      
+      #!!! factor out must_check_contents_after :method, :method, :method
+      
+      def replace(other_hash)
+        #! better message
+        super
+      ensure
+        must_check_contents
+      end
+      
+      def merge!(other_hash)
+        super
+      ensure
+        must_check_contents
+      end
+      
+      def update(other_hash)
+        super
+      ensure
+        must_check_contents
       end
     end
   end

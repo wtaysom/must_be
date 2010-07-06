@@ -982,6 +982,24 @@ describe MustBe do
           subject[:six].should == 6
           should_not notify
         end
+        
+        it "should not notify when replaced with an acceptable hash" do
+          subject[:six] = 6
+          subject.replace({:sym => 343}).should == subject
+          subject[:six].should be_nil
+          subject[:sym].should == 343
+          should_not notify
+        end
+        
+        it "should notify when merged with an unacceptable hash" do
+          subject.merge!({3 => 1})
+          should notify #! message
+        end
+        
+        it "should not notify when updated with an acceptable hash" do
+          subject.update({:yes => 1})
+          should_not notify
+        end
       end
       
       describe "#must_only_ever_contain_cases" do
