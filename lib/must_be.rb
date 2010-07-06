@@ -279,7 +279,7 @@ module MustBe
       end
     else
       each do |item|
-        #! better message -- use `must_check' then
+        #!! better message -- use `must_check' then
         # may want to customize Note to make it easier to build that custom
         # message
         item.must_be(*cases)
@@ -290,6 +290,8 @@ module MustBe
   
   #! other modules, rename, etc
   module MustOnlyEverContain
+    REGISTERED_CLASSES = {}
+    
     module Base
       attr_accessor :must_only_ever_contain_cases
 
@@ -298,18 +300,45 @@ module MustBe
         @must_only_ever_contain_cases = cases
         must_only_contain(*cases)
       end
-    end
-    
-    module Hash
-      include Base
       
-      def []=(key, value)
+    protected
+      def must_check(item)
+        #!! better message -- see must_only_contain
+        item.must_be(*must_only_ever_contain_cases)
+      end
+    
+      def must_check_pair(key, value)
         unless MustBe.check_pair_against_hash_cases(key, value,
             must_only_ever_contain_cases)
           #! better message
           must_notify("pair #{{key => value}.inspect} does not match"\
             " #{must_only_ever_contain_cases.inspect} in #{inspect}")
         end
+      end
+      
+      #!! a method for checking each -- relates to must_only_contain
+    end
+    
+    #!! spec error pathways
+    def self.register(klass, &body)
+      unless klass.is_a? Class
+        raise ArgumentError, "invalid value for Class: #{klass.inspect}"
+      end
+      if REGISTERED_CLASSES[klass]
+        raise ArgumentError, "handler for #{klass} previously provided"
+      end
+      
+      REGISTERED_CLASSES[klass] = mod = Module.new
+      mod.class_eval do
+        include Base
+      end
+      mod.class_eval &body
+      mod
+    end
+    
+    register Hash do
+      def []=(key, value)
+        must_check_pair(key, value)
         super
       end
     end
@@ -318,9 +347,10 @@ module MustBe
   #! should raise when there are already singleton methods defined on self
   #! spec that the installation depends on the class
   #! be able to register new classes (e.g. Set)
-  def must_only_ever_contain(*cases)    
-    if instance_of? Hash
-      extend MustOnlyEverContain::Hash
+  def must_only_ever_contain(*cases)
+    advice = MustOnlyEverContain::REGISTERED_CLASSES[self.class]
+    if advice
+      extend advice
       self.must_only_ever_contain_cases = cases
     elsif instance_of? Array
       #!! array case: lots of methods to override to be useful
