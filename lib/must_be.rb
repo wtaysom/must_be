@@ -294,6 +294,24 @@ module MustBe
     
     module Base
       attr_accessor :must_only_ever_contain_cases
+      
+      module ClassMethods 
+        def must_check_contents_after(*methods)
+          methods.each do |method|
+            define_method(method) do |*args, &block|
+              begin
+                super(*args, &block)
+              ensure
+                must_check_contents
+              end
+            end
+          end
+        end
+      end
+      
+      def self.included(base)
+        base.extend(ClassMethods)
+      end
 
       def must_only_ever_contain_cases=(cases)
         cases = [cases] unless cases.is_a? Array
@@ -354,26 +372,7 @@ module MustBe
         super
       end
       
-      #!!! factor out must_check_contents_after :method, :method, :method
-      
-      def replace(other_hash)
-        #! better message
-        super
-      ensure
-        must_check_contents
-      end
-      
-      def merge!(other_hash)
-        super
-      ensure
-        must_check_contents
-      end
-      
-      def update(other_hash)
-        super
-      ensure
-        must_check_contents
-      end
+      must_check_contents_after :replace, :merge!, :update
     end
   end
   
