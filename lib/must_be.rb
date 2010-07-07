@@ -269,7 +269,7 @@ module MustBe
   end
 
   def must_only_contain(*cases)
-    advice = MustOnlyEverContain.registered_class(self)
+    advice = MustOnlyEverContain.registered_class(self)    
     if advice and advice.respond_to? :must_only_contain_check
       advice.must_only_contain_check(self, cases)
     elsif respond_to? :each_pair
@@ -294,10 +294,6 @@ module MustBe
   #! other modules, rename, etc
   module MustOnlyEverContain
     REGISTERED_CLASSES = {}
-    
-    def self.registered_class(object)
-      REGISTERED_CLASSES[object.class]
-    end
     
     module Base
       attr_accessor :must_only_ever_contain_cases
@@ -347,8 +343,6 @@ module MustBe
       end
     end
     
-    #!! spec error pathways
-    #!! spec must_only_contain_check
     ##
     # Creates a module from `body' which includes MustOnlyEverContain::Base.
     # The module will be mixed into an objects of type `klass' when 
@@ -374,6 +368,14 @@ module MustBe
       end
       mod.class_eval &body
       mod
+    end
+    
+    def self.registered_class(object)
+      REGISTERED_CLASSES[object.class]
+    end
+    
+    def self.unregister(klass)
+      REGISTERED_CLASSES.delete(klass)
     end
     
     register Hash do
@@ -405,8 +407,8 @@ module MustBe
       #!! array case: lots of methods to override to be useful
       raise "Array receiver unimplemented"
     else
-      #! complain
-      raise "decide on the right error to raise: TypeError?"
+      raise TypeError,
+        "No MustOnlyEverContain.registered_class for #{self.class}"
     end
     self
   end

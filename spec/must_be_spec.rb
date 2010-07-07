@@ -932,6 +932,10 @@ describe MustBe do
   end
   
   describe "#must_only_ever_contain" do
+    describe Array do
+      #!! write examples
+    end
+    
     describe Hash do
       subject { {} }
       
@@ -1068,6 +1072,111 @@ describe MustBe do
         it "should notify when cases do not match" do
           subject.must_only_ever_contain(Symbol => String)
           should notify #! message
+        end
+      end
+    end
+    
+    describe "custom" do
+      class Box
+        include Enumerable
+        
+        attr_accessor :contents
+        
+        def initialize(contents = nil)
+          self.contents = contents
+        end
+        
+        def each_called?
+          @each_called
+        end
+        
+        def each
+          @each_called = true
+          yield(contents) unless contents.nil?
+        end
+        
+        def empty!
+          self.contents = nil
+        end
+      end
+      
+      subject { Box.new(:contents) }
+      
+      describe "without MustOnlyEverContain.registered_class" do
+        describe "#must_only_contain" do
+          it "should use each to check the contents" do
+            subject.must_only_contain(String)
+            subject.should be_each_called
+            should notify #! message
+          end
+        end
+        
+        describe "#must_only_ever_contain" do
+          it "should raise a TypeError" do
+            expect do
+              subject.must_only_ever_contain(Symbol)
+            end.should raise_error(TypeError,
+              /No MustOnlyEverContain.registered_class for .*Box/)
+          end
+        end
+      end
+      
+      describe "with MustOnlyEverContain.registered_class" do
+        before do
+          MustOnlyEverContain.register(Box) do
+            def self.must_only_contain_check(object, cases)
+              object.contents.must_be(*cases)
+            end
+            
+            def contents=(contents)
+              must_check(contents)
+              super
+            end
+            
+            must_check_contents_after :empty!
+          end
+        end
+        
+        after do
+          MustOnlyEverContain.unregister(Box)
+        end
+        
+        describe "when updating contents" do
+          it "should notify when does not match must_only_ever_contain_cases" do
+            subject.must_only_ever_contain(Symbol)
+            subject.contents = 435
+            should notify #! message
+          end
+          
+          it "should not notify when matches must_only_ever_contain_cases" do
+            subject.must_only_ever_contain(Symbol)
+            subject.contents = :another_symbol
+            should_not notify
+          end
+        end
+        
+        describe "when emptied" do
+          it "should notify if nil does not match"\
+              " must_only_ever_contain_cases" do
+            subject.must_only_ever_contain(Symbol)
+            subject.empty!
+            subject.should_not be_each_called
+            should notify #! message
+          end
+        end
+        
+        describe "ArgumentError" do
+          it "should raise when trying to register a non-class" do
+            expect do
+              MustOnlyEverContain.register(:not_a_class)
+            end.should raise_error(ArgumentError)
+          end
+          
+          it "should raise when trying to register a class more than once" do
+            expect do
+              MustOnlyEverContain.register(Box)
+            end.should raise_error(ArgumentError)
+          end
         end
       end
     end
