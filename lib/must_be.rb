@@ -269,7 +269,10 @@ module MustBe
   end
 
   def must_only_contain(*cases)
-    if respond_to? :each_pair
+    advice = MustOnlyEverContain.registered_class(self)
+    if advice and advice.respond_to? :must_only_contain_check
+      advice.must_only_contain_check(self, cases)
+    elsif respond_to? :each_pair
       each_pair do |key, value|
         unless MustBe.check_pair_against_hash_cases(key, value, cases)
           #! better message
@@ -291,6 +294,10 @@ module MustBe
   #! other modules, rename, etc
   module MustOnlyEverContain
     REGISTERED_CLASSES = {}
+    
+    def self.registered_class(object)
+      REGISTERED_CLASSES[object.class]
+    end
     
     module Base
       attr_accessor :must_only_ever_contain_cases
@@ -335,14 +342,24 @@ module MustBe
       end
       
       def must_check_contents
-        #! better message
+        #! better message?
         must_only_contain(*must_only_ever_contain_cases)
       end
-      
-      #!! a method for checking each -- relates to must_only_contain
     end
     
     #!! spec error pathways
+    #!! spec must_only_contain_check
+    ##
+    # Creates a module from `body' which includes MustOnlyEverContain::Base.
+    # The module will be mixed into an objects of type `klass' when 
+    # `must_only_ever_contain' is called.  The module should override methods of
+    # `klass' which modify the contents of the object.
+    # If the module has a class method named `must_only_contain_check',
+    # then this method is used by `MustBe#must_only_contain(object, cases)'
+    # to check the contents of `object' against `cases'.  
+    # `must_only_contain_check' should call `MustBe#must_notify' for any 
+    # contents which do not match `cases'.
+    #
     def self.register(klass, &body)
       unless klass.is_a? Class
         raise ArgumentError, "invalid value for Class: #{klass.inspect}"
@@ -380,7 +397,7 @@ module MustBe
   #! spec that the installation depends on the class
   #! be able to register new classes (e.g. Set)
   def must_only_ever_contain(*cases)
-    advice = MustOnlyEverContain::REGISTERED_CLASSES[self.class]
+    advice = MustOnlyEverContain.registered_class(self)
     if advice
       extend advice
       self.must_only_ever_contain_cases = cases
