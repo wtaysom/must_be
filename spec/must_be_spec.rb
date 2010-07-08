@@ -861,12 +861,12 @@ describe MustBe do
     describe Array do
       subject { [11, :sin, 'cos'] }
       
-      it "should not notify when each member matches one of the cases" do
+      it "should not notify if each member matches one of the cases" do
         subject.must_only_contain(Symbol, Numeric, String).should == subject
         should_not notify
       end
     
-      it "should notify when any member matches none of the cases" do
+      it "should notify if any member matches none of the cases" do
         subject.must_only_contain(Symbol, Numeric).should == subject
         should notify #! check format of the message
       end
@@ -888,13 +888,13 @@ describe MustBe do
       subject { {:key => :value, :another => 'thing', 12 => 43} }
       
       describe "when called with a single hash" do
-        it "should not notify when each pair matches one of the cases" do
+        it "should not notify if each pair matches one of the cases" do
           subject.must_only_contain(Symbol => [Symbol, String],
             Numeric => Numeric).should == subject
           should_not notify
         end
         
-        it "should notify when any pair matches none of the cases" do
+        it "should notify if any pair matches none of the cases" do
           subject.must_only_contain(Symbol => Symbol, Symbol => String,
             String => Numeric).should == subject
           should notify #! message?
@@ -902,13 +902,13 @@ describe MustBe do
       end
       
       describe "when called with multiple hashes" do
-        it "should not notify when each pair matches one of the cases" do
+        it "should not notify if each pair matches one of the cases" do
           subject.must_only_contain({Symbol => Symbol}, {Symbol => String},
             {Numeric => Numeric}).should == subject
           should_not notify
         end
         
-        it "should notify when any pair matches none of the cases" do
+        it "should notify if any pair matches none of the cases" do
           subject.must_only_contain({Symbol => Symbol}, {Symbol => String},
             {String => Numeric}).should == subject
           should notify #! message?
@@ -916,13 +916,13 @@ describe MustBe do
       end
       
       describe "when called with array keys and values" do
-        it "should not notify when each pair matches" do
+        it "should not notify if each pair matches" do
           subject.must_only_contain([Symbol, Numeric] => [Symbol, String, 
             Numeric]).should == subject
           should_not notify
         end
         
-        it "should notify when any pair does not match" do
+        it "should notify if any pair does not match" do
           subject.must_only_contain([Symbol, Numeric] => [Symbol, 
             Numeric]).should == subject
           should notify #! message?
@@ -933,7 +933,203 @@ describe MustBe do
   
   describe "#must_only_ever_contain" do
     describe Array do
-      #!! write examples
+      subject { [1, 2, 3, 4] }
+      
+      before do
+        subject.must_only_ever_contain
+      end
+      
+      describe "#<<" do
+        it "should not notify if obj is non-nil" do
+          subject << 5
+          should_not notify
+        end
+        
+        it "should notify if obj is nil" do
+          subject << nil
+          should notify #! message
+        end
+      end
+      
+      describe "#[]=" do
+        describe "when called with index" do
+          it "should not notify if obj is non-nil" do
+            subject[2] = 5
+            should_not notify
+          end
+
+          it "should notify if obj is nil" do
+            subject[2] = nil
+            should notify #! message
+          end
+        end
+        
+        describe "when called with start and length" do
+          it "should not notify if RHS is non-nil obj" do
+            subject[2, 2] = 5
+            should_not notify
+          end
+          
+          it "should not notify if RHS is nil" do
+            subject[2, 2] = nil
+            should_not notify
+          end
+          
+          it "should not notify if RHS is compact array" do
+            subject[2, 2] = [8, 9, 0]
+          end
+          
+          it "should notify if RHS is array containing nil" do
+            subject[2, 2] = [8, nil, 0]
+            should notify #! message
+          end
+        end
+        
+        describe "when called with range" do
+          it "should not notify if RHS is non-nil obj" do
+            subject[2..4] = 5
+            should_not notify
+          end
+          
+          it "should not notify if RHS is nil" do
+            subject[2..4] = nil
+            should_not notify
+          end
+          
+          it "should not notify if RHS is compact array" do
+            subject[2..4] = [8, 9, 0]
+          end
+          
+          it "should notify if RHS is array containing nil" do
+            subject[2..4] = [8, nil, 0]
+            should notify #! message
+          end
+        end
+      end
+      
+      describe "#collect!" do
+        it "should not notify if all new values are non-nil" do
+          subject.collect! {|v| v }
+          should_not notify
+        end
+        
+        it "should notify if any new values are nil" do
+          subject.collect! {|v| v == 3 ? nil : v }
+          should notify #! message
+        end
+      end
+      
+      describe "#map!" do
+        it "should not notify if all new values are non-nil" do
+          subject.map! {|v| v }
+          should_not notify
+        end
+        
+        it "should notify if any new values are nil" do
+          subject.map! {|v| v == 3 ? nil : v }
+          should notify #! message
+        end
+      end
+      
+      describe "#concat" do
+        it "should not notify if all items in other_array are non-nil" do
+          subject.concat([6, 7, 8, 9])
+          should_not notify
+        end
+        
+        it "should notify if any item in other_array is nil" do
+          subject.concat([6, 7, nil, 9])
+          should notify #! message
+        end
+      end
+      
+      describe "#fill" do
+        describe "when called without a block" do
+          it "should not notify if obj is non-nil" do
+            subject.fill(3)
+            should_not notify
+          end
+
+          it "should notify if obj is nil" do
+            subject.fill(nil)
+            should notify #! message
+          end
+        end
+        
+        describe "when called with a block" do
+          it "should not notify if block never returns nil" do
+            subject.fill {|v| v }
+            should_not notify
+          end
+
+          it "should notify if block ever returns nil" do
+            subject.fill {|v| v == 3 ? nil : v }
+            should notify #! message
+          end
+        end
+      end
+      
+      describe "#flatten!" do
+        it "should not notify if does not contain an array with nil items" do
+          subject << [[6, 7], [8, 9]]
+          subject.flatten!          
+          should_not notify
+        end
+        
+        it "should notify if contains an array with any nil items" do
+          subject << [[6, 7], [nil, 9]]
+          subject.flatten!
+          should notify #! message
+        end
+      end
+      
+      describe "#insert" do
+        it "should not notify if all objs are non-nil" do
+          subject.insert(2, 6, 7, 8, 9)
+          should_not notify
+        end
+        
+        it "should notify if any objs are nil" do
+          subject.insert(2, 6, 7, nil, 9)
+          should notify #! message
+        end
+      end
+      
+      describe "#push" do
+        it "should not notify if all objs are non-nil" do
+          subject.push(6, 7, 8, 9)
+          should_not notify
+        end
+        
+        it "should notify if any objs are nil" do
+          subject.push(6, 7, nil, 9)
+          should notify #! message
+        end
+      end
+      
+      describe "#replace" do
+        it "should not notify if all items in other_array are non-nil" do
+          subject.replace([6, 7, 8, 9])
+          should_not notify
+        end
+        
+        it "should notify if any items in other_array are nil" do
+          subject.replace([6, 7, nil, 9])
+          should notify #! message
+        end
+      end
+      
+      describe "#unshift" do
+        it "should not notify if all objs are non-nil" do
+          subject.unshift(6, 7, 8, 9)
+          should_not notify
+        end
+        
+        it "should notify if any objs are nil" do
+          subject.unshift(6, 7, nil, 9)
+          should notify #! message
+        end
+      end
     end
     
     describe Hash do
@@ -948,17 +1144,17 @@ describe MustBe do
           subject.must_only_ever_contain_cases.should == []
         end
         
-        it "should notify when inserting a nil value" do
+        it "should notify if inserting a nil value" do
           subject[:nil] = nil
           should notify #! message
         end
         
-        it "should notify when inserting a false key" do
+        it "should notify if inserting a false key" do
           subject[false] = :false
           should notify #! message
         end
         
-        it "should not notify when inserting a regular pair" do
+        it "should not notify if inserting a regular pair" do
           subject[:key] = :value
           should_not notify
         end
@@ -969,25 +1165,25 @@ describe MustBe do
           subject.must_only_ever_contain(Symbol => Integer, Integer => Symbol)
         end
         
-        it "should notify when inserting an invalid key" do
+        it "should notify if inserting an invalid key" do
           subject["six"] = 6
           subject["six"].should == 6
           should notify #! message
         end
         
-        it "should notify when inserting an invalid value" do
+        it "should notify if inserting an invalid value" do
           subject[:six] = :six
           subject[:six].should == :six
           should notify #! message
         end
         
-        it "should not notify when inserting a valid pair" do
+        it "should not notify if inserting a valid pair" do
           subject[:six] = 6
           subject[:six].should == 6
           should_not notify
         end
         
-        it "should not notify when replaced with an acceptable hash" do
+        it "should not notify if replaced with an acceptable hash" do
           subject[:six] = 6
           subject.replace({:sym => 343}).should == subject
           subject[:six].should be_nil
@@ -995,12 +1191,12 @@ describe MustBe do
           should_not notify
         end
         
-        it "should notify when merged with an unacceptable hash" do
+        it "should notify if merged with an unacceptable hash" do
           subject.merge!({3 => 1})
           should notify #! message
         end
         
-        it "should not notify when updated with an acceptable hash" do
+        it "should not notify if updated with an acceptable hash" do
           subject.update({:yes => 1})
           should_not notify
         end
@@ -1015,17 +1211,17 @@ describe MustBe do
           subject.must_only_ever_contain_cases.should == [{Symbol => Symbol}]
         end
                 
-        it "should not notify when inserting Symbol => Symbol pair" do
+        it "should not notify if inserting Symbol => Symbol pair" do
           subject[:hello] = :granny
           should_not notify
         end
         
-        it "should notify when inserting Symbol => Integer pair" do
+        it "should notify if inserting Symbol => Integer pair" do
           subject[:hello] = 970
           should notify #! message
         end
         
-        it "should notify when inserting Integer => Integer pair" do
+        it "should notify if inserting Integer => Integer pair" do
           subject[3984] = 970
           should notify #! message
         end
@@ -1042,17 +1238,17 @@ describe MustBe do
             subject.must_only_ever_contain_cases.should == cases
           end
           
-          it "should not notify when inserting Symbol => Symbol pair" do
+          it "should not notify if inserting Symbol => Symbol pair" do
             subject[:hello] = :granny
             should_not notify
           end
 
-          it "should not notify when inserting Symbol => Integer pair" do
+          it "should not notify if inserting Symbol => Integer pair" do
             subject[:hello] = 970
             should_not notify #! message
           end
 
-          it "should notify when inserting Integer => Integer pair" do
+          it "should notify if inserting Integer => Integer pair" do
             subject[3984] = 970
             should notify #! message
           end
@@ -1064,12 +1260,12 @@ describe MustBe do
           subject[:hello] = :world
         }
         
-        it "should not notify when cases match" do
+        it "should not notify if cases match" do
           subject.must_only_ever_contain(Symbol => Symbol)
           should_not notify
         end
         
-        it "should notify when cases do not match" do
+        it "should notify if cases do not match" do
           subject.must_only_ever_contain(Symbol => String)
           should notify #! message
         end
@@ -1141,14 +1337,27 @@ describe MustBe do
           MustOnlyEverContain.unregister(Box)
         end
         
+        describe "when subject already has singleton methods" do
+          it "should raise ArgumentError" do
+            expect do
+              class <<subject
+                def singleton_method
+                end
+              end
+              subject.must_only_ever_contain(Symbol)
+            end.should raise_error(ArgumentError,
+              /must_only_ever_contain adds singleton methods but receiver .*/)
+          end
+        end
+        
         describe "when updating contents" do
-          it "should notify when does not match must_only_ever_contain_cases" do
+          it "should notify if does not match must_only_ever_contain_cases" do
             subject.must_only_ever_contain(Symbol)
             subject.contents = 435
             should notify #! message
           end
           
-          it "should not notify when matches must_only_ever_contain_cases" do
+          it "should not notify if matches must_only_ever_contain_cases" do
             subject.must_only_ever_contain(Symbol)
             subject.contents = :another_symbol
             should_not notify
@@ -1210,10 +1419,6 @@ end
 
 == Main things ==
 
-#must_only_ever_contain
-  Array unimplemented
-  Hash only checks when you use `[]='
-
 Messages
   some errors aren't really checked
   the messages for some assertions could be improved
@@ -1228,12 +1433,6 @@ Notifiers
   ENV['MUST_BE__NOTIFIER'] = 'raise' (default), 'disable', 'notify', 'test', 'spec', 'debug'
   -- check that the default is properly set to MustBe::RaiseNotifier
 
-#must_only_ever_contain
-  (String => String, String => Array) -- for hashes
-  (Symbol, Array) -- for arrays
-  -- be able to register other collections, complain if unregistered
-  -- complain if the collection already has singleton methods
-
 spec MustBe::Proxy (just the initializer)
 spec #must_be and #must_not_be against `==='
 
@@ -1247,11 +1446,11 @@ spec Note
 
 spec ENV["MUST_BE__SHOULD_NOT_AUTOMATICALLY_BE_INCLUDED_IN_OBJECT"]
 
-handle large .inspect strings gracefully -- omit the middle break at words if sensible
+handle large .inspect strings gracefully -- omit the middle, break at words if sensible
 
 seperate into multiple files, refactor, remove excess duplication
   see <http://pure-rspec-rubynation.heroku.com/> shared behaviors (30-32)
-  let for providing differences to use in shared behaviors
+  `let' for providing differences to use in shared behaviors
   put more things in spec_helper?
   learn rSpec better before diving into this stuff
     read tRSb chapter 17 specifically Custom Matchers and Macros

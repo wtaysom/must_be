@@ -291,7 +291,6 @@ module MustBe
     self
   end
   
-  #! other modules, rename, etc
   module MustOnlyEverContain
     REGISTERED_CLASSES = {}
     
@@ -327,7 +326,7 @@ module MustBe
         #!! better message -- see must_only_contain
         item.must_be(*must_only_ever_contain_cases)
       end
-    
+      
       def must_check_pair(key, value)
         unless MustBe.check_pair_against_hash_cases(key, value,
             must_only_ever_contain_cases)
@@ -337,9 +336,9 @@ module MustBe
         end
       end
       
-      def must_check_contents
+      def must_check_contents(items = self)
         #! better message?
-        must_only_contain(*must_only_ever_contain_cases)
+        items.must_only_contain(*must_only_ever_contain_cases)
       end
     end
     
@@ -378,34 +377,95 @@ module MustBe
       REGISTERED_CLASSES.delete(klass)
     end
     
+    register Array do
+      must_check_contents_after :collect!, :map!, :flatten!
+      
+      def <<(obj)
+        must_check(obj)
+        super
+      end
+      
+      def []=(*args)
+        if args.size == 3 or args[0].is_a? Range
+          value = args[-1]
+          if value.nil?
+            # No check needed.
+          elsif value.is_a? Array
+            value.map {|v| must_check(v) }
+          else
+            must_check(value)
+          end
+        else
+          must_check(args[1])
+        end
+        super
+      end
+      
+      def concat(other_array)
+        must_check_contents(other_array)
+        super
+      end
+      
+      def fill(*args)
+        if block_given?
+          begin
+            super
+          ensure
+            must_check_contents
+          end
+        else
+          must_check(args[0])
+          super
+        end
+      end
+      
+      def insert(index, *objs)
+        must_check_contents(objs)
+        super
+      end
+      
+      def push(*objs)
+        must_check_contents(objs)
+        super
+      end
+      
+      def replace(other_array)
+        must_check_contents(other_array)
+        super
+      end
+      
+      def unshift(*objs)
+        must_check_contents(objs)
+        super
+      end
+    end
+    
     register Hash do
+      must_check_contents_after :replace, :merge!, :update
+      
       def []=(key, value)
         must_check_pair(key, value)
         super
       end
-      
-      #!! spec all of the methods
-      
+            
       def store(key, value)
         must_check_pair(key, value)
         super
       end
-      
-      must_check_contents_after :replace, :merge!, :update
     end
   end
   
-  #! should raise when there are already singleton methods defined on self
-  #! spec that the installation depends on the class
-  #! be able to register new classes (e.g. Set)
   def must_only_ever_contain(*cases)
+    unless singleton_methods.empty?
+      raise ArgumentError, "must_only_ever_contain adds singleton methods but"\
+        " receiver #{self.inspect} already"\
+        " has singleton methods #{singleton_methods.inspect}"
+    end
+    
     advice = MustOnlyEverContain.registered_class(self)
     if advice
       extend advice
       self.must_only_ever_contain_cases = cases
-    elsif instance_of? Array
-      #!! array case: lots of methods to override to be useful
-      raise "Array receiver unimplemented"
     else
       raise TypeError,
         "No MustOnlyEverContain.registered_class for #{self.class}"
