@@ -92,7 +92,7 @@ module MustBe
     note = Note === receiver ? receiver :
       Note.new(receiver, assertion, args, block, additional_message)
     if $must_check__is_checking
-      $must_check__found = note
+      $must_check__found_note = note
     else
       raise note if MustBe.notifier.call(note)
     end
@@ -104,15 +104,15 @@ module MustBe
     was_checking = $must_check__is_checking
     $must_check__is_checking = true
     
-    already_found = $must_check__found
-    $must_check__found = nil
+    already_found = $must_check__found_note
+    $must_check__found_note = nil
     
     yield(self)
     
-    $must_check__found
+    $must_check__found_note
   ensure
     $must_check__is_checking = was_checking
-    $must_check__found = already_found
+    $must_check__found_note = already_found
   end
 
 ### Basic Assertions ###
@@ -267,6 +267,23 @@ module MustBe
       end
     end
   end
+  
+  def self.must_check_pair_against_hash_cases(container, key, value, cases)
+    unless MustBe.check_pair_against_hash_cases(key, value, cases)
+      must_notify("pair #{{key => value}.inspect} does not match"\
+        " #{cases.inspect} in #{container.inspect}")
+    end
+  end
+  
+  def self.must_check_item_against_cases(container, item, cases)
+    note = item.must_check do
+      item.must_be(*cases)
+    end
+    if note
+      #!!! make a better message using container
+      must_notify(note)
+    end
+  end
 
   def must_only_contain(*cases)
     advice = MustOnlyEverContain.registered_class(self)    
@@ -274,18 +291,11 @@ module MustBe
       advice.must_only_contain_check(self, cases)
     elsif respond_to? :each_pair
       each_pair do |key, value|
-        unless MustBe.check_pair_against_hash_cases(key, value, cases)
-          #! better message
-          must_notify("pair #{{key => value}.inspect} does not match"\
-            " #{cases.inspect} in #{inspect}")
-        end
+        MustBe.must_check_pair_against_hash_cases(self, key, value, cases)
       end
     else
       each do |item|
-        #!! better message -- use `must_check' then
-        # may want to customize Note to make it easier to build that custom
-        # message
-        item.must_be(*cases)
+        MustBe.must_check_item_against_cases(self, item, cases)
       end
     end
     self
@@ -323,17 +333,13 @@ module MustBe
       
     protected
       def must_check(item)
-        #!! better message -- see must_only_contain
-        item.must_be(*must_only_ever_contain_cases)
+        MustBe.must_check_item_against_cases(self, item, 
+          must_only_ever_contain_cases)
       end
       
       def must_check_pair(key, value)
-        unless MustBe.check_pair_against_hash_cases(key, value,
-            must_only_ever_contain_cases)
-          #! better message
-          must_notify("pair #{{key => value}.inspect} does not match"\
-            " #{must_only_ever_contain_cases.inspect} in #{inspect}")
-        end
+        MustBe.must_check_pair_against_hash_cases(self, key, value,
+          must_only_ever_contain_cases)
       end
       
       def must_check_contents(items = self)
