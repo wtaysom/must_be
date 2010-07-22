@@ -1,5 +1,5 @@
 module MustBe
-  VERSION = '0.0.1'
+  VERSION = '0.0.3'
   
   class <<self
     attr_accessor :notifier # should respond_to? :call with Note argument.
