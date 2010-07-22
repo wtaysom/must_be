@@ -280,7 +280,7 @@ module MustBe
       item.must_be(*cases)
     end
     if note
-      #!!! make a better message using container
+      note.additional_message += " in container #{container.inspect}"
       must_notify(note)
     end
   end
@@ -343,7 +343,6 @@ module MustBe
       end
       
       def must_check_contents(items = self)
-        #! better message?
         items.must_only_contain(*must_only_ever_contain_cases)
       end
     end

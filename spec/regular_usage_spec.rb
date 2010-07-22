@@ -126,7 +126,8 @@ describe MustBe, " regular usage" do
       example "[1, :hi, \"wow\"].must_only_contain(Numeric, String)"\
           " should not notify" do
         [1, :hi, "wow"].must_only_contain(Numeric, String)
-        should notify(":hi.must_be(Numeric, String), but is Symbol") #! message
+        should notify(":hi.must_be(Numeric, String), but is Symbol"\
+          " in container [1, :hi, \"wow\"]")
       end
     end
     
