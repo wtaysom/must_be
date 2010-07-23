@@ -19,7 +19,7 @@ module MustBe
       @disabled_methods = nil
     end
     
-    def enable?
+    def enabled?
       @disabled_methods.nil?
     end
   end
@@ -29,14 +29,54 @@ module MustBe
   end
   
 ### Notifiers ###
-
+  
+  NOTIFIERS = {}
+  
   class <<self
     attr_accessor :notifier # should respond_to? :call with Note argument.
+    
+    def def_notifier(constant_name, key = nil, &notifier)
+      const_set(constant_name, notifier)
+      NOTIFIERS[key] = constant_name if key
+    end
+    
+    def set_notifier_from_env(key = ENV['MUST_BE__NOTIFIER'])
+      key = key.to_sym
+      
+      if key == :disable
+        disable
+        return
+      end
+      
+      constant_name = NOTIFIERS[key]
+      unless constant_name
+        raise ArgumentError, "no MustBe::NOTIFIERS called #{key.inspect}"
+      end
+      self.notifier = const_get(constant_name)
+    end
+  end
+  
+  def_notifier(:RaiseNotifier, :raise) {|note| true }
+  
+  def_notifier(:LogNotifier, :log) do |note|
+    begin
+      raise note
+    rescue Note
+      puts [note.message, *note.backtrace].join("\n\t")
+    end
+    false
+  end
+  
+  def_notifier(:DebugNotifier, :debug) do |note|
+    $must_be__note = note
+    puts note.message
+    puts "Starting debugger ($must_be__note stores the note)..."
+    require 'ruby-debug'
+    debugger
+    false
   end
 
-  self.notifier = RaiseNotifier = lambda {|note| true }
-  
-  #!! add notifiers
+  set_notifier_from_env(ENV['MUST_BE__NOTIFIER'] || :raise)
   
 ### Note ###
   
@@ -497,7 +537,7 @@ end
 
 ### Automatically Include in Object ###
 
-unless ENV["MUST_BE__SHOULD_NOT_AUTOMATICALLY_BE_INCLUDED_IN_OBJECT"]
+unless ENV['MUST_BE__SHOULD_NOT_AUTOMATICALLY_BE_INCLUDED_IN_OBJECT']
   class Object
     include MustBe
   end

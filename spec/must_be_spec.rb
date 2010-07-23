@@ -15,7 +15,7 @@ describe MustBe do
     end
     
     it "should be disabled" do
-      MustBe.enable?.should be_false
+      MustBe.enabled?.should be_false
     end
     
     it "#must_be should not notify" do
@@ -41,7 +41,7 @@ describe MustBe do
 
   describe ".enable" do
     it "should start off enabled" do
-      MustBe.enable?.should be_true
+      MustBe.enabled?.should be_true
     end
     
     context "after disabling" do
@@ -51,7 +51,7 @@ describe MustBe do
       end
       
       it "should be enabled again" do
-        MustBe.enable?.should be_true
+        MustBe.enabled?.should be_true
       end
       
       it "#must_be should notify" do
@@ -84,6 +84,90 @@ describe MustBe do
   end
 
 ### Notifiers ###
+
+  describe "default notifier" do
+    it "should be RaiseNotifier" do
+      DEFAULT_MUST_BE_NOTIFIER.should == MustBe::RaiseNotifier
+    end
+  end
+  
+  describe ".set_notifier_from_env" do
+    before do
+      NOTIFIER = MustBe.notifier
+    end
+    
+    after do
+      MustBe.notifier = NOTIFIER
+    end
+    
+    it "should use 'log' to set the LogNotifier" do
+      MustBe.set_notifier_from_env('log')
+      MustBe.notifier.should == MustBe::LogNotifier
+    end
+    
+    it "should use ENV['MUST_BE__NOTIFIER'] when no argument provided" do
+      ENV['MUST_BE__NOTIFIER'] = 'debug'
+      MustBe.set_notifier_from_env
+      MustBe.notifier.should == MustBe::DebugNotifier
+    end
+    
+    it "should raise NoMethodError when argument does not respond to :to_sym" do
+      expect do
+        MustBe.set_notifier_from_env(nil)
+      end.should raise_error(NoMethodError)
+    end
+    
+    it "should raise ArgumentError when bad argument provided" do
+      expect do
+        MustBe.set_notifier_from_env(:unknown)
+      end.should raise_error(ArgumentError)
+    end
+        
+    it "should treat 'disable' as a special case" do
+      MustBe.set_notifier_from_env('disable')
+      MustBe.should_not be_enabled
+      MustBe.notifier.should == NOTIFIER
+      MustBe.enable
+      MustBe.should be_enabled
+    end
+  end
+  
+  describe ".def_notifier" do
+    context "when called with a key" do
+      before :all do
+        MustBe.def_notifier(:Spec__ExampleNotifier, :spec__example) {}
+      end
+      
+      it "should set a constant" do
+        MustBe::Spec__ExampleNotifier.should be_a(Proc)
+      end
+      
+      it "should add a key to NOTIFIERS" do
+        MustBe::NOTIFIERS[:spec__example].should == :Spec__ExampleNotifier
+      end
+      
+      it "should extend .set_notifier_from_env" do
+        MustBe.set_notifier_from_env(:spec__example)
+        MustBe.notifier.should == MustBe::Spec__ExampleNotifier
+      end
+    end
+    
+    context "when called with no key" do
+      before :all do
+        @original_notifiers = MustBe::NOTIFIERS.clone
+        
+        MustBe.def_notifier(:Spec__SecondExampleNotifier) {}
+      end
+      
+      it "should set a constant" do
+        MustBe::Spec__SecondExampleNotifier.should be_a(Proc)
+      end
+      
+      it "should leave NOTIFIERS unchanged" do
+        MustBe::NOTIFIERS.should == @original_notifiers
+      end
+    end
+  end
 
   describe "RaiseNotifier" do    
     before do
@@ -1479,16 +1563,6 @@ end
 
 ###! to-do ###
 =begin
-
-== Main things ==
-
-Notifiers
-  more built-in ones
-  use ENV to configure
-
--- configuration:
-  ENV['MUST_BE__NOTIFIER'] = 'raise' (default), 'disable', 'notify', 'test', 'spec', 'debug'
-  -- spec that the default is properly set to MustBe::RaiseNotifier
 
 == Hodgepodge ==
 

@@ -1,7 +1,9 @@
 require 'lib/must_be'
 
 module MustBeExampleHelper
-
+  
+  DEFAULT_MUST_BE_NOTIFIER = MustBe.notifier
+  
   def self.included(example_group)
     example_group.before do
       MustBe.notifier = lambda do |note|
