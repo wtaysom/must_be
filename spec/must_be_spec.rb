@@ -290,25 +290,19 @@ describe MustBe do
       note = nil
             
       thread_block = lambda do
-        mutex.synchronize do          
-          puts "great"
+        mutex.synchronize do
           thread_note = must_check do
             must_notify("thread")
-            puts "crazy"
             cv_yield[]
-            puts "heck"
           end
         end
-        puts "happy"
       end
       
       mutex.synchronize do
         note = must_check do
           must_notify("main")
-          puts "  OKAY"
           thread = Thread.new &thread_block
           cv_yield[]
-          puts "  DONE"
         end
         cv.signal
       end
@@ -1492,11 +1486,11 @@ Notifiers
   more built-in ones
   use ENV to configure
 
-== Hodgepodge ==
-
 -- configuration:
   ENV['MUST_BE__NOTIFIER'] = 'raise' (default), 'disable', 'notify', 'test', 'spec', 'debug'
-  -- check that the default is properly set to MustBe::RaiseNotifier
+  -- spec that the default is properly set to MustBe::RaiseNotifier
+
+== Hodgepodge ==
 
 spec MustBe::Proxy (just the initializer)
 spec #must_be and #must_not_be against `==='

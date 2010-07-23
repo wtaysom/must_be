@@ -1,11 +1,9 @@
 module MustBe
   VERSION = '0.0.3'
-  
-  class <<self
-    attr_accessor :notifier # should respond_to? :call with Note argument.
-    
+
 ### Enable ###
-        
+  
+  class <<self      
     def disable
       @disabled_methods = instance_methods.map do |method_name|
         method = instance_method(method_name)
@@ -26,11 +24,19 @@ module MustBe
     end
   end
   
-  self.notifier = RaiseNotifier = lambda {|note| true }
-  
   def must_just_return(*args)
     self
   end
+  
+### Notifiers ###
+
+  class <<self
+    attr_accessor :notifier # should respond_to? :call with Note argument.
+  end
+
+  self.notifier = RaiseNotifier = lambda {|note| true }
+  
+  #!! add notifiers
   
 ### Note ###
   
