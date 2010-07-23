@@ -489,7 +489,7 @@ if RUBY_VERSION < "1.9"
   end
 end
 
-### Automatically Inclue in Object ###
+### Automatically Include in Object ###
 
 unless ENV["MUST_BE__SHOULD_NOT_AUTOMATICALLY_BE_INCLUDED_IN_OBJECT"]
   class Object
