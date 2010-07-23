@@ -91,8 +91,8 @@ module MustBe
       additional_message = nil)
     note = Note === receiver ? receiver :
       Note.new(receiver, assertion, args, block, additional_message)
-    if $must_check__is_checking
-      $must_check__found_note = note
+    if Thread.current[:must_check__is_checking]
+      Thread.current[:must_check__found_note] = note
     else
       raise note if MustBe.notifier.call(note)
     end
@@ -100,19 +100,18 @@ module MustBe
   end
   
   def must_check
-    #! use thread-local variables
-    was_checking = $must_check__is_checking
-    $must_check__is_checking = true
+    was_checking = Thread.current[:must_check__is_checking]
+    Thread.current[:must_check__is_checking] = true
     
-    already_found = $must_check__found_note
-    $must_check__found_note = nil
+    already_found = Thread.current[:must_check__found_note]
+    Thread.current[:must_check__found_note] = nil
     
     yield(self)
     
-    $must_check__found_note
+    Thread.current[:must_check__found_note]
   ensure
-    $must_check__is_checking = was_checking
-    $must_check__found_note = already_found
+    Thread.current[:must_check__is_checking] = was_checking
+    Thread.current[:must_check__found_note] = already_found
   end
 
 ### Basic Assertions ###

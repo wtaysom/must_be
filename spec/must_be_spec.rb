@@ -277,10 +277,69 @@ describe MustBe do
     end
     
     it "should be thread safe" do
-      #! use Mutex and Conditional variables to test
-      # <http://ruby-doc.org/docs/ProgrammingRuby/html/tut_threads.html>
-      # should also check against Ruby 1.9 Fibers
-      # -- I believe thread local variables are also fiber local
+      mutex = Mutex.new
+      cv = ConditionVariable.new
+      
+      cv_yield = lambda do
+        cv.signal
+        cv.wait(mutex)
+      end
+      
+      thread = nil
+      thread_note = nil
+      note = nil
+            
+      thread_block = lambda do
+        mutex.synchronize do          
+          puts "great"
+          thread_note = must_check do
+            must_notify("thread")
+            puts "crazy"
+            cv_yield[]
+            puts "heck"
+          end
+        end
+        puts "happy"
+      end
+      
+      mutex.synchronize do
+        note = must_check do
+          must_notify("main")
+          puts "  OKAY"
+          thread = Thread.new &thread_block
+          cv_yield[]
+          puts "  DONE"
+        end
+        cv.signal
+      end
+      thread.join
+      
+      note.message.should == "main"
+      thread_note.message.should == "thread"    
+    end
+    
+    if RUBY_VERSION > "1.9"
+      fiber_note = nil
+      
+      it "should be fiber safe" do
+        fiber_note = nil
+        
+        fiber = Fiber.new do
+          fiber_note = must_check do
+            must_notify("fiber")
+            Fiber.yield
+          end
+        end
+        
+        note = must_check do
+          must_notify("main")
+          fiber.resume
+        end
+        fiber.resume
+        
+        note.message.should == "main"
+        fiber_note.message.should == "fiber"
+      end
     end
   end
 
@@ -898,9 +957,7 @@ describe MustBe do
         it "should notify if any pair matches none of the cases" do
           subject.must_only_contain(Symbol => Symbol, Symbol => String,
             String => Numeric).should == subject
-          should notify("pair {12=>43} does not match"\
-            " [{Symbol=>String, String=>Numeric}] in"\
-            " {:key=>:value, :another=>\"thing\", 12=>43}")
+          should notify
         end
       end
       
