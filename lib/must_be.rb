@@ -537,7 +537,7 @@ end
 
 ### Automatically Include in Object ###
 
-unless ENV['MUST_BE__SHOULD_NOT_AUTOMATICALLY_BE_INCLUDED_IN_OBJECT']
+unless ENV['MUST_BE__DO_NOT_AUTOMATICALLY_INCLUDE_IN_OBJECT']
   class Object
     include MustBe
   end

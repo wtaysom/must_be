@@ -1,4 +1,33 @@
+### MUST_BE__DO_NOT_AUTOMATICALLY_INCLUDE_IN_OBJECT ###
+#
+# Hard to describe within normal RSpec control flow.  Instead we raise a
+# RuntimeError if MUST_BE__DO_NOT_AUTOMATICALLY_INCLUDE_IN_OBJECT doesn't work
+# as expected.
+#
+
+ENV['MUST_BE__DO_NOT_AUTOMATICALLY_INCLUDE_IN_OBJECT'] = "" # any string.
+
 require 'lib/must_be'
+
+if Object.include? MustBe
+  raise "MustBe should not be automatically included in Object."
+end
+
+# Show that MustBe does not need to be included in Object to be useful.
+def example_of_must_be_inclusion
+  example = Object.new
+  example.extend(MustBe)  
+  example.must == example
+  example.must_not_be_nil
+end
+example_of_must_be_inclusion
+
+# Manually include MustBe in Object.
+class Object
+  include MustBe
+end
+
+### MustBeExampleHelper ###
 
 module MustBeExampleHelper
   

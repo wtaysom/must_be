@@ -1590,8 +1590,6 @@ end
 ###! to-do ###
 =begin
 
-spec ENV["MUST_BE__SHOULD_NOT_AUTOMATICALLY_BE_INCLUDED_IN_OBJECT"]
-
 #must_only_ever_contain and #must_never_contain
   should store a stack trace when they are created.
   when calling update methods, the note could be better
