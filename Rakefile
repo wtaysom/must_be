@@ -2,7 +2,10 @@ require 'rubygems'
 require 'rake'
 require 'echoe'
 
-Echoe.new('must_be', '0.0.4') do |p|
+ENV['MUST_BE__NOTIFIER'] = "disable"
+require 'lib/must_be'
+
+Echoe.new('must_be', MustBe::VERSION) do |p|
   p.description = "MustBe Runtime Assertions"
   p.url = "http://github.com/#?{Where we want to put it.}"
   p.author = "William Taysom"
