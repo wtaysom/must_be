@@ -185,6 +185,32 @@ describe MustBe do
 
 ### Note ###
   
+  describe "Note" do
+    # #must_notify provides examples covering #initialize and #to_s.
+    
+    describe "difference between #backtrace and #complete_backtrace" do
+      example "#backtrace should drop lines containing 'lib/must_be.rb:' from"\
+          "#complete_backtrace" do
+        
+        backtrace = [
+          "first line kept",
+          "other lib/must_be.rb: kept as well"]
+        
+        complete_backtrace = [
+          "lib/must_be.rb: at start",
+          "in middle lib/must_be.rb: is okay",
+          "at end too lib/must_be.rb:",
+          *backtrace]
+        
+        note = Note.new("sample")
+        note.set_backtrace(complete_backtrace)
+        
+        note.complete_backtrace.should == complete_backtrace
+        note.backtrace.should == backtrace
+      end
+    end
+  end
+  
   describe "#must_notify" do
     class <<self
       def it_should_notify(message)
@@ -1564,25 +1590,16 @@ end
 ###! to-do ###
 =begin
 
-== Hodgepodge ==
-
-spec MustBe::Proxy (just the initializer)
-spec #must_be and #must_not_be against `==='
-
-#must_not_contain
-#must_never_contain
-  -- duels
-
-spec Note
-  mostly covered by #must_notify
-  show the difference between complete_backtrace and backtrace
-
 spec ENV["MUST_BE__SHOULD_NOT_AUTOMATICALLY_BE_INCLUDED_IN_OBJECT"]
 
 #must_only_ever_contain and #must_never_contain
   should store a stack trace when they are created.
   when calling update methods, the note could be better
   "pair {false=>:false} does not match [] in {}" is a good example of a bad message
+
+#must_not_contain
+#must_never_contain
+  -- duels
 
 handle large .inspect strings gracefully -- omit the middle, break at words if sensible
 
