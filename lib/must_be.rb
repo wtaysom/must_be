@@ -342,13 +342,21 @@ module MustBe
         super
       end
     end
+    
+    alias regular_backtrace backtrace
+    
+    def backtrace
+      regular_backtrace and
+        regular_backtrace+["=== caused by container ==="]+
+          container.must_only_ever_contain_backtrace
+    end
   end
   
   class PairNote < ContainerNote
     attr_accessor :key, :value, :cases
     
     def initialize(key, value, cases, container)
-      super(Note.new(""), container.clone) #!!! clone?
+      super(Note.new(""), container)
       @key = key
       @value = value
       @cases = cases
@@ -413,7 +421,8 @@ module MustBe
     REGISTERED_CLASSES = {}
     
     module Base
-      attr_accessor :must_only_ever_contain_cases
+      attr_accessor :must_only_ever_contain_cases, 
+        :must_only_ever_contain_backtrace
       
       module ClassMethods 
         def must_check_contents_after(*methods)
@@ -606,6 +615,7 @@ module MustBe
     if advice
       extend advice
       self.must_only_ever_contain_cases = cases
+      self.must_only_ever_contain_backtrace = caller
     else
       raise TypeError,
         "No MustOnlyEverContain.registered_class for #{self.class}"

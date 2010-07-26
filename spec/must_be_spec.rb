@@ -1353,7 +1353,8 @@ describe MustBe do
         it "should notify if inserting a false key" do
           subject[false] = :false
           should notify("must_only_ever_contain: Hash#[]=(false, :false)"\
-            "\npair {false=>:false} does not match [] in container {}")
+            "\npair {false=>:false} does not match [] in container"\
+            " {false=>:false}")
         end
         
         it "should not notify if inserting a regular pair" do
@@ -1372,7 +1373,7 @@ describe MustBe do
           subject["six"].should == 6
           should notify("must_only_ever_contain: Hash#[]=(\"six\", 6)"\
             "\npair {\"six\"=>6} does not match"\
-            " [{Symbol=>Integer, Integer=>Symbol}] in container {}")
+            " [{Symbol=>Integer, Integer=>Symbol}] in container {\"six\"=>6}")
         end
         
         it "should notify if inserting an invalid value" do
@@ -1431,7 +1432,7 @@ describe MustBe do
           subject[3984] = 970
           should notify("must_only_ever_contain: Hash#[]=(3984, 970)"\
             "\npair {3984=>970} does not match [{Symbol=>Symbol}] in"\
-            " container {}")
+            " container {3984=>970}")
         end
         
         describe "when #must_only_ever_contain_cases is updated" do
