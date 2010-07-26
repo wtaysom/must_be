@@ -585,14 +585,14 @@ describe MustBe do
       context "when called with no arguments" do
         it "should notify" do
           51.must_not_be.should == 51
-          should notify("51.must_not_be")
+          should notify("51.must_not_be, but is Fixnum")
         end
       end
       
       context "when called with Numeric" do
         it "should notify" do
           51.must_not_be(Numeric)
-          should notify("51.must_not_be(Numeric)")
+          should notify("51.must_not_be(Numeric), but is Fixnum")
         end
       end
       
@@ -606,7 +606,7 @@ describe MustBe do
       context "when called with Comparable" do
         it "should notify" do
           51.must_not_be(Comparable)
-          should notify("51.must_not_be(Comparable)")
+          should notify("51.must_not_be(Comparable), but is Fixnum")
         end
       end
       
@@ -620,7 +620,7 @@ describe MustBe do
       context "when called with Hash, Kernel, Object" do
         it "should notify" do
           51.must_not_be(Hash, Kernel, Object).should == 51
-          should notify("51.must_not_be(Hash, Kernel, Object)")
+          should notify("51.must_not_be(Hash, Kernel, Object), but is Fixnum")
         end
       end
       
@@ -1097,6 +1097,15 @@ describe MustBe do
     describe Hash do
       subject { {:key => :value, :another => 'thing', 12 => 43} }
       
+      describe "note message" do
+        it "should include 'does not match'" do
+          subject = {:key => :value}
+          subject.must_only_contain(Symbol => [String, Numeric])
+          should notify("must_only_contain: pair {:key=>:value} does not match"\
+            " [{Symbol=>[String, Numeric]}] in container {:key=>:value}")
+        end
+      end
+      
       describe "when called with a single hash" do
         it "should not notify if each pair matches one of the cases" do
           subject.must_only_contain(Symbol => [Symbol, String],
@@ -1134,6 +1143,90 @@ describe MustBe do
         
         it "should notify if any pair does not match" do
           subject.must_only_contain([Symbol, Numeric] => [Symbol, 
+            Numeric]).should == subject
+          should notify
+        end
+      end
+    end
+  end
+  
+  describe "#must_not_contain" do
+    describe Array do
+      subject { [11, :sin, 'cos'] }
+      
+      it "should not notify if no member matches any of the cases" do
+        subject.must_not_contain(Float, Range).should == subject
+        should_not notify
+      end
+    
+      it "should notify if any member matches any of the cases" do        
+        subject.must_not_contain(Range, Numeric).should == subject
+        should notify("must_not_contain: 11.must_not_be(Range, Numeric),"\
+          " but is Fixnum in container [11, :sin, \"cos\"]")
+      end
+    
+      context "when there are no cases" do
+        it "should not notify if every member is conditionally false" do
+          [false, nil].must_not_contain
+          should_not notify
+        end
+      
+        it "should notify if any member is conditionally true" do
+          [0, [], ""].must_not_contain
+          should notify
+        end
+      end
+    end
+    
+    describe Hash do
+      subject { {:key => :value, :another => 'thing', 12 => 43} }
+      
+      describe "note message" do
+        it "should include 'does match'" do
+          subject = {:key => :value}
+          subject.must_not_contain(Symbol => [String, Symbol])
+          should notify("must_not_contain: pair {:key=>:value} matches"\
+            " [{Symbol=>[String, Symbol]}] in container {:key=>:value}")
+        end
+      end
+      
+      describe "when called with a single hash" do
+        it "should notify if any pair matches one of the cases" do
+          subject.must_not_contain(Symbol => [Symbol, String],
+            Numeric => Numeric).should == subject
+          should notify
+        end
+        
+        it "should_not notify if no pair matches any of the cases" do
+          subject.must_not_contain(Symbol => Numeric, String => String,
+            Range => Numeric).should == subject
+          should_not notify
+        end
+      end
+      
+      describe "when called with multiple hashes" do
+        it "should not notify if no pair matches any of the cases" do
+          subject.must_not_contain({Symbol => Numeric}, {String => String},
+            {String => Numeric}).should == subject
+          should_not notify
+        end
+        
+        it "should notify if any pair matches any of the cases" do
+          subject.must_not_contain({Symbol => Symbol}, {Symbol => String},
+            {String => Numeric}).should == subject
+          should notify
+        end
+      end
+      
+      describe "when called with array keys and values" do
+        it "should not notify if no pair matches" do
+          subject.must_not_contain([Range, Numeric] => [Symbol, String, 
+            Float]).should == subject
+          should_not notify
+        end
+        
+        it "should notify if any pair matches" do
+          subject.must_not_contain([Symbol, Numeric] => [Symbol, 
             Numeric]).should == subject
           should notify
         end
@@ -1555,8 +1648,13 @@ describe MustBe do
       describe "with MustOnlyEverContain.registered_class" do
         before do
           MustOnlyEverContain.register(Box) do
-            def self.must_only_contain_check(object, cases)
-              object.contents.must_be(*cases)
+            def self.must_only_contain_check(object, cases, negate = false)
+              if negate
+                #!! spec #must_not_be cases
+                object.contents.must_not_be(*cases)
+              else
+                object.contents.must_be(*cases)
+              end              
             end
             
             def contents=(contents)
@@ -1647,19 +1745,18 @@ describe "case equality patch" do
       end
     end
   end
-  end
+end
 
 ###! to-do ###
 =begin
 
-#must_not_contain
 #must_never_ever_contain
   -- duels
 
 handle large .inspect strings gracefully -- omit the middle, break at words if sensible
 
 
-seperate into multiple files, refactor, remove excess duplication
+seperate into multiple files, refactor, remove excess duplication, improve names of helper functions (*_helper), set their visibility to private?
   see <http://pure-rspec-rubynation.heroku.com/> shared behaviors (30-32)
   `let' for providing differences to use in shared behaviors
   put more things in spec_helper?

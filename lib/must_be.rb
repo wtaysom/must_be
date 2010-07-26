@@ -192,7 +192,7 @@ module MustBe
 
   def must_not_be(*cases)
     if cases.empty? ? self : MustBe.match_any_case?(self, cases)
-      must_notify(self, __method__, cases)
+      must_notify(self, __method__, cases, nil, ", but is #{self.class}")
     end
     self 
   end
@@ -359,68 +359,100 @@ module MustBe
   end
   
   class PairNote < ContainerNote
-    attr_accessor :key, :value, :cases
+    attr_accessor :key, :value, :cases, :negate
     
-    def initialize(key, value, cases, container)
+    def initialize(key, value, cases, container, negate)
       super(Note.new(""), container)
       @key = key
       @value = value
       @cases = cases
+      @negate = negate
     end
     
     def to_s
-      "#{prefix}pair #{{key => value}.inspect} does not match #{cases.inspect}"\
+      match = negate ? "matches" : "does not match"
+      "#{prefix}pair #{{key => value}.inspect} #{match} #{cases.inspect}"\
       " in container #{container.inspect}"
     end
   end
 
-  def self.check_pair_against_hash_cases(key, value, cases)
-    if cases.empty?
-      key and value
+  def self.check_pair_against_hash_cases(key, value, cases, negate = false)
+    if negate
+      if cases.empty?
+        !key and !value
+      else        
+        cases.all? do |c|
+          c.all? do |k, v|
+            not (match_any_case?(key, k) and match_any_case?(value, v))
+          end
+        end
+      end
     else
-      cases.any? do |c|
-        c.any? do |k, v|
-          match_any_case?(key, k) and match_any_case?(value, v)
+      if cases.empty?
+        key and value
+      else
+        cases.any? do |c|
+          c.any? do |k, v|
+            match_any_case?(key, k) and match_any_case?(value, v)
+          end
         end
       end
     end
   end
   
-  def self.must_check_item_against_cases(container, item, cases)
-    item.must_check(lambda { item.must_be(*cases) }) do |note|
+  def self.must_check_item_against_cases(container, item, cases, negate = false)
+    item.must_check(lambda do
+      if negate
+        item.must_not_be(*cases)
+      else
+        item.must_be(*cases)
+      end
+    end) do |note|
       note = ContainerNote.new(note, container)
       block_given? ? yield(note) : note
     end
   end
 
-  def self.must_check_pair_against_hash_cases(container, key, value, cases)
-    unless MustBe.check_pair_against_hash_cases(key, value, cases)
-      note = PairNote.new(key, value, cases, container)
+  def self.must_check_pair_against_hash_cases(container, key, value, cases,
+      negate = false)
+    unless MustBe.check_pair_against_hash_cases(key, value, cases, negate)
+      note = PairNote.new(key, value, cases, container, negate)
       must_notify(block_given? ? yield(note) : note)
     end
   end
-
-  def must_only_contain(*cases)
-    advice = MustOnlyEverContain.registered_class(self)    
+  
+  def self.must_only_contain(container, cases, negate = false)
+    prefix = negate ? "must_not_contain: " : "must_only_contain: "
+    
+    advice = MustOnlyEverContain.registered_class(container)    
     if advice and advice.respond_to? :must_only_contain_check
-      advice.must_only_contain_check(self, cases)
-    elsif respond_to? :each_pair
-      each_pair do |key, value|
-        MustBe.must_check_pair_against_hash_cases(self, key, value,
-            cases) do |note|
-          note.prefix = "must_only_contain: "
+      advice.must_only_contain_check(container, cases, negate)
+    elsif container.respond_to? :each_pair
+      container.each_pair do |key, value|
+        MustBe.must_check_pair_against_hash_cases(container, key, value,
+            cases, negate) do |note|
+          note.prefix = prefix
           note
         end
       end
     else
-      each do |item|
-        MustBe.must_check_item_against_cases(self, item, cases) do |note|
-          note.prefix = "must_only_contain: "
+      container.each do |item|
+        MustBe.must_check_item_against_cases(container, item, cases,
+            negate) do |note|
+          note.prefix = prefix
           note
         end
       end
     end
-    self
+    container  
+  end
+
+  def must_only_contain(*cases)
+    MustBe.must_only_contain(self, cases)
+  end
+  
+  def must_not_contain(*cases)
+    MustBe.must_only_contain(self, cases, true)
   end
   
   module MustOnlyEverContain
@@ -482,11 +514,14 @@ module MustBe
     # The module will be mixed into an objects of type `klass' when 
     # `must_only_ever_contain' is called.  The module should override methods of
     # `klass' which modify the contents of the object.
-    # If the module has a class method named `must_only_contain_check',
-    # then this method is used by `MustBe#must_only_contain(object, cases)'
+    # If the module has a class method
+    # `must_only_contain_check(object, cases, negate = false)',
+    # then this method is used by `MustBe.must_only_contain' #!! maybe renamed?
     # to check the contents of `object' against `cases'.  
     # `must_only_contain_check' should call `MustBe#must_notify' for any 
-    # contents which do not match `cases'.
+    # contents which do not match `cases'.  (Or if `negate' is true, then
+    # `MustBe#must_notify' should be called for any contents that do match
+    # `cases'.)
     #
     def self.register(klass, &body)
       unless klass.is_a? Class
