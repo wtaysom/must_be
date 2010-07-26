@@ -81,7 +81,8 @@ module MustBe
 ### Note ###
   
   class Note < StandardError
-    attr_accessor :receiver, :assertion, :args, :block, :additional_message
+    attr_accessor :receiver, :assertion, :args, :block, :additional_message,
+      :prefix
     
     def initialize(receiver, assertion = nil, args = nil, block = nil,
         additional_message = nil)
@@ -98,7 +99,7 @@ module MustBe
     
     def to_s
       if @assertion
-        "#{receiver.inspect}.#{assertion}#{format_args_and_block}"\
+        "#{prefix}#{receiver.inspect}.#{assertion}#{format_args_and_block}"\
           "#{additional_message}"
       else
         super
@@ -133,6 +134,20 @@ module MustBe
     end
   end
   
+  class PairNote < Note
+    attr_accessor :key, :value
+    
+    def initialize(key, value, additional_message = nil)
+      @key = key
+      @value = value
+      @additional_message = additional_message
+    end
+    
+    def to_s
+      "#{prefix}pair #{{key => value}.inspect}#{additional_message}"
+    end
+  end
+  
   def must_notify(receiver = nil, assertion= nil, args = nil, block = nil,
       additional_message = nil)
     note = Note === receiver ? receiver :
@@ -145,19 +160,32 @@ module MustBe
     note
   end
   
-  def must_check
-    was_checking = Thread.current[:must_check__is_checking]
-    Thread.current[:must_check__is_checking] = true
+  def must_check(check_block = nil, &block)
+    if check_block
+      result = nil
+      note = must_check do |obj|
+        result = check_block.arity.zero? ? check_block[] : check_block[obj]
+      end
+      if note
+        must_notify(block[note])
+      end
+      return result
+    end
     
-    already_found = Thread.current[:must_check__found_note]
-    Thread.current[:must_check__found_note] = nil
+    begin
+      was_checking = Thread.current[:must_check__is_checking]
+      Thread.current[:must_check__is_checking] = true
     
-    yield(self)
+      already_found = Thread.current[:must_check__found_note]
+      Thread.current[:must_check__found_note] = nil
     
-    Thread.current[:must_check__found_note]
-  ensure
-    Thread.current[:must_check__is_checking] = was_checking
-    Thread.current[:must_check__found_note] = already_found
+      yield(self)
+    
+      Thread.current[:must_check__found_note]
+    ensure
+      Thread.current[:must_check__is_checking] = was_checking
+      Thread.current[:must_check__found_note] = already_found
+    end
   end
 
 ### Basic Assertions ###
@@ -313,20 +341,18 @@ module MustBe
     end
   end
   
-  def self.must_check_pair_against_hash_cases(container, key, value, cases)
-    unless MustBe.check_pair_against_hash_cases(key, value, cases)
-      must_notify("pair #{{key => value}.inspect} does not match"\
-        " #{cases.inspect} in #{container.inspect}")
+  def self.must_check_item_against_cases(container, item, cases)
+    item.must_check(lambda { item.must_be(*cases) }) do |note|
+      note.additional_message += " in container #{container.inspect}"
+      block_given? ? yield(note) : note
     end
   end
-  
-  def self.must_check_item_against_cases(container, item, cases)
-    note = item.must_check do
-      item.must_be(*cases)
-    end
-    if note
-      note.additional_message += " in container #{container.inspect}"
-      must_notify(note)
+
+  def self.must_check_pair_against_hash_cases(container, key, value, cases)
+    unless MustBe.check_pair_against_hash_cases(key, value, cases)
+      note = PairNote.new(key, value,
+        " does not match #{cases.inspect} in #{container.inspect}")
+      must_notify(block_given? ? yield(note) : note)
     end
   end
 
@@ -336,11 +362,18 @@ module MustBe
       advice.must_only_contain_check(self, cases)
     elsif respond_to? :each_pair
       each_pair do |key, value|
-        MustBe.must_check_pair_against_hash_cases(self, key, value, cases)
+        MustBe.must_check_pair_against_hash_cases(self, key, value,
+            cases) do |note|
+          note.prefix = "must_only_contain: "
+          note
+        end
       end
     else
       each do |item|
-        MustBe.must_check_item_against_cases(self, item, cases)
+        MustBe.must_check_item_against_cases(self, item, cases) do |note|
+          note.prefix = "must_only_contain: "
+          note
+        end
       end
     end
     self
@@ -373,17 +406,22 @@ module MustBe
       def must_only_ever_contain_cases=(cases)
         cases = [cases] unless cases.is_a? Array
         @must_only_ever_contain_cases = cases
-        must_only_contain(*cases)
+        
+        must_check(lambda { must_only_contain(*cases) }) do |note|
+          note.prefix = "must_only_ever_contain: "
+          note
+        end     
       end
       
     protected
-      def must_check(item)
+    
+      def must_check_item(item)
         MustBe.must_check_item_against_cases(self, item, 
           must_only_ever_contain_cases)
       end
       
       def must_check_pair(key, value)
-        MustBe.must_check_pair_against_hash_cases(self, key, value,
+        MustBe.must_check_pair_against_hash_cases(self, key, value, 
           must_only_ever_contain_cases)
       end
       
@@ -391,6 +429,8 @@ module MustBe
         items.must_only_contain(*must_only_ever_contain_cases)
       end
     end
+    
+  public
     
     ##
     # Creates a module from `body' which includes MustOnlyEverContain::Base.
@@ -412,10 +452,30 @@ module MustBe
       end
       
       REGISTERED_CLASSES[klass] = mod = Module.new
-      mod.class_eval do
-        include Base
-      end
+      mod.send(:include, Base)
       mod.class_eval &body
+      
+      mutator_advice = Module.new
+      mod.instance_methods(false).each do |method_name|
+        mutator_advice.send(:define_method, method_name) do |*args, &block|
+          must_check(lambda { super(*args, &block) }) do |note|
+            note.prefix = nil
+            args_s = args.map(&:inspect).join(", ")
+            args_s = "(#{args_s})" unless args_s.empty?            
+            call_s = self.class.to_s+"#"+method_name.to_s+args_s+
+              (block ? " {}" : "")
+            note.prefix = "must_only_ever_contain: #{call_s}\n"
+            note
+          end
+        end
+      end
+      mod.const_set(:MutatorAdvice, mutator_advice)
+      mod.instance_eval do
+        def extended(base)
+          base.extend(const_get(:MutatorAdvice))
+        end
+      end
+      
       mod
     end
     
@@ -431,7 +491,7 @@ module MustBe
       must_check_contents_after :collect!, :map!, :flatten!
       
       def <<(obj)
-        must_check(obj)
+        must_check_item(obj)
         super
       end
       
@@ -441,12 +501,12 @@ module MustBe
           if value.nil?
             # No check needed.
           elsif value.is_a? Array
-            value.map {|v| must_check(v) }
+            value.map {|v| must_check_item(v) }
           else
-            must_check(value)
+            must_check_item(value)
           end
         else
-          must_check(args[1])
+          must_check_item(args[1])
         end
         super
       end
@@ -464,7 +524,7 @@ module MustBe
             must_check_contents
           end
         else
-          must_check(args[0])
+          must_check_item(args[0])
           super
         end
       end

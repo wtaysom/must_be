@@ -126,8 +126,8 @@ describe MustBe, " regular usage" do
       example "[1, :hi, \"wow\"].must_only_contain(Numeric, String)"\
           " should not notify" do
         [1, :hi, "wow"].must_only_contain(Numeric, String)
-        should notify(":hi.must_be(Numeric, String), but is Symbol"\
-          " in container [1, :hi, \"wow\"]")
+        should notify("must_only_contain: :hi.must_be(Numeric, String), but is"\
+          " Symbol in container [1, :hi, \"wow\"]")
       end
     end
     
@@ -142,8 +142,8 @@ describe MustBe, " regular usage" do
       example "{:key => \"value\"}.must_only_contain({Symbol => Symbol})"\
           " should notify" do
         {:key => "value"}.must_only_contain({Symbol => Symbol})
-        should notify("pair {:key=>\"value\"} does not match"\
-          " [{Symbol=>Symbol}] in {:key=>\"value\"}")
+        should notify("must_only_contain: pair {:key=>\"value\"} does not"\
+          " match [{Symbol=>Symbol}] in {:key=>\"value\"}")
       end
     end
   end

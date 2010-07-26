@@ -87,17 +87,17 @@ describe MustBe do
 
   describe "default notifier" do
     it "should be RaiseNotifier" do
-      DEFAULT_MUST_BE_NOTIFIER.should == MustBe::RaiseNotifier
+      $default_must_be_notifier.should == MustBe::RaiseNotifier
     end
   end
   
   describe ".set_notifier_from_env" do
     before do
-      NOTIFIER = MustBe.notifier
+      $notifier = MustBe.notifier
     end
     
     after do
-      MustBe.notifier = NOTIFIER
+      MustBe.notifier = $notifier
     end
     
     it "should use 'log' to set the LogNotifier" do
@@ -126,7 +126,7 @@ describe MustBe do
     it "should treat 'disable' as a special case" do
       MustBe.set_notifier_from_env('disable')
       MustBe.should_not be_enabled
-      MustBe.notifier.should == NOTIFIER
+      MustBe.notifier.should == $notifier
       MustBe.enable
       MustBe.should be_enabled
     end
@@ -1031,8 +1031,8 @@ describe MustBe do
     
       it "should notify if any member matches none of the cases" do
         subject.must_only_contain(Symbol, Numeric).should == subject
-        should notify("\"cos\".must_be(Symbol, Numeric), but is String"\
-          " in container [11, :sin, \"cos\"]")
+        should notify("must_only_contain: \"cos\".must_be(Symbol, Numeric),"\
+          " but is String in container [11, :sin, \"cos\"]")
       end
     
       context "when there are no cases" do
@@ -1103,6 +1103,13 @@ describe MustBe do
         subject.must_only_ever_contain
       end
       
+      it "should notify when initially contains a non-matching item" do
+        array = [:oops]
+        array.must_only_ever_contain(String)
+        should notify("must_only_ever_contain: :oops.must_be(String), but is"\
+          " Symbol in container [:oops]")
+      end
+      
       describe "#<<" do
         it "should not notify if obj is non-nil" do
           subject << 5
@@ -1111,7 +1118,8 @@ describe MustBe do
         
         it "should notify if obj is nil" do
           subject << nil
-          should notify("nil.must_be, but is NilClass in container"\
+          should notify("must_only_ever_contain: Array#<<(nil)"\
+            "\nnil.must_be, but is NilClass in container"\
             " [1, 2, 3, 4]")
         end
       end
@@ -1146,8 +1154,9 @@ describe MustBe do
           
           it "should notify if RHS is array containing nil" do
             subject[2, 2] = [8, nil, 0]
-            should notify("nil.must_be, but is NilClass in container"\
-              " [1, 2, 3, 4]")
+            should notify("must_only_ever_contain:"\
+              " Array#[]=(2, 2, [8, nil, 0])\nnil.must_be, but is NilClass in"\
+              " container [1, 2, 3, 4]")
           end
         end
         
@@ -1193,8 +1202,8 @@ describe MustBe do
         
         it "should notify if any new values are nil" do
           subject.map! {|v| v == 3 ? nil : v }
-          should notify("nil.must_be, but is NilClass in container"\
-            " [1, 2, nil, 4]")
+          should notify("must_only_ever_contain: Array#map! {}"\
+            "\nnil.must_be, but is NilClass in container [1, 2, nil, 4]")
         end
       end
       
@@ -1219,7 +1228,8 @@ describe MustBe do
 
           it "should notify if obj is nil" do
             subject.fill(nil)
-            should notify("nil.must_be, but is NilClass in container"\
+            should notify("must_only_ever_contain: Array#fill(nil)"\
+              "\nnil.must_be, but is NilClass in container"\
               " [1, 2, 3, 4]")
           end
         end
@@ -1271,7 +1281,8 @@ describe MustBe do
         
         it "should notify if any objs are nil" do
           subject.push(6, 7, nil, 9)
-          should notify("nil.must_be, but is NilClass in container"\
+          should notify("must_only_ever_contain: Array#push(6, 7, nil, 9)"\
+            "\nnil.must_be, but is NilClass in container"\
             " [6, 7, nil, 9]")
         end
       end
@@ -1320,7 +1331,8 @@ describe MustBe do
         
         it "should notify if inserting a false key" do
           subject[false] = :false
-          should notify("pair {false=>:false} does not match [] in {}")
+          should notify("must_only_ever_contain: Hash#[]=(false, :false)"\
+            "\npair {false=>:false} does not match [] in {}")
         end
         
         it "should not notify if inserting a regular pair" do
@@ -1337,7 +1349,8 @@ describe MustBe do
         it "should notify if inserting an invalid key" do
           subject["six"] = 6
           subject["six"].should == 6
-          should notify("pair {\"six\"=>6} does not match"\
+          should notify("must_only_ever_contain: Hash#[]=(\"six\", 6)"\
+            "\npair {\"six\"=>6} does not match"\
             " [{Symbol=>Integer, Integer=>Symbol}] in {}")
         end
         
@@ -1363,7 +1376,8 @@ describe MustBe do
         
         it "should notify if merged with an unacceptable hash" do
           subject.merge!({3 => 1})
-          should notify("pair {3=>1} does not match"\
+          should notify("must_only_ever_contain: Hash#merge!({3=>1})"\
+            "\npair {3=>1} does not match"\
             " [{Symbol=>Integer, Integer=>Symbol}] in {3=>1}")
         end
         
@@ -1394,8 +1408,8 @@ describe MustBe do
         
         it "should notify if inserting Integer => Integer pair" do
           subject[3984] = 970
-          should notify("pair {3984=>970} does not match [{Symbol=>Symbol}]"\
-            " in {}")
+          should notify("must_only_ever_contain: Hash#[]=(3984, 970)"\
+            "\npair {3984=>970} does not match [{Symbol=>Symbol}] in {}")
         end
         
         describe "when #must_only_ever_contain_cases is updated" do
@@ -1428,9 +1442,9 @@ describe MustBe do
       end
       
       describe "when it is initially non-empty" do
-        before {
+        before do
           subject[:hello] = :world
-        }
+        end
         
         it "should not notify if cases match" do
           subject.must_only_ever_contain(Symbol => Symbol)
@@ -1439,8 +1453,8 @@ describe MustBe do
         
         it "should notify if cases do not match" do
           subject.must_only_ever_contain(Symbol => String)
-          should notify("pair {:hello=>:world} does not match"\
-            " [{Symbol=>String}] in {:hello=>:world}")
+          should notify("must_only_ever_contain: pair {:hello=>:world} does"\
+            " not match [{Symbol=>String}] in {:hello=>:world}")
         end
       end
     end
@@ -1498,7 +1512,7 @@ describe MustBe do
             end
             
             def contents=(contents)
-              must_check(contents)
+              must_check_item(contents)
               super
             end
             
@@ -1590,16 +1604,17 @@ end
 ###! to-do ###
 =begin
 
-#must_only_ever_contain and #must_never_contain
-  should store a stack trace when they are created.
-  when calling update methods, the note could be better
-  "pair {false=>:false} does not match [] in {}" is a good example of a bad message
+spec new must_check behavior -- with an argument
+
+#must_only_ever_contain
+  should store a stack trace when they are created -- want to append it to the end of the note: think we need yet another Note subclass
 
 #must_not_contain
-#must_never_contain
+#must_never_ever_contain
   -- duels
 
 handle large .inspect strings gracefully -- omit the middle, break at words if sensible
+
 
 seperate into multiple files, refactor, remove excess duplication
   see <http://pure-rspec-rubynation.heroku.com/> shared behaviors (30-32)

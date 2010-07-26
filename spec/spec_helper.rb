@@ -19,6 +19,8 @@ def example_of_must_be_inclusion
   example.extend(MustBe)  
   example.must == example
   example.must_not_be_nil
+  
+  #? Don't must_contain and must_only_contain depend that the contents of a collection also include MustBe?
 end
 example_of_must_be_inclusion
 
@@ -31,7 +33,7 @@ end
 
 module MustBeExampleHelper
   
-  DEFAULT_MUST_BE_NOTIFIER = MustBe.notifier
+  $default_must_be_notifier = MustBe.notifier
   
   def self.included(example_group)
     example_group.before do
