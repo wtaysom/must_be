@@ -20,7 +20,7 @@ def example_of_must_be_inclusion
   example.must == example
   example.must_not_be_nil
   
-  #? Don't must_contain and must_only_contain depend that the contents of a collection also include MustBe?
+  #! Don't must_contain and must_only_contain depend that the contents of a collection also include MustBe?
 end
 example_of_must_be_inclusion
 

@@ -1242,7 +1242,7 @@ describe MustBe do
         subject.must_only_ever_contain
       end
       
-      it "should notify when initially contains a non-matching item" do
+      it "should notify if initially contains a non-matching item" do
         array = [:oops]
         array.must_only_ever_contain(String)
         should notify("must_only_ever_contain: :oops.must_be(String), but is"\
@@ -1723,6 +1723,51 @@ describe MustBe do
       end
     end
   end
+  
+  describe "#must_never_ever_contain" do
+    describe Array do
+      subject { [nil] }
+      
+      before do
+        subject.must_never_ever_contain
+      end
+      
+      it "should notify if initially contains a non-matching item" do
+        array = [:oops]
+        array.must_never_ever_contain
+        should notify("must_never_ever_contain: :oops.must_not_be, but is"\
+          " Symbol in container [:oops]")
+      end
+      
+      describe "#<<" do
+        it "should not notify if obj is nil" do
+          subject << nil
+          should_not notify
+        end
+
+        it "should notify if obj is non-nil" do
+          subject << 5
+          should notify("must_never_ever_contain: Array#<<(5)"\
+            "\n5.must_not_be, but is Fixnum in container"\
+            " [nil, 5]")
+        end
+      end
+      
+      describe "#collect!" do
+        it "should not notify if all new values are nil" do
+          subject.collect! {|v| v }
+          should_not notify
+        end
+
+        it "should notify if any new values are non-nil" do
+          subject.collect! {|v| 5 }
+          should notify
+        end
+      end      
+    end
+     
+    #!!! Hash and custom (keep the ArgumentError spec)
+  end
 end
 
 ### Proc Case Equality Patch ###
@@ -1750,10 +1795,9 @@ end
 ###! to-do ###
 =begin
 
-#must_never_ever_contain
-  -- duels
-
 handle large .inspect strings gracefully -- omit the middle, break at words if sensible
+
+spec `Hash#must_contain()` and `Hash#must_not_contain()`
 
 
 seperate into multiple files, refactor, remove excess duplication, improve names of helper functions (*_helper), set their visibility to private?

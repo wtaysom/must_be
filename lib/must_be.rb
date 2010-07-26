@@ -5,7 +5,7 @@ module MustBe
 
 ### Enable ###
   
-  class <<self      
+  class <<self
     def disable
       @disabled_methods = instance_methods.map do |method_name|
         method = instance_method(method_name)
@@ -460,7 +460,7 @@ module MustBe
     
     module Base
       attr_accessor :must_only_ever_contain_cases, 
-        :must_only_ever_contain_backtrace
+        :must_only_ever_contain_backtrace, :must_only_ever_contain_negate
       
       module ClassMethods 
         def must_check_contents_after(*methods)
@@ -479,13 +479,18 @@ module MustBe
       def self.included(base)
         base.extend(ClassMethods)
       end
+      
+      def must_only_ever_contain_prefix
+        must_only_ever_contain_negate ? "must_never_ever_contain: " : 
+          "must_only_ever_contain: "
+      end
 
       def must_only_ever_contain_cases=(cases)
         cases = [cases] unless cases.is_a? Array
         @must_only_ever_contain_cases = cases
         
-        must_check(lambda { must_only_contain(*cases) }) do |note|
-          note.prefix = "must_only_ever_contain: "
+        must_check(lambda { must_check_contents }) do |note|
+          note.prefix = must_only_ever_contain_prefix
           note
         end     
       end
@@ -494,16 +499,17 @@ module MustBe
     
       def must_check_item(item)
         MustBe.must_check_item_against_cases(self, item, 
-          must_only_ever_contain_cases)
+          must_only_ever_contain_cases, must_only_ever_contain_negate)
       end
       
       def must_check_pair(key, value)
         MustBe.must_check_pair_against_hash_cases(self, key, value, 
-          must_only_ever_contain_cases)
+          must_only_ever_contain_cases, must_only_ever_contain_negate)
       end
       
       def must_check_contents(items = self)
-        items.must_only_contain(*must_only_ever_contain_cases)
+        MustBe.must_only_contain(items, must_only_ever_contain_cases,
+          must_only_ever_contain_negate)
       end
     end
     
@@ -516,8 +522,8 @@ module MustBe
     # `klass' which modify the contents of the object.
     # If the module has a class method
     # `must_only_contain_check(object, cases, negate = false)',
-    # then this method is used by `MustBe.must_only_contain' #!! maybe renamed?
-    # to check the contents of `object' against `cases'.  
+    # then this method is used by `MustBe.must_only_contain'
+    # to check the contents of `object' against `cases'.
     # `must_only_contain_check' should call `MustBe#must_notify' for any 
     # contents which do not match `cases'.  (Or if `negate' is true, then
     # `MustBe#must_notify' should be called for any contents that do match
@@ -542,7 +548,7 @@ module MustBe
             note.prefix = nil
             call_s = Note.new(self.class, method_name, args, block).message
             call_s.sub!(".", "#")
-            note.prefix = "must_only_ever_contain: #{call_s}\n"
+            note.prefix = "#{must_only_ever_contain_prefix}#{call_s}\n"
             note
           end
         end
@@ -643,23 +649,33 @@ module MustBe
     end
   end
   
-  def must_only_ever_contain(*cases)
-    unless singleton_methods.empty?
-      raise ArgumentError, "must_only_ever_contain adds singleton methods but"\
-        " receiver #{self.inspect} already"\
-        " has singleton methods #{singleton_methods.inspect}"
+  def self.must_only_ever_contain(container, cases, negate = false)
+    unless container.singleton_methods.empty?
+      method_name = "must_#{negate ? "never" : "only"}_ever_contain"
+      raise ArgumentError, "#{method_name} adds singleton methods but"\
+        " receiver #{container.inspect} already"\
+        " has singleton methods #{container.singleton_methods.inspect}"
     end
     
-    advice = MustOnlyEverContain.registered_class(self)
+    advice = MustOnlyEverContain.registered_class(container)
     if advice
-      extend advice
-      self.must_only_ever_contain_cases = cases
-      self.must_only_ever_contain_backtrace = caller
+      container.extend advice
+      container.must_only_ever_contain_backtrace = caller
+      container.must_only_ever_contain_negate = negate
+      container.must_only_ever_contain_cases = cases
     else
       raise TypeError,
-        "No MustOnlyEverContain.registered_class for #{self.class}"
+        "No MustOnlyEverContain.registered_class for #{container.class}"
     end
-    self
+    container
+  end
+  
+  def must_only_ever_contain(*cases)
+    MustBe.must_only_ever_contain(self, cases)
+  end
+  
+  def must_never_ever_contain(*cases)
+    MustBe.must_only_ever_contain(self, cases, true)
   end
 end
 
