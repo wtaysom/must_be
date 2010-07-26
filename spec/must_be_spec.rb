@@ -1040,6 +1040,31 @@ describe MustBe do
   end
   
 ### Containers ###
+
+  describe ContainerNote do
+    describe "#backtrace" do
+      context "when container must_only_ever_contain" do
+        subject do
+          note = ContainerNote.new(Note.new("nothing"),
+            [].must_only_ever_contain)
+          note.set_backtrace([])
+          note
+        end
+    
+        its(:backtrace) { should include("=== caused by container ===")}
+      end
+    
+      context "when container is not required to must_only_ever_contain" do
+        subject do
+          note = ContainerNote.new(Note.new("nothing"), [])
+          note.set_backtrace([])
+          note
+        end
+    
+        its(:backtrace) { should_not include("=== caused by container ===")}
+      end
+    end
+  end
   
   describe "#must_only_contain" do
     describe Array do
@@ -1626,9 +1651,6 @@ describe "case equality patch" do
 
 ###! to-do ###
 =begin
-
-#must_only_ever_contain
-  should store a stack trace when they are created -- want to append it to the end of the note
 
 #must_not_contain
 #must_never_ever_contain

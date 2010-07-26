@@ -346,9 +346,15 @@ module MustBe
     alias regular_backtrace backtrace
     
     def backtrace
-      regular_backtrace and
+      return unless regular_backtrace
+      
+      if container.respond_to?(:must_only_ever_contain_backtrace) and 
+          container.must_only_ever_contain_backtrace
         regular_backtrace+["=== caused by container ==="]+
           container.must_only_ever_contain_backtrace
+      else
+        regular_backtrace
+      end
     end
   end
   
