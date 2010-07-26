@@ -334,6 +334,27 @@ describe MustBe do
       end
     end
     
+    context "when called with a proc" do
+      it "should not call its block if the proc does not notify" do
+        did_call_block = false
+        must_check(lambda {}) do
+          did_call_block = true
+        end
+        did_call_block.should be_false
+      end
+      
+      it "should should call its block and notify if the proc notifies" do
+        did_call_block = false
+        must_check(lambda { must_notify("check") }) do |note|
+          did_call_block = true
+          note.message.should == "check"
+          Note.new("mate")
+        end
+        did_call_block.should be_true
+        should notify("mate")
+      end
+    end
+    
     it "should be able to be called multiple times" do
       note = must_check { must_notify("once") }
       should_not notify
@@ -1603,8 +1624,6 @@ end
 
 ###! to-do ###
 =begin
-
-spec new must_check behavior -- with an argument
 
 #must_only_ever_contain
   should store a stack trace when they are created -- want to append it to the end of the note: think we need yet another Note subclass
