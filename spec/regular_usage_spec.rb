@@ -143,7 +143,7 @@ describe MustBe, " regular usage" do
           " should notify" do
         {:key => "value"}.must_only_contain({Symbol => Symbol})
         should notify("must_only_contain: pair {:key=>\"value\"} does not"\
-          " match [{Symbol=>Symbol}] in {:key=>\"value\"}")
+          " match [{Symbol=>Symbol}] in container {:key=>\"value\"}")
       end
     end
   end

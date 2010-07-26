@@ -1,3 +1,5 @@
+require 'forwardable'
+
 module MustBe
   VERSION = '0.0.4'
 
@@ -98,7 +100,7 @@ module MustBe
     end
     
     def to_s
-      if @assertion
+      if assertion
         "#{prefix}#{receiver.inspect}.#{assertion}#{format_args_and_block}"\
           "#{additional_message}"
       else
@@ -131,20 +133,6 @@ module MustBe
           args_format+" {}"
         end
       end
-    end
-  end
-  
-  class PairNote < Note
-    attr_accessor :key, :value
-    
-    def initialize(key, value, additional_message = nil)
-      @key = key
-      @value = value
-      @additional_message = additional_message
-    end
-    
-    def to_s
-      "#{prefix}pair #{{key => value}.inspect}#{additional_message}"
     end
   end
   
@@ -329,6 +317,49 @@ module MustBe
 
 ### Containers ###
 
+  class ContainerNote < Note
+    extend Forwardable
+    
+    attr_accessor :original_note, :container
+    
+    def_delegators :@original_note,
+      :receiver, :receiver=,
+      :assertion, :assertion=,
+      :args, :args=,
+      :block, :block=,
+      :additional_message, :additional_message=,
+      :prefix, :prefix=
+    
+    def initialize(original_note, container = nil)
+      @original_note = original_note
+      @container = container
+    end
+    
+    def to_s
+      if assertion
+        super+" in container #{container.inspect}"
+      else
+        super
+      end
+    end
+  end
+  
+  class PairNote < ContainerNote
+    attr_accessor :key, :value, :cases
+    
+    def initialize(key, value, cases, container)
+      super(Note.new(""), container.clone) #!!! clone?
+      @key = key
+      @value = value
+      @cases = cases
+    end
+    
+    def to_s
+      "#{prefix}pair #{{key => value}.inspect} does not match #{cases.inspect}"\
+      " in container #{container.inspect}"
+    end
+  end
+
   def self.check_pair_against_hash_cases(key, value, cases)
     if cases.empty?
       key and value
@@ -343,15 +374,14 @@ module MustBe
   
   def self.must_check_item_against_cases(container, item, cases)
     item.must_check(lambda { item.must_be(*cases) }) do |note|
-      note.additional_message += " in container #{container.inspect}"
+      note = ContainerNote.new(note, container)
       block_given? ? yield(note) : note
     end
   end
 
   def self.must_check_pair_against_hash_cases(container, key, value, cases)
     unless MustBe.check_pair_against_hash_cases(key, value, cases)
-      note = PairNote.new(key, value,
-        " does not match #{cases.inspect} in #{container.inspect}")
+      note = PairNote.new(key, value, cases, container)
       must_notify(block_given? ? yield(note) : note)
     end
   end

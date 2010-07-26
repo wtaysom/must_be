@@ -1141,7 +1141,7 @@ describe MustBe do
           subject << nil
           should notify("must_only_ever_contain: Array#<<(nil)"\
             "\nnil.must_be, but is NilClass in container"\
-            " [1, 2, 3, 4]")
+            " [1, 2, 3, 4, nil]")
         end
       end
       
@@ -1177,7 +1177,7 @@ describe MustBe do
             subject[2, 2] = [8, nil, 0]
             should notify("must_only_ever_contain:"\
               " Array#[]=(2, 2, [8, nil, 0])\nnil.must_be, but is NilClass in"\
-              " container [1, 2, 3, 4]")
+              " container [1, 2, 8, nil, 0]")
           end
         end
         
@@ -1251,7 +1251,7 @@ describe MustBe do
             subject.fill(nil)
             should notify("must_only_ever_contain: Array#fill(nil)"\
               "\nnil.must_be, but is NilClass in container"\
-              " [1, 2, 3, 4]")
+              " [nil, nil, nil, nil]")
           end
         end
         
@@ -1353,7 +1353,7 @@ describe MustBe do
         it "should notify if inserting a false key" do
           subject[false] = :false
           should notify("must_only_ever_contain: Hash#[]=(false, :false)"\
-            "\npair {false=>:false} does not match [] in {}")
+            "\npair {false=>:false} does not match [] in container {}")
         end
         
         it "should not notify if inserting a regular pair" do
@@ -1372,7 +1372,7 @@ describe MustBe do
           subject["six"].should == 6
           should notify("must_only_ever_contain: Hash#[]=(\"six\", 6)"\
             "\npair {\"six\"=>6} does not match"\
-            " [{Symbol=>Integer, Integer=>Symbol}] in {}")
+            " [{Symbol=>Integer, Integer=>Symbol}] in container {}")
         end
         
         it "should notify if inserting an invalid value" do
@@ -1399,7 +1399,7 @@ describe MustBe do
           subject.merge!({3 => 1})
           should notify("must_only_ever_contain: Hash#merge!({3=>1})"\
             "\npair {3=>1} does not match"\
-            " [{Symbol=>Integer, Integer=>Symbol}] in {3=>1}")
+            " [{Symbol=>Integer, Integer=>Symbol}] in container {3=>1}")
         end
         
         it "should not notify if updated with an acceptable hash" do
@@ -1430,7 +1430,8 @@ describe MustBe do
         it "should notify if inserting Integer => Integer pair" do
           subject[3984] = 970
           should notify("must_only_ever_contain: Hash#[]=(3984, 970)"\
-            "\npair {3984=>970} does not match [{Symbol=>Symbol}] in {}")
+            "\npair {3984=>970} does not match [{Symbol=>Symbol}] in"\
+            " container {}")
         end
         
         describe "when #must_only_ever_contain_cases is updated" do
@@ -1475,7 +1476,7 @@ describe MustBe do
         it "should notify if cases do not match" do
           subject.must_only_ever_contain(Symbol => String)
           should notify("must_only_ever_contain: pair {:hello=>:world} does"\
-            " not match [{Symbol=>String}] in {:hello=>:world}")
+            " not match [{Symbol=>String}] in container {:hello=>:world}")
         end
       end
     end
@@ -1620,13 +1621,13 @@ describe "case equality patch" do
       end
     end
   end
-end
+  end
 
 ###! to-do ###
 =begin
 
 #must_only_ever_contain
-  should store a stack trace when they are created -- want to append it to the end of the note: think we need yet another Note subclass
+  should store a stack trace when they are created -- want to append it to the end of the note
 
 #must_not_contain
 #must_never_ever_contain
