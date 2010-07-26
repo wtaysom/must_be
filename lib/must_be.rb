@@ -505,10 +505,8 @@ module MustBe
         mutator_advice.send(:define_method, method_name) do |*args, &block|
           must_check(lambda { super(*args, &block) }) do |note|
             note.prefix = nil
-            args_s = args.map(&:inspect).join(", ")
-            args_s = "(#{args_s})" unless args_s.empty?            
-            call_s = self.class.to_s+"#"+method_name.to_s+args_s+
-              (block ? " {}" : "")
+            call_s = Note.new(self.class, method_name, args, block).message
+            call_s.sub!(".", "#")
             note.prefix = "must_only_ever_contain: #{call_s}\n"
             note
           end
