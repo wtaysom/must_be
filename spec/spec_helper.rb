@@ -13,14 +13,38 @@ if Object.include? MustBe
   raise "MustBe should not be automatically included in Object."
 end
 
+def expect_error(error_type)
+  begin
+    raised_error = false
+    yield
+  rescue error_type
+    raised_error = true
+  end
+  raise "expected #{error_type}" unless raised_error
+end
+
 # Show that MustBe does not need to be included in Object to be useful.
 def example_of_must_be_inclusion
   example = Object.new
-  example.extend(MustBe)  
+  example.extend(MustBe)
   example.must == example
   example.must_not_be_nil
   
-  #! Don't must_contain and must_only_contain depend that the contents of a collection also include MustBe?
+  # must_only_contain and must_not_contain require contents to also include
+  # MustBe.
+  contents = Object.new
+  
+  container = [contents]
+  container.extend(MustBe)
+  
+  expect_error(NoMethodError) do
+    container.must_only_contain
+  end
+  
+  contents.extend(MustBe)
+  expect_error(MustBe::Note) do
+    container.must_not_contain
+  end
 end
 example_of_must_be_inclusion
 
