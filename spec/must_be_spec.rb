@@ -1981,5 +1981,6 @@ seperate into multiple files, refactor, remove excess duplication, improve names
     use a double (perhaps as_nul_object) or some other object as the MustBe.notifier (with should_receive method) -- then we don't need that @note instance variable
 
 icing
-  rdoc (focus on examples), check out rcov <http://eigenclass.org/hiki.rb?rcov>
+  rdoc (focus on examples)
+
 =end
