@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe MustBe, " regular usage" do
+describe MustBe, " typical usage" do
   include MustBeExampleHelper
   
   describe "#must_be", " notifies when receiver doesn't case-equal (===) any"\
