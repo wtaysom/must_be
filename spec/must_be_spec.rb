@@ -1765,8 +1765,47 @@ describe MustBe do
         end
       end      
     end
-     
-    #!!! Hash and custom (keep the ArgumentError spec)
+    
+    describe Hash do
+      subject { {} }
+      
+      describe "when called with a hash" do
+        before do
+          subject.must_never_ever_contain(Symbol => Integer, Integer => Symbol)
+        end
+        
+        it "should notify if inserting an invalid value" do
+          subject[:six] = 6
+          subject[:six].should == 6
+          should notify
+        end
+    
+        it "should not notify if inserting a valid pair" do
+          subject[:six] = :six
+          subject[:six].should == :six
+          should_not notify
+        end        
+      end
+      
+      describe "when it is initially non-empty" do
+        before do
+          subject[:hello] = :world
+        end
+    
+        it "should not notify if no cases match" do
+          subject.must_never_ever_contain(Symbol => String)
+          should_not notify
+        end
+    
+        it "should notify if cases match" do
+          subject.must_never_ever_contain(Symbol => Symbol)
+          should notify("must_never_ever_contain: pair {:hello=>:world}"\
+            " matches [{Symbol=>Symbol}] in container {:hello=>:world}")
+        end
+      end
+    end
+    
+    #!!! custom (keep the ArgumentError spec) -- share common bits (the box)
   end
 end
 
