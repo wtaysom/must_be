@@ -1234,6 +1234,58 @@ describe MustBe do
     end
   end
   
+  shared_examples_for "custom MustOnlyEverContain" do
+    class Box
+      include Enumerable
+      
+      attr_accessor :contents
+      
+      def initialize(contents = nil)
+        self.contents = contents
+      end
+      
+      def each_called?
+        @each_called
+      end
+      
+      def each
+        @each_called = true
+        yield(contents) unless contents.nil?
+      end
+      
+      def empty!
+        self.contents = nil
+      end
+    end
+    
+    subject { Box.new(:contents) }
+    
+    def self.register_before_and_unregister_after
+      before do
+        MustOnlyEverContain.register(Box) do
+          def self.must_only_contain_check(object, cases, negate = false)
+            if negate
+              object.contents.must_not_be(*cases)
+            else
+              object.contents.must_be(*cases)
+            end              
+          end
+          
+          def contents=(contents)
+            must_check_item(contents)
+            super
+          end
+          
+          must_check_contents_after :empty!
+        end
+      end
+      
+      after do
+        MustOnlyEverContain.unregister(Box)
+      end
+    end
+  end
+  
   describe "#must_only_ever_contain" do
     describe Array do
       subject { [1, 2, 3, 4] }
@@ -1599,32 +1651,9 @@ describe MustBe do
         end
       end
     end
-    
+        
     describe "custom" do
-      class Box
-        include Enumerable
-        
-        attr_accessor :contents
-        
-        def initialize(contents = nil)
-          self.contents = contents
-        end
-        
-        def each_called?
-          @each_called
-        end
-        
-        def each
-          @each_called = true
-          yield(contents) unless contents.nil?
-        end
-        
-        def empty!
-          self.contents = nil
-        end
-      end
-      
-      subject { Box.new(:contents) }
+      it_should_behave_like "custom MustOnlyEverContain"
       
       describe "without MustOnlyEverContain.registered_class" do
         describe "#must_only_contain" do
@@ -1646,29 +1675,7 @@ describe MustBe do
       end
       
       describe "with MustOnlyEverContain.registered_class" do
-        before do
-          MustOnlyEverContain.register(Box) do
-            def self.must_only_contain_check(object, cases, negate = false)
-              if negate
-                #!! spec #must_not_be cases
-                object.contents.must_not_be(*cases)
-              else
-                object.contents.must_be(*cases)
-              end              
-            end
-            
-            def contents=(contents)
-              must_check_item(contents)
-              super
-            end
-            
-            must_check_contents_after :empty!
-          end
-        end
-        
-        after do
-          MustOnlyEverContain.unregister(Box)
-        end
+        register_before_and_unregister_after
         
         describe "when subject already has singleton methods" do
           it "should raise ArgumentError" do
@@ -1805,7 +1812,69 @@ describe MustBe do
       end
     end
     
-    #!!! custom (keep the ArgumentError spec) -- share common bits (the box)
+    describe "custom" do
+      it_should_behave_like "custom MustOnlyEverContain"
+      
+      describe "without MustOnlyEverContain.registered_class" do
+        describe "#must_not_contain" do
+          it "should use each to check the contents" do
+            subject.must_not_contain(Symbol)
+            subject.should be_each_called
+            should notify
+          end
+        end
+
+        describe "#must_never_ever_contain" do
+          it "should raise a TypeError" do
+            expect do
+              subject.must_never_ever_contain(String)
+            end.should raise_error(TypeError,
+              /No MustOnlyEverContain.registered_class for .*Box/)
+          end
+        end
+      end
+      
+      describe "with MustOnlyEverContain.registered_class" do
+        register_before_and_unregister_after
+        
+        describe "when subject already has singleton methods" do
+          it "should raise ArgumentError" do
+            expect do
+              class <<subject
+                def singleton_method
+                end
+              end
+              subject.must_never_ever_contain(Symbol)
+            end.should raise_error(ArgumentError,
+              /must_never_ever_contain adds singleton methods but receiver .*/)
+          end
+        end
+                
+        describe "when updating contents" do
+          it "should notify if matches must_only_ever_contain_cases" do
+            subject.must_only_ever_contain(Numeric)
+            subject.contents = 435
+            should notify
+          end
+
+          it "should not notify if does not match"\
+              " must_only_ever_contain_cases" do
+            subject.must_never_ever_contain(Numeric)
+            subject.contents = :another_symbol
+            should_not notify
+          end
+        end
+
+        describe "when emptied" do
+          it "should notify if nil matches must_never_ever_contain_cases" do
+            subject.must_never_ever_contain(nil)
+            subject.empty!
+            subject.should_not be_each_called
+            should notify
+          end
+        end
+      end
+    end
   end
 end
 
@@ -1834,9 +1903,9 @@ end
 ###! to-do ###
 =begin
 
-handle large .inspect strings gracefully -- omit the middle, break at words if sensible
-
 spec `Hash#must_contain()` and `Hash#must_not_contain()`
+
+handle large .inspect strings gracefully -- omit the middle, break at words if sensible
 
 
 seperate into multiple files, refactor, remove excess duplication, improve names of helper functions (*_helper), set their visibility to private?
