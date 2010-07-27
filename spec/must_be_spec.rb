@@ -1106,6 +1106,26 @@ describe MustBe do
         end
       end
       
+      describe "when called with no arguments" do
+        it "should not notifiy if every key and value is non-nil" do
+          subject = {:key => :value}
+          subject.must_only_contain
+          should_not notify
+        end
+        
+        it "should notify if any pair contains a nil key" do
+          subject = {nil => :value}
+          subject.must_only_contain
+          should notify
+        end
+        
+        it "should notify if any pair contains a nil value" do
+          subject = {:key => nil}
+          subject.must_only_contain
+          should notify
+        end
+      end
+      
       describe "when called with a single hash" do
         it "should not notify if each pair matches one of the cases" do
           subject.must_only_contain(Symbol => [Symbol, String],
@@ -1180,6 +1200,20 @@ describe MustBe do
     
     describe Hash do
       subject { {:key => :value, :another => 'thing', 12 => 43} }
+      
+      describe "when called with no arguments" do
+        it "should not notifiy if every key and value is conditionally false" do
+          subject = {nil => false, false => nil}
+          subject.must_not_contain
+          should_not notify
+        end
+        
+        it "should notify if any pair contains someting conitionally true" do
+          subject = {nil => :value}
+          subject.must_not_contain
+          should notify
+        end
+      end
       
       describe "note message" do
         it "should include 'does match'" do
@@ -1902,8 +1936,6 @@ end
 
 ###! to-do ###
 =begin
-
-spec `Hash#must_contain()` and `Hash#must_not_contain()`
 
 handle large .inspect strings gracefully -- omit the middle, break at words if sensible
 
