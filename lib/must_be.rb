@@ -313,7 +313,7 @@ module MustBe
   
   def must(message = nil, &block)
     if block_given?
-      unless yield(self, message)
+      unless block.arity > 1 ? yield(self, message) : yield(self)
         if message
           must_notify(message)
         else
@@ -328,7 +328,7 @@ module MustBe
   
   def must_not(message = nil, &block)
     if block_given?
-      if yield(self, message)
+      if block.arity > 1 ? yield(self, message) : yield(self)
         if message
           must_notify(message)
         else
