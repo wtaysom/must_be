@@ -3,6 +3,32 @@ require 'forwardable'
 module MustBe
   VERSION = '0.0.4'
 
+  SHORT_INSPECT_CUTOFF_LENGTH = 200
+  SHORT_INSPECT_WORD_BREAK_LENGTH = 20
+  SHORT_INSPECT_ELLIPSES = "..."
+
+  def self.short_inspect(obj)
+    s = obj.inspect
+    if s.bytesize > SHORT_INSPECT_CUTOFF_LENGTH
+      real_cutoff = SHORT_INSPECT_CUTOFF_LENGTH - SHORT_INSPECT_ELLIPSES.length
+      left_side = (real_cutoff + 1) / 2
+      right_side = -(real_cutoff / 2)
+      
+      left_start = left_side - SHORT_INSPECT_WORD_BREAK_LENGTH
+      left_word_break_area = s[left_start, SHORT_INSPECT_WORD_BREAK_LENGTH]
+      left_word_break = left_word_break_area.rindex(/\b\s/)
+      start = left_word_break ? left_start + left_word_break + 1 : left_side
+      
+      right_start = right_side
+      right_word_break_area = s[right_start, SHORT_INSPECT_WORD_BREAK_LENGTH]
+      right_word_break = right_word_break_area.index(/\s\b/)
+      stop = right_word_break ? right_start + right_word_break : right_side
+      
+      s[start...stop] = SHORT_INSPECT_ELLIPSES
+    end
+    s
+  end
+
 ### Enable ###
   
   class <<self
@@ -101,8 +127,8 @@ module MustBe
     
     def to_s
       if assertion
-        "#{prefix}#{receiver.inspect}.#{assertion}#{format_args_and_block}"\
-          "#{additional_message}"
+        "#{prefix}#{MustBe.short_inspect(receiver)}."\
+          "#{assertion}#{format_args_and_block}#{additional_message}"
       else
         super
       end
@@ -126,7 +152,7 @@ module MustBe
           " {}"
         end
       else
-        args_format = "(#{args.map(&:inspect).join(", ")})"
+        args_format = "(#{args.map{|v| MustBe.short_inspect(v) }.join(", ")})"
         if block.nil?
           args_format
         else
@@ -337,7 +363,7 @@ module MustBe
     
     def to_s
       if assertion
-        super+" in container #{container.inspect}"
+        super+" in container #{MustBe.short_inspect(container)}"
       else
         super
       end
@@ -371,8 +397,10 @@ module MustBe
     
     def to_s
       match = negate ? "matches" : "does not match"
-      "#{prefix}pair #{{key => value}.inspect} #{match} #{cases.inspect}"\
-      " in container #{container.inspect}"
+      "#{prefix}pair {#{MustBe.short_inspect(key)}=>"\
+        "#{MustBe.short_inspect(value)}} #{match}"\
+        " #{MustBe.short_inspect(cases)} in"\
+        " container #{MustBe.short_inspect(container)}"
     end
   end
 
@@ -653,7 +681,7 @@ module MustBe
     unless container.singleton_methods.empty?
       method_name = "must_#{negate ? "never" : "only"}_ever_contain"
       raise ArgumentError, "#{method_name} adds singleton methods but"\
-        " receiver #{container.inspect} already"\
+        " receiver #{MustBe.short_inspect(container)} already"\
         " has singleton methods #{container.singleton_methods.inspect}"
     end
     

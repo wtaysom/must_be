@@ -3,6 +3,41 @@ require 'spec_helper'
 describe MustBe do
   include MustBeExampleHelper
   
+  QUOTATION_MARKS = 2
+  
+  describe ".short_inspect" do
+    it "should not shorten strings with length"\
+        " MustBe::SHORT_INSPECT_CUTOFF_LENGTH" do
+      s = "x" * (MustBe::SHORT_INSPECT_CUTOFF_LENGTH - QUOTATION_MARKS)
+      s.inspect.length.should == MustBe::SHORT_INSPECT_CUTOFF_LENGTH
+      si = MustBe.short_inspect(s)
+      si.should == s.inspect
+    end
+    
+    it "should shorten strings longer than"\
+        " MustBe::SHORT_INSPECT_CUTOFF_LENGTH characters" do
+      s = "x" * MustBe::SHORT_INSPECT_CUTOFF_LENGTH
+      s.inspect.length.should == MustBe::SHORT_INSPECT_CUTOFF_LENGTH +
+        QUOTATION_MARKS
+      si = MustBe.short_inspect(s)
+      si.length.should == MustBe::SHORT_INSPECT_CUTOFF_LENGTH
+    end
+    
+    it "should break at word boundries if possible" do
+      side_length = MustBe::SHORT_INSPECT_CUTOFF_LENGTH / 2
+      padding = "x" * (side_length - 7)
+      s = "#{padding} helloXXXXXworld #{padding}"
+      is = MustBe.short_inspect(s)
+      is.should match("xx ... xx")
+    end
+    
+    it "should be used by must_be" do
+      s = "x" * MustBe::SHORT_INSPECT_CUTOFF_LENGTH
+      s.must_be(Symbol)
+      should notify(/"x*\.\.\.x*"\.must_be\(Symbol\), but is String/)
+    end
+  end
+  
 ### Enable ###
 
   describe ".disable" do
@@ -1936,9 +1971,6 @@ end
 
 ###! to-do ###
 =begin
-
-handle large .inspect strings gracefully -- omit the middle, break at words if sensible
-
 
 seperate into multiple files, refactor, remove excess duplication, improve names of helper functions (*_helper), set their visibility to private?
   see <http://pure-rspec-rubynation.heroku.com/> shared behaviors (30-32)
