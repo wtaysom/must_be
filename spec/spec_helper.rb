@@ -5,6 +5,7 @@
 # as expected.
 #
 
+ENV['MUST_BE__NOTIFIER'] = nil # to make `rake spec` work.
 ENV['MUST_BE__DO_NOT_AUTOMATICALLY_INCLUDE_IN_OBJECT'] = "" # any string.
 
 require 'lib/must_be'
