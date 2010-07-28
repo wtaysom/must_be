@@ -68,9 +68,10 @@ module MustBeExampleHelper
       end
     end
 
-### Value Assertion ###
-
-    class <<example_group      
+    class <<example_group
+      
+      ### Value Assertion ###
+      
       def it_should_have_must_be_value_assertion(method, value, alt = 411)
         describe "##{method}" do
           it "should not notify if sender is #{value.inspect}" do
@@ -98,10 +99,29 @@ module MustBeExampleHelper
           end
         end
       end
+    
+      ### Notify Example ###
+
+      def notify_example(expression, message = nil)
+        expression = expression.gsub(/\n\s*/, " ")
+        if message.is_a? Module
+          message = expression+", but is #{message}"
+        end
+        example "#{expression} should #{message ? "" : "not "}notify" do
+          eval(expression)
+          if message == true
+            should notify
+          elsif message
+            should notify(message)
+          else
+            should_not notify
+          end
+        end
+      end
     end
   end
   
-### Notify Matcher ###
+  ### Notify Matcher ###
   
   def notify(message = nil)
     simple_matcher do |given, matcher|

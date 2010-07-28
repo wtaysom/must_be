@@ -1,7 +1,5 @@
 require 'spec_helper'
 
-#!!! factor out this notify_example pattern that you use pervasively here -- the eval it a small price to pay
-
 describe MustBe, " typical usage" do
   include MustBeExampleHelper
   
@@ -9,233 +7,122 @@ describe MustBe, " typical usage" do
       " of its arguments" do
     context "when called with a Class, it notifies unless"\
         " receiver.is_a? Class" do
-      example "4.must_be(Numeric) should not notify" do
-        4.must_be(Numeric).should == 4
-        should_not notify
-      end
-      
-      example "4.must_be(Float) should notify" do
-        4.must_be(Float)
-        should notify("4.must_be(Float), but is Fixnum")
-      end
+      notify_example %{4.must_be(Numeric)}
+      notify_example %{4.must_be(Float)}, Fixnum
     end
     
     context "when called with a regexp, it notifies unless"\
         " regexp =~ receiver" do
-      example "\"funny\".must_be(/n{2}/) should not notify" do
-        "funny".must_be(/n{2}/)
-        should_not notify
-      end
-      
-      example "\"funny\".must_be(/\d/) should notify" do
-        "funny".must_be(/\d/)
-        should notify("\"funny\".must_be(/\\d/), but is String")
-      end
+      notify_example %{"funny".must_be(/n{2}/)}
+      notify_example %{"funny".must_be(/\d/)}, String
     end
     
     context "when called with a range, it notifies unless"\
         " range.include? receiver" do
-      example "5.must_be(1..5) should not notify" do
-        5.must_be(1..5)
-        should_not notify
-      end
-      
-      example "5.must_be(1...5) should notify" do
-        5.must_be(1...5)
-        should notify("5.must_be(1...5), but is Fixnum")
-      end
+      notify_example %{5.must_be(1..5)}
+      notify_example %{5.must_be(1...5)}, Fixnum
     end
     
     context "when called with an array, it notifies unless"\
         " array == receiver" do
-      example("[3, 5].must_be([3, 5]) should not notify") do
-        [3, 5].must_be([3, 5])
-        should_not notify
-      end
-      
-      example("3.must_be([3, 5]) should notify") do
-        3.must_be([3, 5])
-        should notify("3.must_be([3, 5]), but is Fixnum")
-      end
+      notify_example %{[3, 5].must_be([3, 5])}
+      notify_example %{3.must_be([3, 5])}, Fixnum
     end
     
     context "when called with a proc, it notifies unless proc[receiver]" do
-      example ":anything.must_be(lambda {|v| true }) should not notify" do
-        :anything.must_be(lambda {|v| true })
-        should_not notify
-      end
-      
-      example ":anything.must_be(lambda {|v| false }) should notify" do
-        :anything.must_be(lambda {|v| false })
-        should notify
-      end
+      notify_example %{:anything.must_be(lambda {|v| true })}
+      notify_example %{:anything.must_be(lambda {|v| false })}, true
     end
     
     context "when called with most other objects, it notifies unless"\
         " object == receiver" do
-      example ":yep.must_be(:yep) should not notify" do
-        :yep.must_be(:yep)
-        should_not notify
-      end
-      
-      example ":yep.must_be(:nope) should notify" do
-        :yep.must_be(:nope)
-        should notify(":yep.must_be(:nope), but is Symbol")
-      end
+      notify_example %{:yep.must_be(:yep)}
+      notify_example %{:yep.must_be(:nope)}, Symbol
     end
     
     context "when called without arguments, it notifies if receiver is"\
         " nil or false" do
-      example "5.must_be should not notify" do
-        5.must_be
-        should_not notify
-      end
-      
-      example "nil.must_be should notify" do
-        nil.must_be
-        should notify("nil.must_be, but is NilClass")
-      end
-      
-      example "false.must_be should notify" do
-        false.must_be
-        should notify("false.must_be, but is FalseClass")
-      end
+      notify_example %{5.must_be}
+      notify_example %{nil.must_be}, NilClass
+      notify_example %{false.must_be}, FalseClass
     end
     
     context "when called with multiple arguments, it notifies unless receiver"\
         " case-equals (===) one of them" do
-      example ":happy.must_be(String, Symbol) should not notify" do
-        :happy.must_be(String, Symbol)
-        should_not notify
-      end
-      
-      example "934.must_be(String, Symbol) should notify" do
-        934.must_be(String, Symbol)
-        should notify("934.must_be(String, Symbol), but is Fixnum")
-      end
+      notify_example %{:happy.must_be(String, Symbol)}
+      notify_example %{934.must_be(String, Symbol)}, Fixnum
     end    
   end
   
   describe "#must" do
     context "when called with a block, it notifies if the result is"\
         " false or nil" do
-      example ":helm.must(\"message\")"\
-          " {|receiver, message| message == \"mess\" } should notify" do
-        :helm.must("message") {|receiver, message| message == "\"mess\""}
-        should notify("message")
-      end
-      
-      example ":helm.must {|receiver| receiver == :helm } should not notify" do
-        :helm.must("message") {|receiver| receiver == :helm }
-        should_not notify
-      end
+      notify_example %{:helm.must("message") {|receiver, message| message ==
+        "mess" }}, "message"
+      notify_example %{:helm.must {|receiver| receiver == :helm }}
     end
     
     context "when called with no argument, it returns a proxy which notifies"\
         " when a method returning false or nil is called" do
-      subject { 5.must }
-        
-      example "5.must == 4 should notify" do
-        subject == 4
-        should notify("5.must.==(4)")
-      end
-        
-      example "5.must > 4 should not notify" do
-        subject > 4
-        should_not notify
-      end
+      notify_example %{5.must == 4}, "5.must.==(4)"
+      notify_example %{5.must > 4}
     end
   end
   
   describe "#must_only_contain" do
     context "with Array receiver, it should notify unless each item in the"\
         " array case-equals (===) one of the arguments" do
-      example "[1, :hi, \"wow\"].must_only_contain(Numeric, Symbol, String)"\
-          " should not notify" do
-        [1, :hi, "wow"].must_only_contain(Numeric, Symbol, String)
-        should_not notify
-      end
-      
-      example "[1, :hi, \"wow\"].must_only_contain(Numeric, String)"\
-          " should notify" do
-        [1, :hi, "wow"].must_only_contain(Numeric, String)
-        should notify("must_only_contain: :hi.must_be(Numeric, String), but is"\
-          " Symbol in container [1, :hi, \"wow\"]")
-      end
+      notify_example %{[1, :hi, "wow"].must_only_contain(Numeric, Symbol,
+        String)}
+      notify_example %{[1, :hi, "wow"].must_only_contain(Numeric, String)},
+        "must_only_contain: :hi.must_be(Numeric, String), but is Symbol in"\
+          " container [1, :hi, \"wow\"]"
     end
     
     context "with Hash receiver, it should notify unless each pair"\
         " case-equals (===) a pair in an argument hash" do
-      example "{:key => \"value\"}.must_only_contain("\
-          "{Symbol => [Symbol, String]}) should not notify" do
-        {:key => "value"}.must_only_contain({Symbol => [Symbol, String]})
-        should_not notify
-      end
-      
-      example "{:key => \"value\"}.must_only_contain({Symbol => Symbol},"\
-          " {Symbol => Numeric}) should notify" do
-        {:key => "value"}.must_only_contain({Symbol => Symbol},
-          {Symbol => Numeric})
-        should notify("must_only_contain: pair {:key=>\"value\"} does not"\
-          " match [{Symbol=>Symbol}, {Symbol=>Numeric}] in container"\
-          " {:key=>\"value\"}")
-      end
+      notify_example %{{:key => "value"}.must_only_contain({Symbol => [Symbol,
+        String]})}
+      notify_example %{{:key => "value"}.must_only_contain({Symbol => Symbol},
+        {Symbol => Numeric})}, "must_only_contain: pair {:key=>\"value\"} does"\
+          " not match [{Symbol=>Symbol}, {Symbol=>Numeric}] in container"\
+          " {:key=>\"value\"}"
     end
   end
   
   describe "#must_only_ever_contain" do
     context "like #must_only_contain, it notifies unless each item"\
         " case-equals (===) one of the arguments" do
-      example "[1, :hi, \"wow\"].must_only_ever_contain(Numeric, Symbol,"\
-          " String) should not notify" do
-        [1, :hi, "wow"].must_only_ever_contain(Numeric, Symbol, String)
-        should_not notify
-      end
-
-      example "[1, :hi, \"wow\"].must_only_ever_contain(Numeric, String)"\
-          " should notify" do
-        [1, :hi, "wow"].must_only_ever_contain(Numeric, String)
-        should notify("must_only_ever_contain: :hi.must_be(Numeric, String),"\
-          " but is Symbol in container [1, :hi, \"wow\"]")
-      end
+      notify_example %{[1, :hi, "wow"].must_only_ever_contain(Numeric, Symbol,
+        String)}
+      notify_example %{[1, :hi, "wow"].must_only_ever_contain(Numeric, String)},
+        "must_only_ever_contain: :hi.must_be(Numeric, String), but is Symbol"\
+          " in container [1, :hi, \"wow\"]"
     end
     
     context "it notifies whenever the container is updated to hold an item"\
         " which does not case-equal (===) one of the arguments" do
       describe "[1, 2, 3].must_only_ever_contain(Numeric)" do
         subject { [1, 2, 3].must_only_ever_contain(Numeric) }
-      
-        it "should not notify if 3.14 is appended" do
-          subject << 3.14
-          should_not notify
-        end
-      
-        it "notify if nil is appended" do
-          subject << nil
-          should notify("must_only_ever_contain: Array#<<(nil)\n"\
-            "nil.must_be(Numeric), but is NilClass in container [1, 2, 3, nil]")
-        end
+        
+        notify_example %{subject << 3.14}
+        notify_example %{subject << nil}, "must_only_ever_contain:"\
+          " Array#<<(nil)\nnil.must_be(Numeric), but is NilClass in container"\
+          " [1, 2, 3, nil]"
       end
     end
   end
   
   describe "#must_notify", " primitive used to define other must_be methods" do
     context "when called with a string, it notifies with a string message" do
-      example "must_notify(\"message\") should notify" do
-        must_notify("message")
-        should notify("message")
-      end
+      notify_example %{must_notify("message")}, "message"
     end
     
     context "when called with multiple arguments, notifies with method"\
         " invocation details" do
-      example "must_notify(:receiver, :method_name, [:arg, :arg, :arg],"\
-          " lambda {}, \" additional message\") should notify" do
-        must_notify(:receiver, :method_name, [:arg, :arg, :arg],
-          lambda {}, " additional message")
-        should notify(":receiver.method_name(:arg, :arg, :arg) {} additional"\
-          " message")
-      end
+      notify_example %{must_notify(:receiver, :method_name, [:arg, :arg, :arg],
+        lambda {}, " additional message")}, ":receiver.method_name(:arg, :arg,"\
+          " :arg) {} additional message"
     end
   end
   
