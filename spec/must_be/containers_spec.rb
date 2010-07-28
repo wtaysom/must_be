@@ -139,7 +139,7 @@ describe MustBe do
         should_not notify
       end
     
-      it "should notify if any member matches one of the cases" do        
+      it "should notify if any member matches one of the cases" do
         subject.must_not_contain(Range, Numeric).should == subject
         should notify("must_not_contain: 11.must_not_be(Range, Numeric),"\
           " but is Fixnum in container [11, :sin, \"cos\"]")
@@ -262,7 +262,7 @@ describe MustBe do
               object.contents.must_not_be(*cases)
             else
               object.contents.must_be(*cases)
-            end              
+            end
           end
           
           def contents=(contents)
@@ -764,7 +764,7 @@ describe MustBe do
           subject.collect! {|v| 5 }
           should notify
         end
-      end      
+      end
     end
     
     describe Hash do
@@ -785,7 +785,7 @@ describe MustBe do
           subject[:six] = :six
           subject[:six].should == :six
           should_not notify
-        end        
+        end
       end
       
       context "when it is initially non-empty" do

@@ -32,7 +32,7 @@ module MustBe
     def backtrace
       return unless regular_backtrace
       
-      if container.respond_to?(:must_only_ever_contain_backtrace) and 
+      if container.respond_to?(:must_only_ever_contain_backtrace) and
           container.must_only_ever_contain_backtrace
         regular_backtrace+["=== caused by container ==="]+
           container.must_only_ever_contain_backtrace
@@ -66,7 +66,7 @@ module MustBe
     if negate
       if cases.empty?
         !key and !value
-      else        
+      else
         cases.all? do |c|
           c.all? do |k, v|
             not (match_any_case?(key, k) and match_any_case?(value, v))
@@ -130,7 +130,7 @@ module MustBe
         end
       end
     end
-    container  
+    container
   end
 
   def must_only_contain(*cases)
@@ -148,7 +148,7 @@ module MustBe
       attr_accessor :must_only_ever_contain_cases, 
         :must_only_ever_contain_backtrace, :must_only_ever_contain_negate
       
-      module ClassMethods 
+      module ClassMethods
         def must_check_contents_after(*methods)
           methods.each do |method|
             define_method(method) do |*args, &block|
@@ -178,7 +178,7 @@ module MustBe
         must_check(lambda { must_check_contents }) do |note|
           note.prefix = must_only_ever_contain_prefix
           note
-        end     
+        end
       end
       
     protected
@@ -203,14 +203,14 @@ module MustBe
     
     ##
     # Creates a module from `body' which includes MustOnlyEverContain::Base.
-    # The module will be mixed into an objects of type `klass' when 
+    # The module will be mixed into an objects of type `klass' when
     # `must_only_ever_contain' is called.  The module should override methods of
     # `klass' which modify the contents of the object.
     # If the module has a class method
     # `must_only_contain_check(object, cases, negate = false)',
     # then this method is used by `MustBe.must_only_contain'
     # to check the contents of `object' against `cases'.
-    # `must_only_contain_check' should call `MustBe#must_notify' for any 
+    # `must_only_contain_check' should call `MustBe#must_notify' for any
     # contents which do not match `cases'.  (Or if `negate' is true, then
     # `MustBe#must_notify' should be called for any contents that do match
     # `cases'.)

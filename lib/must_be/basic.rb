@@ -15,7 +15,7 @@ module MustBe
     if cases.empty? ? self : MustBe.match_any_case?(self, cases)
       must_notify(self, __method__, cases, nil, ", but is #{self.class}")
     end
-    self 
+    self
   end
   
   def must_be_in(collection)

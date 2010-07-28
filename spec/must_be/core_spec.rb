@@ -206,12 +206,12 @@ describe MustBe do
     end
   end
 
-  describe "RaiseNotifier" do    
+  describe "RaiseNotifier" do
     before do
       MustBe.notifier = RaiseNotifier
     end
         
-    it "should raise Note" do      
+    it "should raise Note" do
       expect do
           must_notify("funny bunny")
       end.should(raise_error(Note, "funny bunny") do |note|

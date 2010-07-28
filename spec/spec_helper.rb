@@ -1,7 +1,7 @@
 ### MUST_BE__DO_NOT_AUTOMATICALLY_INCLUDE_IN_OBJECT ###
 #
 # Hard to describe within normal RSpec control flow.  Instead we raise a
-# RuntimeError if MUST_BE__DO_NOT_AUTOMATICALLY_INCLUDE_IN_OBJECT doesn't 
+# RuntimeError if MUST_BE__DO_NOT_AUTOMATICALLY_INCLUDE_IN_OBJECT doesn't
 # behave as expected.
 #
 

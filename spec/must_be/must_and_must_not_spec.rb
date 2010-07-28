@@ -22,7 +22,7 @@ describe MustBe do
       
       example "#object_id" do
         subject.object_id.should_not == :moxie.object_id
-      end      
+      end
     end
   end
   
@@ -76,7 +76,7 @@ describe MustBe do
       end
     end
     
-    context "when used to proxy" do      
+    context "when used to proxy" do
       subject { 0xabaca_facade.must }
       
       it_should_notify("#{0xabaca_facade}.must.==(#{0xdefaced})") do
@@ -105,11 +105,11 @@ describe MustBe do
       
       it_should_notify("#{0xabaca_facade}.must.instance_of?(Integer)") do
         subject.instance_of? Integer
-      end    
+      end
     end
   end
   
-  describe "#must_not" do    
+  describe "#must_not" do
     extend ItShouldNotifyExpectations
         
     context "when called with a block" do
@@ -118,7 +118,7 @@ describe MustBe do
       end
       
       it "should notify if block returns true" do
-        :helm.must_not{|receiver| receiver == :helm }.should == :helm        
+        :helm.must_not{|receiver| receiver == :helm }.should == :helm
         should notify(":helm.must_not {}")
       end
       
@@ -143,7 +143,7 @@ describe MustBe do
       end
     end
     
-    context "when used to proxy" do      
+    context "when used to proxy" do
       subject { 0xabaca_facade.must_not }
       
       it_should_not_notify("#{0xabaca_facade}.must_not.==(#{0xdefaced})") do
@@ -174,7 +174,7 @@ describe MustBe do
       it_should_not_notify(
           "#{0xabaca_facade}.must_not.instance_of?(Integer)") do
         subject.instance_of? Integer
-      end    
+      end
     end
   end
   

@@ -51,7 +51,7 @@ describe MustBe, " typical usage" do
         " case-equals (===) one of them" do
       notify_example %{:happy.must_be(String, Symbol)}
       notify_example %{934.must_be(String, Symbol)}, Fixnum
-    end    
+    end
   end
   
   describe "#must" do

@@ -114,7 +114,7 @@ describe MustBe do
       end
     end
     
-    context "given 51 as receiver" do      
+    context "given 51 as receiver" do
       context "when called with no arguments" do
         it "should notify" do
           51.must_not_be.should == 51
@@ -307,8 +307,8 @@ describe MustBe do
     end
   end
   
-  shared_examples_for "*_be_close in case of bad arguments" do  
-    it "should raise ArgumentError if delta cannot be compared" do      
+  shared_examples_for "*_be_close in case of bad arguments" do
+    it "should raise ArgumentError if delta cannot be compared" do
       expect do
         200.0.send(the_method_name, 2.0, :a_little)
       end.should raise_error ArgumentError
