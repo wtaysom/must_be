@@ -7,5 +7,5 @@ require 'must_be/containers'
 require 'must_be/containers_registered_classes'
 
 module MustBe
-  VERSION = '0.0.5'
+  VERSION = '0.1.0'
 end
