@@ -1,14 +1,14 @@
 ### MUST_BE__DO_NOT_AUTOMATICALLY_INCLUDE_IN_OBJECT ###
 #
 # Hard to describe within normal RSpec control flow.  Instead we raise a
-# RuntimeError if MUST_BE__DO_NOT_AUTOMATICALLY_INCLUDE_IN_OBJECT doesn't work
-# as expected.
+# RuntimeError if MUST_BE__DO_NOT_AUTOMATICALLY_INCLUDE_IN_OBJECT doesn't 
+# behave as expected.
 #
 
 ENV['MUST_BE__NOTIFIER'] = nil # to make `rake spec` work.
 ENV['MUST_BE__DO_NOT_AUTOMATICALLY_INCLUDE_IN_OBJECT'] = "" # any string.
 
-require 'lib/must_be'
+require 'lib/must_be.rb'
 
 if Object.include? MustBe
   raise "MustBe should not be automatically included in Object."
@@ -30,18 +30,18 @@ def example_of_must_be_inclusion
   example.extend(MustBe)
   example.must == example
   example.must_not_be_nil
-  
+
   # must_only_contain and must_not_contain require contents to also include
   # MustBe.
   contents = Object.new
-  
+
   container = [contents]
   container.extend(MustBe)
-  
+
   expect_error(NoMethodError) do
     container.must_only_contain
   end
-  
+
   contents.extend(MustBe)
   expect_error(MustBe::Note) do
     container.must_not_contain
@@ -49,7 +49,6 @@ def example_of_must_be_inclusion
 end
 example_of_must_be_inclusion
 
-# Manually include MustBe in Object.
 class Object
   include MustBe
 end
