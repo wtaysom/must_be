@@ -6,7 +6,7 @@ describe MustBe do
   QUOTATION_MARKS = 2
   
   describe ".short_inspect" do
-    it "should not shorten strings with length"\
+    it "should not shorten strings of length"\
         " MustBe::SHORT_INSPECT_CUTOFF_LENGTH" do
       s = "x" * (MustBe::SHORT_INSPECT_CUTOFF_LENGTH - QUOTATION_MARKS)
       s.inspect.length.should == MustBe::SHORT_INSPECT_CUTOFF_LENGTH
@@ -31,7 +31,7 @@ describe MustBe do
       is.should match("xx ... xx")
     end
     
-    it "should be used by must_be" do
+    it "should be used by MustBe" do
       s = "x" * MustBe::SHORT_INSPECT_CUTOFF_LENGTH
       s.must_be(Symbol)
       should notify(/"x*\.\.\.x*"\.must_be\(Symbol\), but is String/)
@@ -53,23 +53,23 @@ describe MustBe do
       MustBe.enabled?.should be_false
     end
     
-    it "#must_be should not notify" do
+    example "#must_be should not notify" do
       5799.must_be(:lolly).should == 5799
       should_not notify
     end
     
-    it "#must_notify should return receiver (not a note)" do
+    example "#must_notify should return receiver (not a note)" do
       5799.must_notify("ignored message").should == 5799
       should_not notify
     end
     
-    it "#must_check should not yield to its block" do
+    example "#must_check should not yield to its block" do
       yielded = false
       must_check { yielded = true }
       yielded.should be_false
     end
     
-    it "#must should return receiver (not a proxy)" do
+    example "#must should return receiver (not a proxy)" do
       :delegate.must.object_id.should == :delegate.object_id
     end
   end
@@ -89,23 +89,23 @@ describe MustBe do
         MustBe.enabled?.should be_true
       end
       
-      it "#must_be should notify" do
+      example "#must_be should notify" do
         5799.must_be(:lolly).should == 5799
         should notify("5799.must_be(:lolly), but is Fixnum")
       end
 
-      it "#must_notify should return a note" do
+      example "#must_notify should return a note" do
         5799.must_notify("noted message").should be_a(Note)
         should notify("noted message")
       end
 
-      it "#must_check should yield to its block" do
+      example "#must_check should yield to its block" do
         yielded = false
         must_check { yielded = true }
         yielded.should be_true
       end
 
-      it "#must should return a proxy" do
+      example "#must should return a proxy" do
         :delegate.must.object_id.should_not == :delegate.object_id
       end
     end
@@ -152,7 +152,7 @@ describe MustBe do
       end.should raise_error(NoMethodError)
     end
     
-    it "should raise ArgumentError when bad argument provided" do
+    it "should raise ArgumentError when unknown notifier name provided" do
       expect do
         MustBe.set_notifier_from_env(:unknown)
       end.should raise_error(ArgumentError)
@@ -177,7 +177,7 @@ describe MustBe do
         MustBe::Spec__ExampleNotifier.should be_a(Proc)
       end
       
-      it "should add a key to NOTIFIERS" do
+      it "should add the key to NOTIFIERS" do
         MustBe::NOTIFIERS[:spec__example].should == :Spec__ExampleNotifier
       end
       
@@ -224,17 +224,16 @@ describe MustBe do
     # #must_notify provides examples covering #initialize and #to_s.
     
     describe "difference between #backtrace and #complete_backtrace" do
-      example "#backtrace should drop lines containing 'lib/must_be.rb:' from"\
-          "#complete_backtrace" do
-        
+      example "#backtrace should drop lines containing %r{lib/must_be.*\\.rb:}"\
+          " from #complete_backtrace" do
         backtrace = [
           "first line kept",
           "other lib/must_be.rb: kept as well"]
         
         complete_backtrace = [
           "lib/must_be.rb: at start",
-          "in middle lib/must_be.rb: is okay",
-          "at end too lib/must_be.rb:",
+          "in middle lib/must_be_elsewhere.rb: is okay",
+          "at end too lib/must_be_yet_again.rb:",
           *backtrace]
         
         note = Note.new("sample")
@@ -378,7 +377,7 @@ describe MustBe do
         did_call_block.should be_false
       end
       
-      it "should should call its block and notify if the proc notifies" do
+      it "should call its block and notify if the proc notifies" do
         did_call_block = false
         must_check(lambda { must_notify("check") }) do |note|
           did_call_block = true
@@ -388,16 +387,17 @@ describe MustBe do
         did_call_block.should be_true
         should notify("mate")
       end
-    end
-    
-    it "should be able to be called multiple times" do
-      note = must_check { must_notify("once") }
-      should_not notify
-      note.message.should == "once"
       
-      note = must_check { must_notify("again") }
-      should_not notify
-      note.message.should == "again"
+      it "should use the result of the proc to generate a new note" do
+        did_call_block = false
+        must_check(lambda { must_notify("check") }) do |note|
+          did_call_block = true
+          note.message.should == "check"
+          "mate"
+        end
+        did_call_block.should be_true
+        should notify("mate")
+      end
     end
     
     context "when nesting" do
@@ -431,74 +431,86 @@ describe MustBe do
       end
     end
     
-    it "should be error safe" do
-      expect do
-        must_check do
-          raise
-        end
-      end.should raise_error
+    describe "safety" do
+      it "should be able to be called multiple times" do
+        note = must_check { must_notify("once") }
+        should_not notify
+        note.message.should == "once"
       
-      must_notify
-      should notify
-    end
-    
-    it "should be thread safe" do
-      mutex = Mutex.new
-      cv = ConditionVariable.new
-      
-      cv_yield = lambda do
-        cv.signal
-        cv.wait(mutex)
+        note = must_check { must_notify("again") }
+        should_not notify
+        note.message.should == "again"
       end
+    
+      it "should be error safe" do
+        expect do
+          must_check do
+            raise
+          end
+        end.should raise_error
       
-      thread = nil
-      thread_note = nil
-      note = nil
+        must_notify
+        should notify
+      end
+    
+      it "should be thread safe" do
+        mutex = Mutex.new
+        cv = ConditionVariable.new
+      
+        cv_yield = lambda do
+          cv.signal
+          cv.wait(mutex)
+        end
+      
+        thread = nil
+        thread_note = nil
+        note = nil
             
-      thread_block = lambda do
+        thread_block = lambda do
+          mutex.synchronize do
+            thread_note = must_check do
+              must_notify("thread")
+              cv_yield[]
+            end
+          end
+        end
+      
         mutex.synchronize do
-          thread_note = must_check do
-            must_notify("thread")
+          note = must_check do
+            must_notify("main")
+            thread = Thread.new &thread_block
             cv_yield[]
           end
+          cv.signal
         end
-      end
+        thread.join
       
-      mutex.synchronize do
-        note = must_check do
-          must_notify("main")
-          thread = Thread.new &thread_block
-          cv_yield[]
-        end
-        cv.signal
-      end
-      thread.join
-      
-      note.message.should == "main"
-      thread_note.message.should == "thread"    
-    end
-    
-    if RUBY_VERSION > "1.9"
-      fiber_note = nil
-      
-      it "should be fiber safe" do
-        fiber_note = nil
-        
-        fiber = Fiber.new do
-          fiber_note = must_check do
-            must_notify("fiber")
-            Fiber.yield
-          end
-        end
-        
-        note = must_check do
-          must_notify("main")
-          fiber.resume
-        end
-        fiber.resume
-        
         note.message.should == "main"
-        fiber_note.message.should == "fiber"
+        thread_note.message.should == "thread"    
+      end
+    
+      if RUBY_VERSION > "1.9"
+        fiber_note = nil
+      
+        it "should be fiber safe" do
+          fiber_note = nil
+        
+          fiber = Fiber.new do
+            fiber_note = must_check do
+              must_notify("fiber")
+              Fiber.yield
+            end
+          end
+        
+          note = must_check do
+            must_notify("main")
+            fiber.resume
+          end
+          fiber.resume
+        
+          note.message.should == "main"
+          fiber_note.message.should == "fiber"
+        end
       end
     end
   end
@@ -947,19 +959,19 @@ describe MustBe do
       end
       
       it "should notify if block returns false" do
-        :helm.must{|receiver, message| receiver == :harm }.should == :helm
+        :helm.must{|receiver| receiver == :harm }.should == :helm
         should notify(":helm.must {}")
       end
       
       it "should notify with message if provided" do
-        :ice.must("ice must be icy") do |receiver, message|
+        :ice.must("ice must be icy") do |receiver|
           receiver == :icy
         end.should == :ice
         should notify("ice must be icy")
       end
       
       it "should not notify if block returns true" do
-        :jinn.must{|receiver, message| receiver == :jinn }.should == :jinn
+        :jinn.must{|receiver| receiver == :jinn }.should == :jinn
         should_not notify
       end
       
@@ -1014,19 +1026,19 @@ describe MustBe do
       end
       
       it "should notify if block returns true" do
-        :helm.must_not{|receiver, message| receiver == :helm }.should == :helm        
+        :helm.must_not{|receiver| receiver == :helm }.should == :helm        
         should notify(":helm.must_not {}")
       end
       
       it "should notify with message if provided" do
-        :ice.must_not("ice must not be ice") do |receiver, message|
+        :ice.must_not("ice must not be ice") do |receiver|
           receiver == :ice
         end.should == :ice
         should notify("ice must not be ice")
       end
       
       it "should not notify if block returns false" do
-        :jinn.must_not{|receiver, message| receiver == :gem }.should == :jinn
+        :jinn.must_not{|receiver| receiver == :gem }.should == :jinn
         should_not notify
       end
       
@@ -1089,7 +1101,7 @@ describe MustBe do
         its(:backtrace) { should include("=== caused by container ===")}
       end
     
-      context "when container is not required to must_only_ever_contain" do
+      context "when container has not been set to must_only_ever_contain" do
         subject do
           note = ContainerNote.new(Note.new("nothing"), [])
           note.set_backtrace([])
@@ -1105,7 +1117,7 @@ describe MustBe do
     describe Array do
       subject { [11, :sin, 'cos'] }
       
-      it "should not notify if each member matches one of the cases" do
+      it "should not notify if every member matches one of the cases" do
         subject.must_only_contain(Symbol, Numeric, String).should == subject
         should_not notify
       end
@@ -1122,7 +1134,7 @@ describe MustBe do
           should notify
         end
       
-        it "should not notify if each member is conditionally true" do
+        it "should not notify if every member is conditionally true" do
           [0, [], ""].must_only_contain
           should_not notify
         end
@@ -1133,7 +1145,7 @@ describe MustBe do
       subject { {:key => :value, :another => 'thing', 12 => 43} }
       
       describe "note message" do
-        it "should include 'does not match'" do
+        it "should include \"does not match\"" do
           subject = {:key => :value}
           subject.must_only_contain(Symbol => [String, Numeric])
           should notify("must_only_contain: pair {:key=>:value} does not match"\
@@ -1141,7 +1153,7 @@ describe MustBe do
         end
       end
       
-      describe "when called with no arguments" do
+      context "when called with no arguments" do
         it "should not notifiy if every key and value is non-nil" do
           subject = {:key => :value}
           subject.must_only_contain
@@ -1161,8 +1173,8 @@ describe MustBe do
         end
       end
       
-      describe "when called with a single hash" do
-        it "should not notify if each pair matches one of the cases" do
+      context "when called with a single hash" do
+        it "should not notify if every pair matches one of the cases" do
           subject.must_only_contain(Symbol => [Symbol, String],
             Numeric => Numeric).should == subject
           should_not notify
@@ -1175,8 +1187,8 @@ describe MustBe do
         end
       end
       
-      describe "when called with multiple hashes" do
-        it "should not notify if each pair matches one of the cases" do
+      context "when called with multiple hashes" do
+        it "should not notify if every pair matches one of the cases" do
           subject.must_only_contain({Symbol => Symbol}, {Symbol => String},
             {Numeric => Numeric}).should == subject
           should_not notify
@@ -1189,14 +1201,14 @@ describe MustBe do
         end
       end
       
-      describe "when called with array keys and values" do
-        it "should not notify if each pair matches" do
+      context "when called with array keys and values" do
+        it "should not notify if every pair matches one of the cases" do
           subject.must_only_contain([Symbol, Numeric] => [Symbol, String, 
             Numeric]).should == subject
           should_not notify
         end
         
-        it "should notify if any pair does not match" do
+        it "should notify if any pair does not match any of the cases" do
           subject.must_only_contain([Symbol, Numeric] => [Symbol, 
             Numeric]).should == subject
           should notify
@@ -1214,7 +1226,7 @@ describe MustBe do
         should_not notify
       end
     
-      it "should notify if any member matches any of the cases" do        
+      it "should notify if any member matches one of the cases" do        
         subject.must_not_contain(Range, Numeric).should == subject
         should notify("must_not_contain: 11.must_not_be(Range, Numeric),"\
           " but is Fixnum in container [11, :sin, \"cos\"]")
@@ -1236,14 +1248,14 @@ describe MustBe do
     describe Hash do
       subject { {:key => :value, :another => 'thing', 12 => 43} }
       
-      describe "when called with no arguments" do
+      context "when called with no arguments" do
         it "should not notifiy if every key and value is conditionally false" do
           subject = {nil => false, false => nil}
           subject.must_not_contain
           should_not notify
         end
         
-        it "should notify if any pair contains someting conitionally true" do
+        it "should notify if any key or value is conitionally true" do
           subject = {nil => :value}
           subject.must_not_contain
           should notify
@@ -1251,7 +1263,7 @@ describe MustBe do
       end
       
       describe "note message" do
-        it "should include 'does match'" do
+        it "should include \"does match\"" do
           subject = {:key => :value}
           subject.must_not_contain(Symbol => [String, Symbol])
           should notify("must_not_contain: pair {:key=>:value} matches"\
@@ -1259,7 +1271,7 @@ describe MustBe do
         end
       end
       
-      describe "when called with a single hash" do
+      context "when called with a single hash" do
         it "should notify if any pair matches one of the cases" do
           subject.must_not_contain(Symbol => [Symbol, String],
             Numeric => Numeric).should == subject
@@ -1273,7 +1285,7 @@ describe MustBe do
         end
       end
       
-      describe "when called with multiple hashes" do
+      context "when called with multiple hashes" do
         it "should not notify if no pair matches any of the cases" do
           subject.must_not_contain({Symbol => Numeric}, {String => String},
             {String => Numeric}).should == subject
@@ -1287,14 +1299,14 @@ describe MustBe do
         end
       end
       
-      describe "when called with array keys and values" do
-        it "should not notify if no pair matches" do
+      context "when called with array keys and values" do
+        it "should not notify if no pair matches any of the cases" do
           subject.must_not_contain([Range, Numeric] => [Symbol, String, 
             Float]).should == subject
           should_not notify
         end
         
-        it "should notify if any pair matches" do
+        it "should notify if any pair matches one of the cases" do
           subject.must_not_contain([Symbol, Numeric] => [Symbol, 
             Numeric]).should == subject
           should notify
@@ -1385,7 +1397,7 @@ describe MustBe do
       end
       
       describe "#[]=" do
-        describe "when called with index" do
+        context "when called with index" do
           it "should not notify if obj is non-nil" do
             subject[2] = 5
             should_not notify
@@ -1397,22 +1409,22 @@ describe MustBe do
           end
         end
         
-        describe "when called with start and length" do
-          it "should not notify if RHS is non-nil obj" do
+        context "when called with start and length" do
+          it "should not notify if obj is non-nil" do
             subject[2, 2] = 5
             should_not notify
           end
           
-          it "should not notify if RHS is nil" do
+          it "should not notify if obj is nil" do
             subject[2, 2] = nil
             should_not notify
           end
           
-          it "should not notify if RHS is compact array" do
+          it "should not notify if obj is compact array" do
             subject[2, 2] = [8, 9, 0]
           end
           
-          it "should notify if RHS is array containing nil" do
+          it "should notify if obj is array containing nil" do
             subject[2, 2] = [8, nil, 0]
             should notify("must_only_ever_contain:"\
               " Array#[]=(2, 2, [8, nil, 0])\nnil.must_be, but is NilClass in"\
@@ -1420,22 +1432,22 @@ describe MustBe do
           end
         end
         
-        describe "when called with range" do
-          it "should not notify if RHS is non-nil obj" do
+        context "when called with range" do
+          it "should not notify if obj is non-nil obj" do
             subject[2..4] = 5
             should_not notify
           end
           
-          it "should not notify if RHS is nil" do
+          it "should not notify if obj is nil" do
             subject[2..4] = nil
             should_not notify
           end
           
-          it "should not notify if RHS is compact array" do
+          it "should not notify if obj is compact array" do
             subject[2..4] = [8, 9, 0]
           end
           
-          it "should notify if RHS is array containing nil" do
+          it "should notify if obj is array containing nil" do
             subject[2..4] = [8, nil, 0]
             should notify
           end
@@ -1480,7 +1492,7 @@ describe MustBe do
       end
       
       describe "#fill" do
-        describe "when called without a block" do
+        context "when called without a block" do
           it "should not notify if obj is non-nil" do
             subject.fill(3)
             should_not notify
@@ -1494,7 +1506,7 @@ describe MustBe do
           end
         end
         
-        describe "when called with a block" do
+        context "when called with a block" do
           it "should not notify if block never returns nil" do
             subject.fill {|v| v }
             should_not notify
@@ -1575,7 +1587,7 @@ describe MustBe do
     describe Hash do
       subject { {} }
       
-      describe "when called with no arguments" do
+      context "when called with no arguments" do
         before do
           subject.must_only_ever_contain
         end
@@ -1602,12 +1614,12 @@ describe MustBe do
         end
       end
       
-      describe "when called with a hash" do
+      context "when called with a hash" do
         before do
           subject.must_only_ever_contain(Symbol => Integer, Integer => Symbol)
         end
         
-        it "should notify if inserting an invalid key" do
+        it "should notify if inserting a non-matching key" do
           subject["six"] = 6
           subject["six"].should == 6
           should notify("must_only_ever_contain: Hash#[]=(\"six\", 6)"\
@@ -1615,13 +1627,13 @@ describe MustBe do
             " [{Symbol=>Integer, Integer=>Symbol}] in container {\"six\"=>6}")
         end
         
-        it "should notify if inserting an invalid value" do
+        it "should notify if inserting a matching value" do
           subject[:six] = :six
           subject[:six].should == :six
           should notify
         end
         
-        it "should not notify if inserting a valid pair" do
+        it "should not notify if inserting a non-matching pair" do
           subject[:six] = 6
           subject[:six].should == 6
           should_not notify
@@ -1674,7 +1686,7 @@ describe MustBe do
             " container {3984=>970}")
         end
         
-        describe "when #must_only_ever_contain_cases is updated" do
+        context "when #must_only_ever_contain_cases is updated" do
           let(:cases) { [{Symbol => Symbol}, {Symbol => Integer}] }
           
           before do
@@ -1703,12 +1715,12 @@ describe MustBe do
         end
       end
       
-      describe "when it is initially non-empty" do
+      context "when it is initially non-empty" do
         before do
           subject[:hello] = :world
         end
         
-        it "should not notify if cases match" do
+        it "should not notify if any cases match" do
           subject.must_only_ever_contain(Symbol => Symbol)
           should_not notify
         end
@@ -1724,7 +1736,7 @@ describe MustBe do
     describe "custom" do
       it_should_behave_like "custom MustOnlyEverContain"
       
-      describe "without MustOnlyEverContain.registered_class" do
+      context "without MustOnlyEverContain.registered_class" do
         describe "#must_only_contain" do
           it "should use each to check the contents" do
             subject.must_only_contain(String)
@@ -1743,10 +1755,10 @@ describe MustBe do
         end
       end
       
-      describe "with MustOnlyEverContain.registered_class" do
+      context "with MustOnlyEverContain.registered_class" do
         register_before_and_unregister_after
         
-        describe "when subject already has singleton methods" do
+        context "when subject already has singleton methods" do
           it "should raise ArgumentError" do
             expect do
               class <<subject
@@ -1759,7 +1771,7 @@ describe MustBe do
           end
         end
         
-        describe "when updating contents" do
+        context "when updating contents" do
           it "should notify if does not match must_only_ever_contain_cases" do
             subject.must_only_ever_contain(Symbol)
             subject.contents = 435
@@ -1773,7 +1785,7 @@ describe MustBe do
           end
         end
         
-        describe "when emptied" do
+        context "when emptied" do
           it "should notify if nil does not match"\
               " must_only_ever_contain_cases" do
             subject.must_only_ever_contain(Symbol)
@@ -1808,7 +1820,7 @@ describe MustBe do
         subject.must_never_ever_contain
       end
       
-      it "should notify if initially contains a non-matching item" do
+      it "should notify if initially contains a matching item" do
         array = [:oops]
         array.must_never_ever_contain
         should notify("must_never_ever_contain: :oops.must_not_be, but is"\
@@ -1845,25 +1857,25 @@ describe MustBe do
     describe Hash do
       subject { {} }
       
-      describe "when called with a hash" do
+      context "when called with a hash" do
         before do
           subject.must_never_ever_contain(Symbol => Integer, Integer => Symbol)
         end
         
-        it "should notify if inserting an invalid value" do
+        it "should notify if inserting a non-matching value" do
           subject[:six] = 6
           subject[:six].should == 6
           should notify
         end
     
-        it "should not notify if inserting a valid pair" do
+        it "should not notify if inserting a matching pair" do
           subject[:six] = :six
           subject[:six].should == :six
           should_not notify
         end        
       end
       
-      describe "when it is initially non-empty" do
+      context "when it is initially non-empty" do
         before do
           subject[:hello] = :world
         end
@@ -1873,7 +1885,7 @@ describe MustBe do
           should_not notify
         end
     
-        it "should notify if cases match" do
+        it "should notify if any cases match" do
           subject.must_never_ever_contain(Symbol => Symbol)
           should notify("must_never_ever_contain: pair {:hello=>:world}"\
             " matches [{Symbol=>Symbol}] in container {:hello=>:world}")
@@ -1906,7 +1918,7 @@ describe MustBe do
       describe "with MustOnlyEverContain.registered_class" do
         register_before_and_unregister_after
         
-        describe "when subject already has singleton methods" do
+        context "when subject already has singleton methods" do
           it "should raise ArgumentError" do
             expect do
               class <<subject
@@ -1919,7 +1931,7 @@ describe MustBe do
           end
         end
                 
-        describe "when updating contents" do
+        context "when updating contents" do
           it "should notify if matches must_only_ever_contain_cases" do
             subject.must_only_ever_contain(Numeric)
             subject.contents = 435
@@ -1934,7 +1946,7 @@ describe MustBe do
           end
         end
 
-        describe "when emptied" do
+        context "when emptied" do
           it "should notify if nil matches must_never_ever_contain_cases" do
             subject.must_never_ever_contain(nil)
             subject.empty!
@@ -1973,14 +1985,7 @@ end
 =begin
 
 seperate into multiple files, refactor, remove excess duplication, improve names of helper functions (*_helper), set their visibility to private?
-  see <http://pure-rspec-rubynation.heroku.com/> shared behaviors (30-32)
-  `let' for providing differences to use in shared behaviors
-  put more things in spec_helper?
-  learn rSpec better before diving into this stuff
-    read tRSb chapter 17 specifically Custom Matchers and Macros
-    use a double (perhaps as_nul_object) or some other object as the MustBe.notifier (with should_receive method) -- then we don't need that @note instance variable
 
-icing
-  rdoc (focus on examples)
+rdoc (focus on examples)
 
 =end

@@ -1,7 +1,7 @@
 require 'forwardable'
 
 module MustBe
-  VERSION = '0.0.4'
+  VERSION = '0.0.5'
 
   SHORT_INSPECT_CUTOFF_LENGTH = 200
   SHORT_INSPECT_WORD_BREAK_LENGTH = 20
@@ -138,7 +138,7 @@ module MustBe
     
     def backtrace
       complete_backtrace and complete_backtrace.drop_while do |line|
-        line =~ %r{lib/must_be\.rb:}
+        line =~ %r{lib/must_be.*\.rb:}
       end
     end
   

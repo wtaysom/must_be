@@ -241,7 +241,7 @@ describe MustBe, " typical usage" do
   
   describe "#must_check", " interrupts normal notification" do
     context "when called with a block, it yields to the block" do
-      example "if the block would normally notify, then #must_check returns"\
+      example "if the block attempts to notify, then #must_check returns"\
           " the note" do
         note = must_check do
           must_notify("message")
@@ -260,8 +260,8 @@ describe MustBe, " typical usage" do
     end
     
     context "when called with a proc and a block, #must_check calls the proc" do
-      example "if the proc would notify, then #must_check passes the note to"\
-          " the block and notifies with the result of the block" do
+      example "if the proc attempts to notify, then #must_check passes the"\
+          " note to the block and notifies with the result of the block" do
         must_check(lambda do
           must_notify("original message")
         end) do |note|
