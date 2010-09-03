@@ -18,14 +18,16 @@ module MustBe
     self
   end
   
-  def must_be_in(collection)
+  def must_be_in(*collection)
+    collection = collection[0] if collection.size == 1
     unless collection.include? self
       must_notify(self, __method__, [collection])
     end
     self
   end
   
-  def must_not_be_in(collection)
+  def must_not_be_in(*collection)
+    collection = collection[0] if collection.size == 1
     if collection.include? self
       must_notify(self, __method__, [collection])
     end

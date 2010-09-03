@@ -242,6 +242,25 @@ describe MustBe do
           should_not notify
         end
       end
+      
+      context "when called with no arguments" do
+        it "should notify" do
+          :yep.must_be_in
+          should notify
+        end
+      end
+      
+      context "when called with multiple arguments" do
+        it "should not notify if any argument equals the receiver" do
+          :yep.must_be_in :okay, :yep, :fine
+          should_not notify
+        end
+        
+        it "should notify if no argument equals the receiver" do
+          :yep.must_be_in :nope, :sorry, :negatory
+          should notify
+        end
+      end
     end
   end
   
@@ -275,6 +294,25 @@ describe MustBe do
         it "should notify" do
           "hi".must_not_be_in("wishing").should == "hi"
           should notify(%{"hi".must_not_be_in("wishing")})
+        end
+      end
+      
+      context "when called with no arguments" do
+        it "should not notify" do
+          :yep.must_not_be_in
+          should_not notify
+        end
+      end
+      
+      context "when called with multiple arguments" do
+        it "should notify if any argument equals the receiver" do
+          :yep.must_not_be_in :okay, :yep, :fine
+          should notify
+        end
+        
+        it "should not notify if no argument equals the receiver" do
+          :yep.must_not_be_in :nope, :sorry, :negatory
+          should_not notify
         end
       end
     end
