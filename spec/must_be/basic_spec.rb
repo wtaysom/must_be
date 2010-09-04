@@ -199,6 +199,87 @@ describe MustBe do
     end
   end
   
+  shared_examples_for "*_be_a in case of bad arguments" do
+    def self.it_should_raise_TypeError(&block)
+      it "should raise TypeError" do
+        expect(&block).should raise_error TypeError,
+          "class or module required"
+      end
+    end
+    
+    context "when called with no arguments" do
+      it "should raise ArgumentError" do
+        expect do
+          51.must_be_a
+        end.should raise_error ArgumentError,
+          "wrong number of arguments (0 for 1)"
+      end
+    end
+    
+    context "when called with more than one message" do
+      it_should_raise_TypeError do
+        51.must_be_a(Object, :extra_message, :usual_message)
+      end
+    end
+    
+    context "when called with a non-module in the middle of the argument"\
+        " list" do
+      it_should_raise_TypeError do
+        51.must_be_a(Object, :not_a_module, Kernel)
+      end
+    end
+    
+    context "when called with just one non-module argument" do
+      it_should_raise_TypeError do
+        51.must_be_a(:not_a_module)
+      end
+    end    
+  end
+  
+  describe "#must_be_a" do
+    let(:the_method_name) { :must_be_a }
+    it_should_behave_like "*_be_a in case of bad arguments"
+    
+    context "given 51 as receiver" do
+      it "should notify if called with Float" do
+        51.must_be_a(Float)
+        should notify("51.must_be_a(Float), but is a Fixnum")
+      end
+      
+      it "should not notify if called with Kernel and Comparable" do
+        51.must_be_a(Kernel, Comparable)
+        should_not notify
+      end
+      
+      it "should notify if called with Float and :message" do
+        51.must_be_a(Float, :message)
+        should notify("51.must_be_a(Float, :message), but is a Fixnum")
+      end
+    end
+  end
+  
+  describe "#must_not_be_a" do
+    let(:the_method_name) { :must_not_be_a }
+    it_should_behave_like "*_be_a in case of bad arguments"
+    
+    context "given 51 as receiver" do
+      it "should notify if called with Float and Enumerable" do
+        51.must_not_be_a(Float, Enumerable)
+        should_not notify
+      end
+      
+      it "should notify if called with Kernel, Comparable" do
+        51.must_not_be_a(Kernel, Comparable)
+        should notify("51.must_not_be_a(Kernel, Comparable), but is a Fixnum")
+      end
+      
+      it "should notify if called with Numeric and :message" do
+        51.must_not_be_a(Numeric, :message)
+        should notify("51.must_not_be_a(Numeric, :message), but is a Fixnum")
+      end
+    end
+  end
+  
   shared_examples_for "*_be_in in case of bad arguments" do
     context "when called with :does_not_respond_to_include?" do
       it "should raise NoMethodError" do
@@ -246,19 +327,19 @@ describe MustBe do
       context "when called with no arguments" do
         it "should notify" do
           :yep.must_be_in
-          should notify
+          should notify(":yep.must_be_in")
         end
       end
       
       context "when called with multiple arguments" do
         it "should not notify if any argument equals the receiver" do
-          :yep.must_be_in :okay, :yep, :fine
+          :yep.must_be_in(:okay, :yep, :fine)
           should_not notify
         end
         
         it "should notify if no argument equals the receiver" do
-          :yep.must_be_in :nope, :sorry, :negatory
-          should notify
+          :yep.must_be_in(:nope, :sorry, :negatory)
+          should notify(":yep.must_be_in(:nope, :sorry, :negatory)")
         end
       end
     end
@@ -306,12 +387,12 @@ describe MustBe do
       
       context "when called with multiple arguments" do
         it "should notify if any argument equals the receiver" do
-          :yep.must_not_be_in :okay, :yep, :fine
-          should notify
+          :yep.must_not_be_in(:okay, :yep, :fine)
+          should notify(":yep.must_not_be_in(:okay, :yep, :fine)")
         end
         
         it "should not notify if no argument equals the receiver" do
-          :yep.must_not_be_in :nope, :sorry, :negatory
+          :yep.must_not_be_in(:nope, :sorry, :negatory)
           should_not notify
         end
       end

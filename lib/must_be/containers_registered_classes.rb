@@ -12,7 +12,7 @@ module MustBe::MustOnlyEverContain
     
     def []=(*args)
       if args.size == 3 or args[0].is_a? Range
-        value = args[-1]
+        value = args.last
         if value.nil?
           # No check needed.
         elsif value.is_a? Array

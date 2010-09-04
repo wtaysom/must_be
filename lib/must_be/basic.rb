@@ -18,18 +18,48 @@ module MustBe
     self
   end
   
+private
+
+  def must_be_a__body(modules, test_method, method)
+    if modules.size.zero?
+      raise ArgumentError, "wrong number of arguments (0 for 1)"
+    end
+    ms = modules.last.is_a?(Module) ? modules : modules[0..-2]
+    if ms.size.zero?
+      raise TypeError, "class or module required"
+    end
+    ms.each do |mod|
+      raise TypeError, "class or module required" unless mod.is_a? Module
+    end
+        
+    if ms.send(test_method) {|mod| is_a? mod }
+      must_notify(self, method, modules, nil, ", but is a #{self.class}")
+    end
+    self
+  end
+
+public
+  
+  def must_be_a(*modules)
+    must_be_a__body(modules, :none?, __method__)
+  end
+  
+  def must_not_be_a(*modules)
+    must_be_a__body(modules, :all?, __method__)
+  end
+  
   def must_be_in(*collection)
-    collection = collection[0] if collection.size == 1
-    unless collection.include? self
-      must_notify(self, __method__, [collection])
+    cs = collection.size == 1 ? collection[0] : collection
+    unless cs.include? self
+      must_notify(self, __method__, collection)
     end
     self
   end
   
   def must_not_be_in(*collection)
-    collection = collection[0] if collection.size == 1
-    if collection.include? self
-      must_notify(self, __method__, [collection])
+    cs = collection.size == 1 ? collection[0] : collection
+    if cs.include? self
+      must_notify(self, __method__, collection)
     end
     self
   end
