@@ -129,13 +129,13 @@ describe MustBe do
         it "should raise if symbol cannot be converted #to_sym" do
           expect do
             subject.attr_typed [], Object
-          end.should raise_error TypeError, "[] is not a symbol"
+          end.should raise_error(TypeError, "[] is not a symbol")
         end
         
         it "should raise if symbol is a Fixnum" do
           expect do
             subject.attr_typed 111, Object
-          end.should raise_error TypeError, "111 is not a symbol"
+          end.should raise_error(TypeError, "111 is not a symbol")
         end
         
         it "should be fine if symbol is a String" do
@@ -149,13 +149,13 @@ describe MustBe do
         it "should raise if any type is an Array" do
           expect do
             subject.attr_typed :prop, [Array, Object]
-          end.should raise_error TypeError, "class or module required"
+          end.should raise_error(TypeError, "class or module required")
         end
         
         it "should raise if any type is a String" do
           expect do
             subject.attr_typed :prop, "string"
-          end.should raise_error TypeError, "class or module required"
+          end.should raise_error(TypeError, "class or module required")
         end
       end
     end
