@@ -202,8 +202,8 @@ describe MustBe do
   shared_examples_for "*_be_a in case of bad arguments" do
     def self.it_should_raise_TypeError(&block)
       it "should raise TypeError" do
-        expect(&block).should raise_error TypeError,
-          "class or module required"
+        expect(&block).should raise_error(TypeError,
+          "class or module required")
       end
     end
     
@@ -211,8 +211,8 @@ describe MustBe do
       it "should raise ArgumentError" do
         expect do
           51.must_be_a
-        end.should raise_error ArgumentError,
-          "wrong number of arguments (0 for 1)"
+        end.should raise_error(ArgumentError,
+          "wrong number of arguments (0 for 1)")
       end
     end
     
@@ -285,7 +285,7 @@ describe MustBe do
       it "should raise NoMethodError" do
         expect do
           "hi".send(the_method_name, :does_not_respond_to_include?)
-        end.should raise_error NoMethodError
+        end.should raise_error(NoMethodError)
       end
     end
   end
@@ -430,27 +430,27 @@ describe MustBe do
     it "should raise ArgumentError if delta cannot be compared" do
       expect do
         200.0.send(the_method_name, 2.0, :a_little)
-      end.should raise_error ArgumentError
+      end.should raise_error(ArgumentError)
     end
     
     it "should raise TypeError if expected cannot be subtracted from"\
         " receiver" do
       expect do
         200.0.send(the_method_name, :some)
-      end.should raise_error TypeError
+      end.should raise_error(TypeError)
     end
 
     it "should raise NoMethodError if receiver does not respond to `-'" do
       expect do
         :lots.send(the_method_name, 2.0)
-      end.should raise_error NoMethodError
+      end.should raise_error(NoMethodError)
     end
 
     it "should rasie NoMethodError if `receiver - expected' does not"\
         " respond to `abs'" do
       expect do
         Time.new.send(the_method_name, 2.0, :five)
-      end.should raise_error NoMethodError
+      end.should raise_error(NoMethodError)
     end
   end
   
@@ -513,6 +513,220 @@ describe MustBe do
       should_not notify
     end
   end
+  
+  shared_examples_for "*_raise in case of bad arguments" do
+    context "when called with something other than an exception type,"\
+        " nil, string, or regexp" do
+      it "should notify" do
+        expect do
+          :it.must_raise(:not_an_error_type) { raise "havoc" }
+        end.should raise_error
+        should notify(":it.must_raise(:not_an_error_type) {},"\
+          " but RuntimeError was raised")
+      end
+    end
+    
+    context "when called with an exception type and something other"\
+        " than nil, a string, or a regexp" do
+      it "should raise TypeError" do
+        expect do
+          :it.must_raise(RangeError, :not_nil_string_or_regexp) {}
+        end.should raise_error(TypeError, "nil, string, or regexp required")
+      end
+    end
+  end
+  
+  describe "#must_raise" do
+    it_should_behave_like "*_raise in case of bad arguments"
+    
+    context "when called with no arguments" do
+      it "should not notify if any Exception is raised" do
+        expect do
+          :it.must_raise { raise Exception }
+        end.should raise_error(Exception)
+        should_not notify
+      end
+      
+      it "should notify if no Exception is raised" do
+        called = false
+        :it.must_raise { called = true }
+        called.should be_true
+        should notify ":it.must_raise {}, but nothing was raised"
+      end
+    end
+    
+    context "when called with an Exception type" do
+      it "should not notify if an Exception of the same type is raised" do
+        expect do
+          :it.must_raise(TypeError) { raise TypeError }
+        end.should raise_error
+        should_not notify
+      end
+      
+      it "should notify if no Exception is raised" do
+        :it.must_raise(TypeError) {}
+        should notify ":it.must_raise(TypeError) {}, but nothing was raised"
+      end
+      
+      it "should notify if a different Exception type is raised" do
+        expect do
+          :it.must_raise(TypeError) { raise ArgumentError }
+        end.should raise_error
+        should notify ":it.must_raise(TypeError) {},"\
+          " but ArgumentError was raised"
+      end
+    end
+    
+    context "when called with String" do
+      it "should not notify if an error with the same message is raised" do
+        expect do
+          :it.must_raise("message") { raise "message" }
+        end.should raise_error
+        should_not notify
+      end
+      
+      it "should notify if no Exception is raised" do
+        :it.must_raise("message") {}
+        should notify ":it.must_raise(\"message\") {}, but nothing was raised"
+      end
+      
+      it "should notify if an Exception with a different message is raised" do
+        expect do
+          :it.must_raise("message") { raise "wrong" }
+        end.should raise_error
+        should notify(":it.must_raise(\"message\") {},"\
+          " but RuntimeError with message \"wrong\" was raised")
+      end
+    end
+    
+    context "when called with Regexp" do
+      it "should not notify if an error with matching message is raised" do
+        expect do
+          :it.must_raise(/message/) { raise "some message" }
+        end.should raise_error
+        should_not notify
+      end
+      
+      it "should notify if no Exception is raised" do
+        :it.must_raise(/message/) {}
+        should notify ":it.must_raise(/message/) {}, but nothing was raised"
+      end
+      
+      it "should notify if an Exception with non-matching message"\
+          " is raised" do
+        expect do
+          :it.must_raise(/message/) { raise "mess" }
+        end.should raise_error
+        should notify(":it.must_raise(/message/) {},"\
+          " but RuntimeError with message \"mess\" was raised")
+      end
+    end
+    
+    context "when called with nil" do
+      it "should not notify if any Exception is raised" do
+        expect do
+          :it.must_raise(nil) { raise Exception }
+        end.should raise_error(Exception)
+        should_not notify
+      end
+      
+      it "should notify if no Exception is raised" do
+        :it.must_raise(nil) {}
+        should notify ":it.must_raise(nil) {}, but nothing was raised"
+      end
+    end
+    
+    context "when called with Exception type and String" do
+      it "should not notify if an Exception of the same type with"\
+          " the same message is raised" do
+        expect do
+          :it.must_raise(TypeError, "oops") { raise TypeError, "oops" }
+        end.should raise_error
+        should_not notify
+      end
+      
+      it "should notify if no Exception is raised" do
+        :it.must_raise(TypeError, "oops") {}
+        should notify ":it.must_raise(TypeError, \"oops\") {},"\
+          " but nothing was raised"
+      end
+      
+      it "should notify if an Exception of a different type is raised" do
+        expect do
+          :it.must_raise(TypeError, "oops") { raise ArgumentError, "wrong" }
+        end.should raise_error
+        should notify(":it.must_raise(TypeError, \"oops\") {},"\
+          " but ArgumentError was raised")
+      end
+      
+      it "should notify if an Exception of the same type"\
+          " but with a different message is raised" do
+        expect do
+          :it.must_raise(TypeError, "oops") { raise TypeError, "wrong" }
+        end.should raise_error
+        should notify(":it.must_raise(TypeError, \"oops\") {},"\
+          " but TypeError with message \"wrong\" was raised")
+      end
+    end
+    
+    context "when called with Exception type and Regexp" do
+      it "should not notify if an Exception of the same type with"\
+          " matching message is raised" do
+        expect do
+          :it.must_raise(TypeError, /oops/) { raise TypeError, "oops" }
+        end.should raise_error
+        should_not notify
+      end
+      
+      it "should notify if no Exception is raised" do
+        :it.must_raise(TypeError, /oops/) {}
+        should notify ":it.must_raise(TypeError, /oops/) {},"\
+          " but nothing was raised"
+      end
+      
+      it "should notify if an Exception of a different type is raised" do
+        expect do
+          :it.must_raise(TypeError, /oops/) { raise ArgumentError, "wrong" }
+        end.should raise_error
+        should notify(":it.must_raise(TypeError, /oops/) {},"\
+          " but ArgumentError was raised")
+      end
+      
+      it "should notify if an Exception of the same type"\
+          " but with a non-matching message is raised" do
+        expect do
+          :it.must_raise(TypeError, /oops/) { raise TypeError, "wrong" }
+        end.should raise_error
+        should notify(":it.must_raise(TypeError, /oops/) {},"\
+          " but TypeError with message \"wrong\" was raised")
+      end
+    end
+    
+    context "when called with Exception type and nil" do
+      it "should not notify if an Exception of the same type is raised" do
+        expect do
+          :it.must_raise(TypeError, nil) { raise TypeError }
+        end.should raise_error
+        should_not notify
+      end
+      
+      it "should notify if no Exception is raised" do
+        :it.must_raise(TypeError, nil) {}
+        should notify ":it.must_raise(TypeError, nil) {},"\
+          " but nothing was raised"
+      end
+      
+      it "should notify if a different Exception type is raised" do
+        expect do
+          :it.must_raise(TypeError, nil) { raise ArgumentError }
+        end.should raise_error
+        should notify ":it.must_raise(TypeError, nil) {},"\
+          " but ArgumentError was raised"
+      end
+    end    
+  end
+  
+  #!! #must_not_raise, #must_throw, #must_not_throw
 end
 
 ### Proc Case Equality Patch ###
