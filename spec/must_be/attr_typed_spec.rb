@@ -32,8 +32,8 @@ describe MustBe do
         
         it "should notify if new value does not have the type" do
           subject.float = 23
-          should notify "attribute `float' is typed as Float,"\
-            " but value 23 is a Fixnum"
+          should notify("attribute `float' is typed as Float,"\
+            " but value 23 is a Fixnum")
         end
       end
       
@@ -45,8 +45,8 @@ describe MustBe do
         
         it "should notify if new value does not match either constraint " do
           subject.int = 56.6
-          should notify "attribute `int' is typed as Bignum or Fixnum,"\
-            " but value 56.6 is a Float"
+          should notify("attribute `int' is typed as Bignum or Fixnum,"\
+            " but value 56.6 is a Float")
         end
       end
       
@@ -58,8 +58,8 @@ describe MustBe do
         
         it "should notify if new value matches none of the constraints" do
           subject.collection = :scalar
-          should notify "attribute `collection' is typed as one of"\
-            " [Array, Hash, Range], but value :scalar is a Symbol"
+          should notify("attribute `collection' is typed as one of"\
+            " [Array, Hash, Range], but value :scalar is a Symbol")
         end
       end
       
@@ -71,7 +71,7 @@ describe MustBe do
         
         it "should notify if block[value] is not true" do
           subject.empty = [:not, :empty]
-          should notify "attribute `empty' cannot be [:not, :empty]"
+          should notify("attribute `empty' cannot be [:not, :empty]")
         end
       end
       
@@ -84,13 +84,13 @@ describe MustBe do
         
         it "should notify if new value does not match one of the types" do
           subject.positive_int = 87.6
-          should notify "attribute `positive_int' is typed as Bignum"\
-            " or Fixnum, but value 87.6 is a Float"
+          should notify("attribute `positive_int' is typed as Bignum"\
+            " or Fixnum, but value 87.6 is a Float")
         end
         
         it "should notify if block[value] is not true" do
           subject.positive_int = -11
-          should notify "attribute `positive_int' cannot be -11"
+          should notify("attribute `positive_int' cannot be -11")
         end
       end
       
@@ -102,7 +102,7 @@ describe MustBe do
         
         it "should notify if new value is nil" do
           subject.non_nil = nil
-          should notify "attribute `non_nil' cannot be nil"
+          should notify("attribute `non_nil' cannot be nil")
         end
       end
     end
@@ -117,8 +117,8 @@ describe MustBe do
       
       it "second call should override first" do
         subject.twice = :symbol
-        should notify "attribute `twice' is typed as String,"\
-          " but value :symbol is a Symbol"
+        should notify("attribute `twice' is typed as String,"\
+          " but value :symbol is a Symbol")
       end
     end
     
