@@ -422,5 +422,147 @@ describe MustBe do
     end
   end
   
-  #!! #must_throw, #must_not_throw
+  describe "#must_throw" do
+    context "when block returns normally" do
+      it "should notify and return the result" do
+        :it.must_throw{:result}.should == :result
+        should notify(":it.must_throw {}, but did not throw")
+      end
+    end
+    
+    context "when block raises exception" do
+      it "should notify and reraise" do
+        expect do
+          :it.must_throw { throw :uncaught }
+        end.should raise_error(/uncaught throw/)
+        if RUBY_VERSION < "1.9"
+          should notify(":it.must_throw {}, but raised NameError")
+        else
+          should notify(":it.must_throw {}, but raised ArgumentError")
+        end
+      end
+    end
+    
+    context "when block throws" do
+      context "when called with no arguments" do
+        it "should not notify" do
+          expect do
+            :it.must_throw { throw :ball }
+          end.should throw_symbol(:ball)
+          should_not notify
+        end
+      end
+      
+      context "when called with tag" do
+        it "should not notify if tag equals thrown tag" do
+          expect do
+            :it.must_throw(:ball) { throw :ball }
+          end.should throw_symbol(:ball)
+          should_not notify
+        end
+        
+        it "should notify if tag does not equal thrown tag" do
+          expect do
+            :it.must_throw(:pie) { throw :ball }
+          end.should throw_symbol(:ball)
+          should notify(":it.must_throw(:pie) {}, but threw :ball")
+        end
+      end
+      
+      context "when called with tag and object" do
+        it "should not notify if tag equals thrown tag and"\
+            " object equals thrown object" do
+          expect do
+            :it.must_throw(:ball, :gently) { throw :ball, :gently }
+          end.should throw_symbol(:ball, :gently)
+          should_not notify
+        end
+
+        it "should notify if tag does not equal thrown tag" do
+          expect do
+            :it.must_throw(:pie, :gently) { throw :ball, :gently }
+          end.should throw_symbol(:ball, :gently)
+          should notify(":it.must_throw(:pie, :gently) {},"\
+            " but threw :ball, :gently")
+        end
+        
+        it "should notify if object does not equal thrown object" do
+          expect do
+            :it.must_throw(:ball, :fiercely) { throw :ball, :gently }
+          end.should throw_symbol(:ball, :gently)
+          should notify(":it.must_throw(:ball, :fiercely) {},"\
+            " but threw :ball, :gently")
+        end
+      end
+    end
+    
+    describe "safety" do
+      it "should be unrelated to previous throw" do
+        catch(:ball) { throw :ball }
+        :it.must_throw {}
+        should notify(":it.must_throw {}, but did not throw")
+      end
+      
+      it "should ignore nested catches" do
+        :it.must_throw do
+          catch(:money) { throw :money }
+        end
+        should notify(":it.must_throw {}, but did not throw")
+      end
+      
+      it "should ignore nested #must_throw" do
+        :it.must_throw do
+          note = must_check do
+            catch(:money) do
+              :it.must_throw(:party) { throw :money }
+            end
+          end
+          note.message.should == ":it.must_throw(:party) {}, but threw :money"
+        end
+        should notify(":it.must_throw {}, but did not throw")
+      end
+      
+      it "should be error safe" do
+        :it.must_throw do
+          begin
+            throw :uncaught
+          rescue NameError, ArgumentError
+          end
+        end
+        should notify(":it.must_throw {}, but did not throw")
+      end
+      
+      if RUBY_VERSION > "1.9"
+        it "should be fiber safe" do
+          got_to_end = false
+          fiber = Fiber.new do
+            note = must_check do
+              catch :ball do
+                :it.must_throw(:party) do
+                  begin
+                    throw :ball
+                  ensure
+                    Fiber.yield
+                  end
+                end
+              end
+            end
+            note.message.should == ":it.must_throw(:party) {},"\
+              " but threw :ball"
+            got_to_end = true
+          end
+          
+          :it.must_throw do
+            fiber.resume
+          end
+          fiber.resume
+          
+          got_to_end.should be_true
+          should notify(":it.must_throw {}, but did not throw")
+        end
+      end
+    end
+  end
+  
+  #!! #must_not_throw: safely nesting with #must_throw
 end
