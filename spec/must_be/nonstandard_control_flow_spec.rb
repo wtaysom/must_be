@@ -27,7 +27,7 @@ describe MustBe do
       
       it "should notify if no Exception is raised" do
         called = false
-        :it.must_raise { called = true }
+        :it.must_raise{called = true; :result}.should == :result
         called.should be_true
         should notify(":it.must_raise {}, but nothing was raised")
       end
@@ -239,7 +239,7 @@ describe MustBe do
       
       it "should not notify if no Exception is raised" do
         called = false
-        :it.must_not_raise { called = true }
+        :it.must_not_raise {called = true; :result}.should == :result
         called.should be_true
         should_not notify
       end
