@@ -492,8 +492,6 @@ describe MustBe do
       end
     
       if RUBY_VERSION > "1.9"
-        fiber_note = nil
-      
         it "should be fiber safe" do
           fiber_note = nil
         
