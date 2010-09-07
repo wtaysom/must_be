@@ -41,18 +41,29 @@ describe MustBe do
   end
   
   ### Enable ###
-
-  describe ".disable" do
+  
+  def self.before_disable_after_enable
     before do
       MustBe.disable
     end
-  
+
     after do
       MustBe.enable
     end
+  end
+  
+  def self.before_disable_and_reenable
+    before do
+     MustBe.disable
+     MustBe.enable
+    end
+  end
+
+  describe ".disable" do    
+    before_disable_after_enable
     
     it "should be disabled" do
-      MustBe.enabled?.should be_false
+      MustBe.should_not be_enabled
     end
     
     example "#must_be should not notify" do
@@ -74,21 +85,23 @@ describe MustBe do
     example "#must should return receiver (not a proxy)" do
       :delegate.must.object_id.should == :delegate.object_id
     end
+    
+    it "should be idempotent" do
+      MustBe.disable
+      MustBe.should_not be_enabled
+    end
   end
 
   describe ".enable" do
     it "should start off enabled" do
-      MustBe.enabled?.should be_true
+      MustBe.should be_enabled
     end
     
     context "after disabling" do
-      before do
-       MustBe.disable
-       MustBe.enable
-      end
+      before_disable_and_reenable
       
       it "should be enabled again" do
-        MustBe.enabled?.should be_true
+        MustBe.should be_enabled
       end
       
       example "#must_be should notify" do
@@ -110,12 +123,118 @@ describe MustBe do
       example "#must should return a proxy" do
         :delegate.must.object_id.should_not == :delegate.object_id
       end
+      
+      it "should be idempotent" do
+        MustBe.enable
+        MustBe.should be_enabled
+      end
+    end
+  end
+  
+  describe ".register_disabled_method" do
+    before :all do
+      module ::MustBe
+        def must_try_register_disabled_method
+          :enabled
+        end
+        
+        def must_try_register_disabled_method__disabled
+          :disabled
+        end
+        
+        register_disabled_method :must_try_register_disabled_method__disabled
+      
+        register_disabled_method :must_try_register_disabled_method,
+          :must_try_register_disabled_method__disabled
+      end      
+    end
+            
+    context "after disabling" do
+      before_disable_after_enable
+      
+      example "#must_try_register_disabled_method should be disabled" do
+        must_try_register_disabled_method.should == :disabled
+      end
+    end
+    
+    context "after re-enabling" do
+      before_disable_and_reenable
+      
+      example "#must_try_register_disabled_method should return :enabled" do
+        must_try_register_disabled_method.should == :enabled
+      end
+    end
+  end
+  
+  describe ".register_disabled_handler" do    
+    before do
+      @original_disabled_handlers = 
+        MustBe.send(:class_variable_get, :@@disabled_handlers).clone
+      
+      @handler_called = nil
+      @handler = lambda do |enabled|
+        @handler_called = enabled
+      end
+    end
+    
+    after do
+      MustBe.send(:class_variable_set, :@@disabled_handlers, 
+        @original_disabled_handlers)
+    end
+    
+    context "when initially enabled" do
+      before do
+        MustBe.register_disabled_handler(&@handler)
+      end
+      
+      example "handler should not be called immediately" do
+        @handler_called.should be_nil
+      end
+      
+      context "when disabled" do
+        before_disable_after_enable
+        
+        example "handler should be called" do
+          @handler_called.should be_false
+        end
+      end
+    end
+    
+    context "when initially disabled" do
+      before_disable_after_enable
+      
+      before do
+        MustBe.register_disabled_handler(&@handler)
+      end
+      
+      example "handler should be called immediately" do
+        @handler_called.should be_false
+      end
+      
+      context "when enabled" do
+        before do
+          MustBe.enable
+        end
+        
+        example "handler should be called" do
+          @handler_called.should be_true
+        end
+      end
     end
   end
   
   describe "#must_just_return" do
     it "should return the sender" do
-      :gnarly.must_just_return.should == :gnarly
+      :gnarly.must_just_return(:args, :ignored).should == :gnarly
+      should_not notify
+    end
+  end
+  
+  describe "#must_just_yield" do
+    it "should yield" do
+      did_yield = false
+      must_just_yield { did_yield = true }
+      did_yield.should be_true
       should_not notify
     end
   end

@@ -30,30 +30,66 @@ module MustBe
   
   ### Enable ###
   
+  @@disabled_method_for_method = Hash.new(:must_just_return)
+  @@disabled_handlers = []
+  
   class <<self
     def disable
+      return unless enabled?
+      
       @disabled_methods = instance_methods.map do |method_name|
+        method_name = method_name.to_sym
         method = instance_method(method_name)
-        alias_method method_name, :must_just_return
+        disabled_method_name = @@disabled_method_for_method[method_name]
+        alias_method method_name, disabled_method_name
         [method_name, method]
       end
+      invoke_disabled_handlers
     end
     
     def enable
+      return if enabled?
+      
       @disabled_methods.each do |method_record|
         define_method *method_record
       end
       @disabled_methods = nil
+      invoke_disabled_handlers
     end
     
     def enabled?
       @disabled_methods.nil?
+    end
+    
+    def register_disabled_method(method_name,
+        disabled_method_name = method_name)
+      @@disabled_method_for_method[method_name.to_sym] = 
+        disabled_method_name.to_sym
+    end
+    
+    def register_disabled_handler(&handler)
+      @@disabled_handlers << handler
+      handler[enabled?] unless enabled?
+    end
+    
+  private
+    
+    def invoke_disabled_handlers
+      @@disabled_handlers.each {|handler| handler[enabled?] }
     end
   end
   
   def must_just_return(*args)
     self
   end
+  
+  register_disabled_method(:must_just_return)
+  
+  def must_just_yield(*args)
+    yield
+  end
+  
+  register_disabled_method(:must_just_yield)
   
   ### Notifiers ###
   
