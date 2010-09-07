@@ -8,13 +8,49 @@ describe MustBe do
         " than nil, a string, or a regexp" do
       it "should raise TypeError" do
         expect do
-          :it.must_raise(RangeError, :not_nil_string_or_regexp) {}
+          :it.send(the_method_name, RangeError, :not_nil_string_or_regexp) {}
         end.should raise_error(TypeError, "nil, string, or regexp required")
+      end
+    end
+    
+    context "when called with more than two arguments" do
+      it "should raise ArgumentError" do
+        expect do
+          :it.send(the_method_name, RangeError, "message", "trouble") {}
+        end.should raise_error(ArgumentError,
+          "wrong number of arguments (3 for 2)")
+      end
+    end
+    
+    context "when called with two string arguments" do
+      it "should raise TypeError" do
+        expect do
+          :it.send(the_method_name, "message", "second_message") {}
+        end.should raise_error(TypeError, "exception class expected")
+      end
+    end
+    
+    context "when called with non-exception class" do
+      it "should raise TypeError" do
+        expect do
+          :it.send(the_method_name, Range) {}
+        end.should raise_error(TypeError, "exception class expected")
+      end
+    end
+    
+    context "when called with something other than an exception type,"\
+        " nil, string, or regexp" do
+      it "should raise TypeError" do
+        expect do
+          :it.send(the_method_name, :not_an_error_type) {}
+        end.should raise_error(TypeError,
+          "exception class expected")
       end
     end
   end
   
   describe "#must_raise" do
+    let(:the_method_name) { :must_raise }
     it_should_behave_like "*_raise in case of bad arguments"
     
     context "when called with no arguments" do
@@ -115,27 +151,6 @@ describe MustBe do
       end
     end
     
-    context "when called with something other than an exception type,"\
-        " nil, string, or regexp" do
-      if RUBY_VERSION < "1.9"
-        it "should raise TypeError without notifying" do
-          expect do
-            :it.must_raise(:not_an_error_type) { raise "havoc" }
-          end.should raise_error(TypeError,
-            "class or module required for rescue clause")
-          should_not notify
-        end
-      else
-        it "should notify" do
-          expect do
-            :it.must_raise(:not_an_error_type) { raise "havoc" }
-          end.should raise_error(RuntimeError)
-          should notify(":it.must_raise(:not_an_error_type) {},"\
-            " but RuntimeError was raised")
-        end
-      end
-    end
-    
     context "when called with Exception type and String" do
       it "should not notify if an Exception of the same type with"\
           " the same message is raised" do
@@ -227,6 +242,7 @@ describe MustBe do
   end
   
   describe "#must_not_raise" do
+    let(:the_method_name) { :must_not_raise }
     it_should_behave_like "*_raise in case of bad arguments"
     
     context "when called with no arguments" do
@@ -422,7 +438,21 @@ describe MustBe do
     end
   end
   
+  shared_examples_for "*_throw in case of bad arguments" do
+    context "when called with more than two arguments" do
+      it "should raise ArgumentError" do
+        expect do
+          :it.send(the_method_name, :symbol, :object, :other) {}
+        end.should raise_error(ArgumentError,
+          "wrong number of arguments (3 for 2)")
+      end
+    end
+  end
+  
   describe "#must_throw" do
+    let(:the_method_name) { :must_throw }
+    it_should_behave_like "*_throw in case of bad arguments"
+    
     context "when block returns normally" do
       it "should notify and return the result" do
         :it.must_throw{:result}.should == :result
@@ -467,6 +497,24 @@ describe MustBe do
           end.should throw_symbol(:ball)
           should notify(":it.must_throw(:pie) {}, but threw :ball")
         end
+        
+        context "when checked against object" do
+          it "should notify" do
+            expect do
+              :it.must_throw(:ball, :fiercely) { throw :ball }
+            end.should throw_symbol(:ball)
+            should notify(":it.must_throw(:ball, :fiercely) {},"\
+              " but threw :ball")
+          end
+          
+          it "should notify even if checked object is nil" do
+            expect do
+              :it.must_throw(:ball, nil) { throw :ball }
+            end.should throw_symbol(:ball)
+            should notify(":it.must_throw(:ball, nil) {},"\
+              " but threw :ball")
+          end
+        end
       end
       
       context "when called with tag and object" do
@@ -477,7 +525,7 @@ describe MustBe do
           end.should throw_symbol(:ball, :gently)
           should_not notify
         end
-
+        
         it "should notify if tag does not equal thrown tag" do
           expect do
             :it.must_throw(:pie, :gently) { throw :ball, :gently }
@@ -492,6 +540,23 @@ describe MustBe do
           end.should throw_symbol(:ball, :gently)
           should notify(":it.must_throw(:ball, :fiercely) {},"\
             " but threw :ball, :gently")
+        end
+        
+        context "when checked object is nil" do
+          it "should not notify if thrown object is nil" do
+            expect do
+              :it.must_throw(:ball, nil) { throw :ball, nil }
+            end.should throw_symbol(:ball)
+            should_not notify
+          end
+          
+          it "should notify if thrown object is not nil" do
+            expect do
+              :it.must_throw(:ball, nil) { throw :ball, :gently }
+            end.should throw_symbol(:ball)
+            should notify(":it.must_throw(:ball, nil) {},"\
+              " but threw :ball, :gently")
+          end
         end
       end
     end
@@ -510,15 +575,45 @@ describe MustBe do
         should notify(":it.must_throw {}, but did not throw")
       end
       
-      it "should ignore nested #must_throw" do
+      it "should allow for deeply nested #must_throw" do
+        note = nil
+        outer_note = nil
+        expect do
+          :it.must_throw do
+            begin
+              :it.must_throw(:party) do
+                begin
+                  :it.must_throw(:ball, :fiercely) do
+                    throw :ball, :gently
+                  end
+                ensure
+                  note = @note
+                  @note = nil
+                end
+              end
+            ensure
+              outer_note = @note
+              @note = nil
+            end
+          end
+        end.should throw_symbol(:ball)
+        note.message.should == ":it.must_throw(:ball, :fiercely) {},"\
+          " but threw :ball, :gently"
+        outer_note.message.should == ":it.must_throw(:party) {},"\
+          " but threw :ball, :gently"
+        should_not notify
+      end
+      
+      it "should ignore caught nested #must_throw" do
+        note = nil
         :it.must_throw do
           note = must_check do
             catch(:money) do
               :it.must_throw(:party) { throw :money }
             end
           end
-          note.message.should == ":it.must_throw(:party) {}, but threw :money"
         end
+        note.message.should == ":it.must_throw(:party) {}, but threw :money"
         should notify(":it.must_throw {}, but did not throw")
       end
       
@@ -564,5 +659,140 @@ describe MustBe do
     end
   end
   
-  #!! #must_not_throw: safely nesting with #must_throw
+  describe "#must_not_throw" do
+    let(:the_method_name) { :must_not_throw }
+    it_should_behave_like "*_throw in case of bad arguments"
+    
+    context "when block returns normally" do
+      it "should not notify but should return the result" do
+        :it.must_not_throw{:result}.should == :result
+        should_not notify
+      end
+    end
+    
+    context "when block raises exception" do
+      it "should not notify but should reraise" do
+        expect do
+          :it.must_not_throw { throw :uncaught }
+        end.should raise_error(/uncaught throw/)
+        should_not notify
+      end
+    end
+    
+    context "when block throws" do
+      context "when called with no arguments" do
+        it "should notify" do
+          expect do
+            :it.must_not_throw { throw :ball }
+          end.should throw_symbol(:ball)
+          should notify(":it.must_not_throw {}, but threw :ball")
+        end
+      end
+      
+      context "when called with tag" do
+        it "should notify if tag equals thrown tag" do
+          expect do
+            :it.must_not_throw(:ball) { throw :ball }
+          end.should throw_symbol(:ball)
+          should notify(":it.must_not_throw(:ball) {}, but threw :ball")
+        end
+        
+        it "should not notify if tag does not equal thrown tag" do
+          expect do
+            :it.must_not_throw(:pie) { throw :ball }
+          end.should throw_symbol(:ball)
+          should_not notify
+        end
+        
+        context "when checked against object" do
+          it "should not notify" do
+            expect do
+              :it.must_not_throw(:ball, :fiercely) { throw :ball }
+            end.should throw_symbol(:ball)
+            should_not notify(":it.must_not_throw(:ball, :fiercely) {},"\
+              " but threw :ball")
+          end
+          
+          it "should not notify even if checked object is nil" do
+            expect do
+              :it.must_not_throw(:ball, nil) { throw :ball }
+            end.should throw_symbol(:ball)
+            should_not notify
+          end
+        end
+      end
+            
+      context "when called with tag and object" do
+        it "should notify if tag equals thrown tag and"\
+            " object equals thrown object" do
+          expect do
+            :it.must_not_throw(:ball, :gently) { throw :ball, :gently }
+          end.should throw_symbol(:ball, :gently)
+          should notify(":it.must_not_throw(:ball, :gently) {},"\
+            " but threw :ball, :gently")
+        end
+        
+        it "should not notify if tag does not equal thrown tag" do
+          expect do
+            :it.must_not_throw(:pie, :gently) { throw :ball, :gently }
+          end.should throw_symbol(:ball, :gently)
+          should_not notify
+        end
+        
+        it "should not notify if object does not equal thrown object" do
+          expect do
+            :it.must_not_throw(:ball, :fiercely) { throw :ball, :gently }
+          end.should throw_symbol(:ball, :gently)
+          should_not notify
+        end
+        
+        context "when checked object is nil" do
+          it "should notify if thrown object is nil" do
+            expect do
+              :it.must_not_throw(:ball, nil) { throw :ball, nil }
+            end.should throw_symbol(:ball)
+            should notify(":it.must_not_throw(:ball, nil) {},"\
+              " but threw :ball, nil")
+          end
+          
+          it "should not notify if thrown object is not nil" do
+            expect do
+              :it.must_not_throw(:ball, nil) { throw :ball, :gently }
+            end.should throw_symbol(:ball)
+            should_not notify
+          end
+        end
+      end
+    end
+    
+    describe "safety" do
+      it "should interact with #must_throw without trouble" do
+        note = nil
+        outer_note = nil
+        expect do
+          :it.must_not_throw do
+            begin
+              :it.must_throw(:ball) do
+                begin
+                  :it.must_not_throw(:ball, :gently) do
+                    throw :ball, :gently
+                  end
+                ensure
+                  note = @note
+                  @note = nil
+                end
+              end
+            ensure
+              outer_note = @note
+              @note = nil
+            end
+          end
+        end.should throw_symbol(:ball)
+        note.message.should == ":it.must_not_throw(:ball, :gently) {},"\
+          " but threw :ball, :gently"
+        outer_note.should == nil
+        should notify(":it.must_not_throw {}, but threw :ball, :gently")
+      end
+    end
+  end
 end
