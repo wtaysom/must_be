@@ -61,8 +61,9 @@ describe MustBe do
         it "should include \"does not match\"" do
           subject = {:key => :value}
           subject.must_only_contain(Symbol => [String, Numeric])
-          should notify("must_only_contain: pair {:key=>:value} does not match"\
-            " [{Symbol=>[String, Numeric]}] in container {:key=>:value}")
+          should notify("must_only_contain: pair {:key=>:value} does"\
+            " not match [{Symbol=>[String, Numeric]}] in container"\
+            " {:key=>:value}")
         end
       end
       
@@ -162,7 +163,8 @@ describe MustBe do
       subject { {:key => :value, :another => 'thing', 12 => 43} }
       
       context "when called with no arguments" do
-        it "should not notifiy if every key and value is conditionally false" do
+        it "should not notifiy if every key and value"\
+            " is conditionally false" do
           subject = {nil => false, false => nil}
           subject.must_not_contain
           should_not notify
@@ -295,6 +297,63 @@ describe MustBe do
           " Symbol in container [:oops]")
       end
       
+      context "after disabling" do
+        before do
+          @enabled_array = [].must_only_ever_contain(Fixnum)
+        end
+        
+        before_disable_after_enable
+        
+        context "when #must_only_ever_contain was called while still"\
+            " enabled" do
+          it "should not notify" do
+            @enabled_array << 3.2
+            should_not notify
+          end
+          
+          it "should continue to have singleton methods" do
+            @enabled_array.singleton_methods.should_not be_empty
+          end
+          
+          context "after being reenabled" do
+            before do
+              MustBe.enable
+            end
+            
+            it "should notify again" do
+              @enabled_array << 3.2
+              should notify(/must_only_ever_contain: Array#<<\(3.2\)/)
+            end
+          end          
+        end
+        
+        context "when #must_only_ever_contain is called" do
+          before do 
+            @disabled_array = [].must_only_ever_contain(Fixnum)
+          end
+          
+          it "should not notify" do
+            @disabled_array << 3.2
+            should_not notify
+          end
+          
+          it "should not have singleton methods" do
+            @disabled_array.singleton_methods.should be_empty
+          end
+          
+          context "after being reenabled" do
+            before do
+              MustBe.enable
+            end
+            
+            it "should still not notify" do
+              @disabled_array << 3.2
+              should_not notify
+            end
+          end
+        end
+      end
+      
       describe "#<<" do
         it "should not notify if obj is non-nil" do
           subject << 5
@@ -340,7 +399,8 @@ describe MustBe do
           it "should notify if obj is array containing nil" do
             subject[2, 2] = [8, nil, 0]
             should notify("must_only_ever_contain:"\
-              " Array#[]=(2, 2, [8, nil, 0])\nnil.must_be, but is NilClass in"\
+              " Array#[]=(2, 2, [8, nil, 0])\nnil.must_be,"\
+              " but is NilClass in"\
               " container [1, 2, 8, nil, 0]")
           end
         end
@@ -578,7 +638,8 @@ describe MustBe do
           subject.must_only_ever_contain(Symbol => Symbol)
         end
         
-        example "must_only_ever_contain_cases should == [{Symbol => Symbol}]" do
+        example "must_only_ever_contain_cases"\
+            " should == [{Symbol => Symbol}]" do
           subject.must_only_ever_contain_cases.should == [{Symbol => Symbol}]
         end
                 
@@ -840,7 +901,7 @@ describe MustBe do
               end
               subject.must_never_ever_contain(Symbol)
             end.should raise_error(ArgumentError,
-              /must_never_ever_contain adds singleton methods but receiver .*/)
+              /must_never_ever_contain adds singleton methods but .*/)
           end
         end
                 

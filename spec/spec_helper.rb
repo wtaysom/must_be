@@ -117,6 +117,25 @@ module MustBeExampleHelper
           end
         end
       end
+      
+      ### Enable ###
+      
+      def before_disable_after_enable
+        before do
+          MustBe.disable
+        end
+        
+        after do
+          MustBe.enable
+        end
+      end
+      
+      def before_disable_and_reenable
+        before do
+         MustBe.disable
+         MustBe.enable
+        end
+      end
     end
   end
   

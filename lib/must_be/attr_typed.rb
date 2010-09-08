@@ -31,7 +31,7 @@ class Module
       end
     end
     
-    define_method check_method_name, &(
+    define_method(check_method_name, &(
       if types.empty?
         if test
           test_check
@@ -52,7 +52,7 @@ class Module
           type_check
         end
       end
-    )
+    ))
     
     module_eval %Q{
       def #{name}=(value)
@@ -60,5 +60,19 @@ class Module
         @#{name} = value
       end
     }
+  end
+  
+  MustBe.register_disabled_handler do |enabled|
+    if enabled
+      if method(:attr_typed__original)
+        alias attr_typed attr_typed__original
+        remove_method(:attr_typed__original)
+      end
+    else
+      alias attr_typed__original attr_typed
+      define_method(:attr_typed) do |symbol, *types|
+        attr_accessor symbol
+      end
+    end
   end
 end

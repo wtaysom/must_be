@@ -239,6 +239,16 @@ describe MustBe do
           " but ArgumentError was raised")
       end
     end
+    
+    describe "after disabled" do
+      before_disable_after_enable
+      
+      it "should just yield" do
+        did_yield = false
+        :it.must_raise { did_yield = true }
+        did_yield.should be_true
+      end
+    end
   end
   
   describe "#must_not_raise" do
@@ -558,6 +568,16 @@ describe MustBe do
               " but threw :ball, :gently")
           end
         end
+      end
+    end
+    
+    describe "after disabled" do
+      before_disable_after_enable
+      
+      it "should just yield" do
+        did_yield = false
+        :it.must_throw { did_yield = true }
+        did_yield.should be_true
       end
     end
     

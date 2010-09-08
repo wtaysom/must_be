@@ -51,7 +51,7 @@ module MustBe
       return if enabled?
       
       @disabled_methods.each do |method_record|
-        define_method *method_record
+        define_method(*method_record)
       end
       @disabled_methods = nil
       invoke_disabled_handlers

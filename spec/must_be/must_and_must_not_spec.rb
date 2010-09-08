@@ -106,6 +106,19 @@ describe MustBe do
       it_should_notify("#{0xabaca_facade}.must.instance_of?(Integer)") do
         subject.instance_of? Integer
       end
+      
+      it "should have a different #object_id" do
+        subject.should == 0xabaca_facade
+        subject.object_id.should_not == 0xabaca_facade.object_id
+      end
+      
+      context "after MustBe.disable" do
+        before_disable_after_enable
+        
+        it "should have the same #object_id" do
+          subject.object_id.should == 0xabaca_facade.object_id
+        end
+      end
     end
   end
   

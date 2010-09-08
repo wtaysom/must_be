@@ -199,39 +199,38 @@ describe MustBe do
     end
   end
   
-  shared_examples_for "*_be_a in case of bad arguments" do
-    def self.it_should_raise_TypeError(&block)
-      it "should raise TypeError" do
-        expect(&block).should raise_error(TypeError,
-          "class or module required")
-      end
-    end
-    
+  shared_examples_for "*_be_a in case of bad arguments" do    
     context "when called with no arguments" do
       it "should raise ArgumentError" do
         expect do
-          51.must_be_a
+          51.send(the_method_name)
         end.should raise_error(ArgumentError,
           "wrong number of arguments (0 for 1)")
       end
     end
     
     context "when called with more than one message" do
-      it_should_raise_TypeError do
-        51.must_be_a(Object, :extra_message, :usual_message)
+      it "should raise TypeError" do
+        expect do
+          51.send(the_method_name, Object, :extra_message, :usual_message)
+        end.should raise_error(TypeError, "class or module required")
       end
     end
     
     context "when called with a non-module in the middle of the argument"\
         " list" do
-      it_should_raise_TypeError do
-        51.must_be_a(Object, :not_a_module, Kernel)
+      it "should raise TypeError" do
+        expect do
+          51.send(the_method_name, Object, :not_a_module, Kernel)
+        end.should raise_error(TypeError, "class or module required")
       end
     end
     
     context "when called with just one non-module argument" do
-      it_should_raise_TypeError do
-        51.must_be_a(:not_a_module)
+      it "should raise TypeError" do
+        expect do
+          51.send(the_method_name, :not_a_module)
+        end.should raise_error(TypeError, "class or module required")
       end
     end    
   end
@@ -244,6 +243,15 @@ describe MustBe do
       it "should notify if called with Float" do
         51.must_be_a(Float)
         should notify("51.must_be_a(Float), but is a Fixnum")
+      end
+      
+      context "after disabling" do
+        before_disable_after_enable
+        
+        it "should not notify if called with a Float" do
+          51.must_be_a(Float)
+          should_not notify
+        end
       end
       
       it "should not notify if called with Kernel and Comparable" do

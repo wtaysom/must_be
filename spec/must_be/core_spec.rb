@@ -41,23 +41,6 @@ describe MustBe do
   end
   
   ### Enable ###
-  
-  def self.before_disable_after_enable
-    before do
-      MustBe.disable
-    end
-
-    after do
-      MustBe.enable
-    end
-  end
-  
-  def self.before_disable_and_reenable
-    before do
-     MustBe.disable
-     MustBe.enable
-    end
-  end
 
   describe ".disable" do    
     before_disable_after_enable
@@ -142,10 +125,11 @@ describe MustBe do
           :disabled
         end
         
-        register_disabled_method :must_try_register_disabled_method__disabled
+        register_disabled_method(
+          :must_try_register_disabled_method__disabled)
       
-        register_disabled_method :must_try_register_disabled_method,
-          :must_try_register_disabled_method__disabled
+        register_disabled_method(:must_try_register_disabled_method,
+          :must_try_register_disabled_method__disabled)
       end      
     end
             

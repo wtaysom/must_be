@@ -122,7 +122,7 @@ describe MustBe do
       end
     end
     
-    context "when called with bad argument" do
+    context "when called with bad arguments" do
       subject { Class.new }
       
       describe "(symbol)" do
@@ -156,6 +156,68 @@ describe MustBe do
           expect do
             subject.attr_typed :prop, "string"
           end.should raise_error(TypeError, "class or module required")
+        end
+      end
+    end
+    
+    context "after disabling" do
+      before do
+        @enabled_class = Class.new
+        @enabled_class.attr_typed :prop, Symbol
+        @enabled_instance = @enabled_class.new
+      end
+      
+      before_disable_after_enable
+      
+      context "when .attr_typed was called while still enabled" do
+        it "should not notify" do
+          @enabled_instance.prop = 91
+          @enabled_instance.prop.should == 91
+          should_not notify
+        end
+        
+        context "after being reenabled" do
+          before do
+            MustBe.enable
+          end
+          
+          it "should notify again" do
+            @enabled_instance.prop = 91
+            should notify("attribute `prop' is typed as Symbol,"\
+              " but value 91 is a Fixnum")
+          end
+        end
+      end
+      
+      context "when .attr_typed is called" do
+        before do
+          @disabled_class = Class.new
+          @disabled_class.attr_typed :prop, Symbol
+          @disabled_instance = @disabled_class.new
+        end
+        
+        it "should not notify" do
+          @disabled_instance.prop = 91
+          @disabled_instance.prop.should == 91
+          should_not notify
+        end
+        
+        context "after being reenabled" do
+          before do
+            MustBe.enable
+          end
+          
+          it "should still not notify" do
+            @disabled_instance.prop = 91
+            should_not notify
+          end
+          
+          it ".attr_typed should be reenabled" do
+            @disabled_class.attr_typed :prop, Symbol
+            @disabled_instance.prop = 91
+            should notify("attribute `prop' is typed as Symbol,"\
+              " but value 91 is a Fixnum")
+          end
         end
       end
     end

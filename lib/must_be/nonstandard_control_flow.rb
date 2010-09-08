@@ -82,6 +82,9 @@ public
   def must_not_raise(*args, &block)
     must_raise__body(:must_not_raise, args, &block)
   end
+  
+  register_disabled_method(:must_raise, :must_just_yield)
+  register_disabled_method(:must_not_raise, :must_just_yield)
 
 private
   
@@ -156,4 +159,7 @@ public
   def must_not_throw(*args, &block)
     must_throw__body(:must_not_throw, args, &block)
   end
+  
+  register_disabled_method(:must_throw, :must_just_yield)
+  register_disabled_method(:must_not_throw, :must_just_yield)
 end
