@@ -104,7 +104,7 @@ module MustBeExampleHelper
       def notify_example(expression, message = nil)
         expression = expression.gsub(/\n\s*/, " ")
         if message.is_a? Module
-          message = expression+", but is #{message}"
+          message = expression+", but matches #{message}"
         end
         example "#{expression} should #{message ? "" : "not "}notify" do
           eval(expression)

@@ -40,7 +40,7 @@ describe MustBe do
       it "should notify if any member matches none of the cases" do
         subject.must_only_contain(Symbol, Numeric).should == subject
         should notify("must_only_contain: \"cos\".must_be(Symbol, Numeric),"\
-          " but is String in container [11, :sin, \"cos\"]")
+          " but matches String in container [11, :sin, \"cos\"]")
       end
     
       context "when there are no cases" do
@@ -145,7 +145,7 @@ describe MustBe do
       it "should notify if any member matches one of the cases" do
         subject.must_not_contain(Range, Numeric).should == subject
         should notify("must_not_contain: 11.must_not_be(Range, Numeric),"\
-          " but is Fixnum in container [11, :sin, \"cos\"]")
+          " but matches Fixnum in container [11, :sin, \"cos\"]")
       end
     
       context "when there are no cases" do
@@ -295,8 +295,8 @@ describe MustBe do
       it "should notify if initially contains a non-matching member" do
         array = [:oops]
         array.must_only_ever_contain(String)
-        should notify("must_only_ever_contain: :oops.must_be(String), but is"\
-          " Symbol in container [:oops]")
+        should notify("must_only_ever_contain: :oops.must_be(String), but"\
+          " matches Symbol in container [:oops]")
       end
       
       context "after disabling" do
@@ -365,7 +365,7 @@ describe MustBe do
         it "should notify if obj is nil" do
           subject << nil
           should notify("must_only_ever_contain: Array#<<(nil)"\
-            "\nnil.must_be, but is NilClass in container"\
+            "\nnil.must_be, but matches NilClass in container"\
             " [1, 2, 3, 4, nil]")
         end
       end
@@ -402,7 +402,7 @@ describe MustBe do
             subject[2, 2] = [8, nil, 0]
             should notify("must_only_ever_contain:"\
               " Array#[]=(2, 2, [8, nil, 0])\nnil.must_be,"\
-              " but is NilClass in"\
+              " but matches NilClass in"\
               " container [1, 2, 8, nil, 0]")
           end
         end
@@ -450,7 +450,7 @@ describe MustBe do
         it "should notify if any new values are nil" do
           subject.map! {|v| v == 3 ? nil : v }
           should notify("must_only_ever_contain: Array#map! {}"\
-            "\nnil.must_be, but is NilClass in container [1, 2, nil, 4]")
+            "\nnil.must_be, but matches NilClass in container [1, 2, nil, 4]")
         end
       end
       
@@ -476,7 +476,7 @@ describe MustBe do
           it "should notify if obj is nil" do
             subject.fill(nil)
             should notify("must_only_ever_contain: Array#fill(nil)"\
-              "\nnil.must_be, but is NilClass in container"\
+              "\nnil.must_be, but matches NilClass in container"\
               " [nil, nil, nil, nil]")
           end
         end
@@ -530,7 +530,7 @@ describe MustBe do
         it "should notify if any objs are nil" do
           subject.push(6, 7, nil, 9)
           should notify("must_only_ever_contain: Array#push(6, 7, nil, 9)"\
-            "\nnil.must_be, but is NilClass in container"\
+            "\nnil.must_be, but matches NilClass in container"\
             " [6, 7, nil, 9]")
         end
       end
@@ -800,8 +800,8 @@ describe MustBe do
       it "should notify if initially contains a matching member" do
         array = [:oops]
         array.must_never_ever_contain
-        should notify("must_never_ever_contain: :oops.must_not_be, but is"\
-          " Symbol in container [:oops]")
+        should notify("must_never_ever_contain: :oops.must_not_be, but"\
+          " matches Symbol in container [:oops]")
       end
       
       describe '#<<' do
@@ -813,7 +813,7 @@ describe MustBe do
         it "should notify if obj is non-nil" do
           subject << 5
           should notify("must_never_ever_contain: Array#<<(5)"\
-            "\n5.must_not_be, but is Fixnum in container"\
+            "\n5.must_not_be, but matches Fixnum in container"\
             " [nil, 5]")
         end
       end

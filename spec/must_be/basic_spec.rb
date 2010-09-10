@@ -7,12 +7,12 @@ describe MustBe do
     context "when called with no arguments" do
       it "should notify if receiver is nil" do
         nil.must_be.should == nil
-        should notify("nil.must_be, but is NilClass")
+        should notify("nil.must_be, but matches NilClass")
       end
       
       it "should notify if receiver is false" do
         false.must_be.should == false
-        should notify("false.must_be, but is FalseClass")
+        should notify("false.must_be, but matches FalseClass")
       end
     end
     
@@ -34,7 +34,7 @@ describe MustBe do
       context "when called with Float" do
         it "should notify" do
           51.must_be(Float).should == 51
-          should notify("51.must_be(Float), but is Fixnum")
+          should notify("51.must_be(Float), but matches Fixnum")
         end
       end
       
@@ -48,7 +48,7 @@ describe MustBe do
       context "when called with Enumerable" do
         it "should notify" do
           51.must_be(Enumerable).should == 51
-          should notify("51.must_be(Enumerable), but is Fixnum")
+          should notify("51.must_be(Enumerable), but matches Fixnum")
         end
       end
       
@@ -62,14 +62,14 @@ describe MustBe do
       context "when called with String, Time, Array" do
         it "should notify" do
           51.must_be(String, Time, Array).should == 51
-          should notify("51.must_be(String, Time, Array), but is Fixnum")
+          should notify("51.must_be(String, Time, Array), but matches Fixnum")
         end
       end
       
       context "when called with [1, 51]" do
         it "should notify" do
           51.must_be([1, 51]).should == 51
-          should notify("51.must_be([1, 51]), but is Fixnum")
+          should notify("51.must_be([1, 51]), but matches Fixnum")
         end
       end
       
@@ -118,14 +118,14 @@ describe MustBe do
       context "when called with no arguments" do
         it "should notify" do
           51.must_not_be.should == 51
-          should notify("51.must_not_be, but is Fixnum")
+          should notify("51.must_not_be, but matches Fixnum")
         end
       end
       
       context "when called with Numeric" do
         it "should notify" do
           51.must_not_be(Numeric)
-          should notify("51.must_not_be(Numeric), but is Fixnum")
+          should notify("51.must_not_be(Numeric), but matches Fixnum")
         end
       end
       
@@ -139,7 +139,7 @@ describe MustBe do
       context "when called with Comparable" do
         it "should notify" do
           51.must_not_be(Comparable)
-          should notify("51.must_not_be(Comparable), but is Fixnum")
+          should notify("51.must_not_be(Comparable), but matches Fixnum")
         end
       end
       
@@ -153,7 +153,8 @@ describe MustBe do
       context "when called with Hash, Kernel, Object" do
         it "should notify" do
           51.must_not_be(Hash, Kernel, Object).should == 51
-          should notify("51.must_not_be(Hash, Kernel, Object), but is Fixnum")
+          should notify("51.must_not_be(Hash, Kernel, Object),"\
+            " but matches Fixnum")
         end
       end
       

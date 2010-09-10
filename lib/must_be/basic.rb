@@ -6,14 +6,14 @@ module MustBe
   
   def must_be(*cases)
     unless cases.empty? ? self : MustBe.match_any_case?(self, cases)
-      must_notify(self, __method__, cases, nil, ", but is #{self.class}")
+      must_notify(self, __method__, cases, nil, ", but matches #{self.class}")
     end
     self
   end
 
   def must_not_be(*cases)
     if cases.empty? ? self : MustBe.match_any_case?(self, cases)
-      must_notify(self, __method__, cases, nil, ", but is #{self.class}")
+      must_notify(self, __method__, cases, nil, ", but matches #{self.class}")
     end
     self
   end

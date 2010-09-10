@@ -47,8 +47,8 @@ describe MustBe, " typical usage" do
       notify_example %{false.must_be}, FalseClass
     end
     
-    context "when called with multiple arguments, it notifies unless receiver"\
-        " case-equals (===) one of them" do
+    context "when called with multiple arguments, it notifies unless"\
+        " receiver case-equals (===) one of them" do
       notify_example %{:happy.must_be(String, Symbol)}
       notify_example %{934.must_be(String, Symbol)}, Fixnum
     end
@@ -75,8 +75,8 @@ describe MustBe, " typical usage" do
       notify_example %{[1, :hi, "wow"].must_only_contain(Numeric, Symbol,
         String)}
       notify_example %{[1, :hi, "wow"].must_only_contain(Numeric, String)},
-        "must_only_contain: :hi.must_be(Numeric, String), but is Symbol in"\
-          " container [1, :hi, \"wow\"]"
+        "must_only_contain: :hi.must_be(Numeric, String), but matches"\
+        " Symbol in container [1, :hi, \"wow\"]"
     end
     
     context "with Hash receiver, it should notify unless each pair"\
@@ -84,9 +84,9 @@ describe MustBe, " typical usage" do
       notify_example %{{:key => "value"}.must_only_contain({Symbol => [Symbol,
         String]})}
       notify_example %{{:key => "value"}.must_only_contain({Symbol => Symbol},
-        {Symbol => Numeric})}, "must_only_contain: pair {:key=>\"value\"} does"\
-          " not match [{Symbol=>Symbol}, {Symbol=>Numeric}] in container"\
-          " {:key=>\"value\"}"
+        {Symbol => Numeric})}, "must_only_contain: pair {:key=>\"value\"}"\
+          " does not match [{Symbol=>Symbol}, {Symbol=>Numeric}] in"\
+          " container {:key=>\"value\"}"
     end
   end
   
@@ -95,9 +95,10 @@ describe MustBe, " typical usage" do
         " case-equals (===) one of the arguments" do
       notify_example %{[1, :hi, "wow"].must_only_ever_contain(Numeric, Symbol,
         String)}
-      notify_example %{[1, :hi, "wow"].must_only_ever_contain(Numeric, String)},
-        "must_only_ever_contain: :hi.must_be(Numeric, String), but is Symbol"\
-          " in container [1, :hi, \"wow\"]"
+      notify_example %{[1, :hi, "wow"].must_only_ever_contain(Numeric, 
+          String)},
+        "must_only_ever_contain: :hi.must_be(Numeric, String), but"\
+        " matches Symbol in container [1, :hi, \"wow\"]"
     end
     
     context "it notifies whenever the container is updated to hold an member"\
@@ -107,22 +108,23 @@ describe MustBe, " typical usage" do
         
         notify_example %{subject << 3.14}
         notify_example %{subject << nil}, "must_only_ever_contain:"\
-          " Array#<<(nil)\nnil.must_be(Numeric), but is NilClass in container"\
-          " [1, 2, 3, nil]"
+          " Array#<<(nil)\nnil.must_be(Numeric), but matches NilClass in"\
+          " container [1, 2, 3, nil]"
       end
     end
   end
   
-  describe '#must_notify', " is a primitive used to define other must_be methods" do
+  describe '#must_notify', " is a primitive used to define other must_be"\
+      " methods" do
     context "when called with a string, it notifies with a string message" do
       notify_example %{must_notify("message")}, "message"
     end
     
     context "when called with multiple arguments, it notifies with method"\
         " invocation details" do
-      notify_example %{must_notify(:receiver, :method_name, [:arg, :arg, :arg],
-        lambda {}, " additional message")}, ":receiver.method_name(:arg, :arg,"\
-          " :arg) {} additional message"
+      notify_example %{must_notify(:receiver, :method_name,
+          [:arg, :arg, :arg], lambda {}, " additional message")},
+        ":receiver.method_name(:arg, :arg, :arg) {} additional message"
     end
   end
   

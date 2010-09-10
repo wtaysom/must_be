@@ -36,7 +36,7 @@ describe MustBe do
     it "should be used by MustBe" do
       s = "x" * MustBe::SHORT_INSPECT_CUTOFF_LENGTH
       s.must_be(Symbol)
-      should notify(/"x*\.\.\.x*"\.must_be\(Symbol\), but is String/)
+      should notify(/"x*\.\.\.x*"\.must_be\(Symbol\), but matches String/)
     end
   end
   
@@ -89,7 +89,7 @@ describe MustBe do
       
       example "#must_be should notify" do
         5799.must_be(:lolly).should == 5799
-        should notify("5799.must_be(:lolly), but is Fixnum")
+        should notify("5799.must_be(:lolly), but matches Fixnum")
       end
 
       example "#must_notify should return a note" do
@@ -437,15 +437,15 @@ describe MustBe do
     
     context "when called with #additional_message" do
       subject do
-        must_notify(5, :must_be, [String], nil, ", but is Fixnum")
+        must_notify(5, :must_be, [String], nil, ", but matches Fixnum")
       end
       
-      it_should_notify("5.must_be(String), but is Fixnum")
+      it_should_notify("5.must_be(String), but matches Fixnum")
       its(:receiver) { should == 5 }
       its(:assertion) { should == :must_be }
       its(:args) { should == [String] }
       its(:block) { should be_nil }
-      its(:additional_message) { should == ", but is Fixnum"}
+      its(:additional_message) { should == ", but matches Fixnum"}
     end
   end
   
