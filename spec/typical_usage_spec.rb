@@ -146,7 +146,8 @@ describe MustBe, " typical usage" do
       end
     end
     
-    context "when called with a proc and a block, #must_check calls the proc" do
+    context "when called with a proc and a block, #must_check calls the"\
+        " proc" do
       example "#must_check passes the note to the block and notifies with"\
           " the result of the block if the proc calls #must_notify" do
         must_check(lambda do
