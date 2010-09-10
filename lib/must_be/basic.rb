@@ -45,7 +45,7 @@ public
   end
   
   def must_not_be_a(*modules)
-    must_be_a__body(modules, :all?, __method__)
+    must_be_a__body(modules, :any?, __method__)
   end
   
   def must_be_in(*collection)

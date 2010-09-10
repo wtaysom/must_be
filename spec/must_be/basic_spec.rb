@@ -266,6 +266,13 @@ describe MustBe do
         end
       end
       
+      context "when called with Float, Integer" do
+        it "should not notify" do
+          51.must_be_a(Float, Integer)
+          should_not notify
+        end
+      end
+      
       context "when called with Float, :message" do
         it "should notify" do
           51.must_be_a(Float, :message)
@@ -291,6 +298,14 @@ describe MustBe do
         it "should notify" do
           51.must_not_be_a(Kernel, Comparable)
           should notify("51.must_not_be_a(Kernel, Comparable),"\
+            " but is a Fixnum")
+        end
+      end
+      
+      context "when called with Float, Integer" do
+        it "should notify" do
+          51.must_not_be_a(Float, Integer)
+          should notify("51.must_not_be_a(Float, Integer),"\
             " but is a Fixnum")
         end
       end
