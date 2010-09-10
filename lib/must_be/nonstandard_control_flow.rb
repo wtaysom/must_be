@@ -33,14 +33,8 @@ private
       result = yield
     rescue expected_exception => actual_exception
       
-      is_match = case expected_message
-      when Regexp
-        expected_message =~ actual_exception.message
-      when String
-        expected_message == actual_exception.message
-      else
-          true
-      end
+      is_match = expected_message.nil? ||
+        expected_message === actual_exception.message
       
       if is_match
         if method == :must_not_raise

@@ -146,8 +146,7 @@ module MustBeExampleHelper
       result, message =
         if @note
           if message
-            if message.is_a?(Regexp) ? message =~ @note.message :
-                message == @note.message
+            if message === @note.message
               [true,
                 "did NOT expect note with message: #{message.inspect}\n"\
                 "           got note with message: #{@note.message.inspect}"]
