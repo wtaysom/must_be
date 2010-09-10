@@ -2,14 +2,14 @@ require 'lib/must_be'
 
 $expecting_note = false
 
-class ExpectedNoteError < StandardError; end
+class UnexpectedNoteError < StandardError; end
 class MismatchedNoteError < StandardError; end
 
 MustBe.notifier = lambda do |note|
-  unless $expecting_note
-    raise ExpectedNoteError
-  end
   $note = note
+  unless $expecting_note
+    raise UnexpectedNoteError
+  end
   false
 end
 
@@ -37,11 +37,10 @@ example_text.gsub!(/^(.*)\n#~> (.*)$/, "check_note(%r{\\2}) {\n\\1}")
 begin
   eval example_text
   puts "Examples are okay."
-rescue ExpectedNoteError => ex
+rescue UnexpectedNoteError => ex
   eval_frame = ex.backtrace.last
   eval_frame =~ /:(\d+)$/
   eval_line = $1.to_i
-  offending_line = example_text.split($/)[eval_line - 1]
-  puts "example.rb:#{eval_line}: expected note: #{offending_line}"
+  puts "example.rb:#{eval_line}: unexpected note: #{$note}"
 rescue MismatchedNoteError
 end

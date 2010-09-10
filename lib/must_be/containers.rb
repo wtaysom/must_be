@@ -86,7 +86,8 @@ module MustBe
     end
   end
   
-  def self.must_check_member_against_cases(container, member, cases, negate = false)
+  def self.must_check_member_against_cases(container, member, cases,
+      negate = false)
     member.must_check(lambda do
       if negate
         member.must_not_be(*cases)
@@ -204,8 +205,8 @@ module MustBe
     ##
     # Creates a module from `body' which includes MustOnlyEverContain::Base.
     # The module will be mixed into an objects of type `klass' when
-    # `must_only_ever_contain' is called.  The module should override methods of
-    # `klass' which modify the contents of the object.
+    # `must_only_ever_contain' is called.  The module should override methods 
+    # of`klass' which modify the contents of the object.
     # If the module has a class method
     # `must_only_contain_check(object, cases, negate = false)',
     # then this method is used by `MustBe.must_only_contain'
