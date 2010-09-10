@@ -66,10 +66,21 @@ nil.must_not_be
 :nope.must_not_be(lambda {|v| v == :nope})
 #~> :nope.must_not_be\(#<Proc:0x[^.]+?>\), but matches Symbol
 
-## `attr_typed`
+## `Module#attr_typed`
 
-#!!
-#attr_typed
+class Typed
+  attr_typed :v, Symbol
+  attr_typed :n, Fixnum, Bignum
+end
+
+t = Typed.new
+t.v = :hello
+t.v = "world"
+#=> attribute `v' must be a Symbol, but value "world" is a String
+
+t.n = 411
+t.n = 4.1
+#=> attribute `n' must be a Fixnum or Bignum, but value 4.1 is a Float
 
 ## Containers
 
