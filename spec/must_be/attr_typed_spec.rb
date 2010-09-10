@@ -32,7 +32,7 @@ describe MustBe do
         
         it "should notify if new value does not have the type" do
           subject.float = 23
-          should notify("attribute `float' is typed as Float,"\
+          should notify("attribute `float' must be a Float,"\
             " but value 23 is a Fixnum")
         end
       end
@@ -45,7 +45,7 @@ describe MustBe do
         
         it "should notify if new value does not match either constraint " do
           subject.int = 56.6
-          should notify("attribute `int' is typed as Bignum or Fixnum,"\
+          should notify("attribute `int' must be a Bignum or Fixnum,"\
             " but value 56.6 is a Float")
         end
       end
@@ -58,7 +58,7 @@ describe MustBe do
         
         it "should notify if new value matches none of the constraints" do
           subject.collection = :scalar
-          should notify("attribute `collection' is typed as one of"\
+          should notify("attribute `collection' must be a one of"\
             " [Array, Hash, Range], but value :scalar is a Symbol")
         end
       end
@@ -84,7 +84,7 @@ describe MustBe do
         
         it "should notify if new value does not match one of the types" do
           subject.positive_int = 87.6
-          should notify("attribute `positive_int' is typed as Bignum"\
+          should notify("attribute `positive_int' must be a Bignum"\
             " or Fixnum, but value 87.6 is a Float")
         end
         
@@ -117,7 +117,7 @@ describe MustBe do
       
       it "second call should override first" do
         subject.twice = :symbol
-        should notify("attribute `twice' is typed as String,"\
+        should notify("attribute `twice' must be a String,"\
           " but value :symbol is a Symbol")
       end
     end
@@ -183,7 +183,7 @@ describe MustBe do
           
           it "should notify again" do
             @enabled_instance.prop = 91
-            should notify("attribute `prop' is typed as Symbol,"\
+            should notify("attribute `prop' must be a Symbol,"\
               " but value 91 is a Fixnum")
           end
         end
@@ -215,7 +215,7 @@ describe MustBe do
           it ".attr_typed should be re-enabled" do
             @disabled_class.attr_typed :prop, Symbol
             @disabled_instance.prop = 91
-            should notify("attribute `prop' is typed as Symbol,"\
+            should notify("attribute `prop' must be a Symbol,"\
               " but value 91 is a Fixnum")
           end
         end

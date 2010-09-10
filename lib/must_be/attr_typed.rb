@@ -17,7 +17,7 @@ class Module
             
       type_check = lambda do |value|
         if types.none?{|type| value.is_a? type }
-          must_notify("attribute `#{name}' is typed as #{types_message},"\
+          must_notify("attribute `#{name}' must be a #{types_message},"\
             " but value #{value.inspect} is a #{value.class}")
         end
       end
