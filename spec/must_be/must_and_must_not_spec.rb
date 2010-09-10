@@ -6,7 +6,7 @@ describe MustBe do
   describe Proxy do
     subject { Proxy.new(:moxie) }
     
-    context "when initialized with invalid method" do
+    context "when initialized with method other than :must or :must_not" do
       it "should raise ArgumentError" do
         expect do
           Proxy.new(:moxie, :must_could)
@@ -15,7 +15,7 @@ describe MustBe do
       end
     end
     
-    context "when it should not forward" do
+    describe "it should not forward" do
       example "#__id__" do
         subject.__id__.should_not == :moxie.__id__
       end
@@ -28,26 +28,26 @@ describe MustBe do
   
   module ItShouldNotifyExpectations
     def it_should_notify(message, &implementation)
-      it "`#{message}' should notify" do
+      example "#{message} should notify" do
         instance_eval &implementation
         should notify(message)
       end
     end
   
     def it_should_not_notify(message, &implementation)
-      it "`#{message}' should not notify" do
+      example "#{message} should not notify" do
         instance_eval &implementation
         should_not notify
       end
     end
   end
   
-  describe "#must" do
+  describe '#must' do
     extend ItShouldNotifyExpectations
     
     context "when called with a block" do
       it "should return the receiver" do
-        0xdad.must{}.should == 0xdad
+        0xdad.must{}.object_id.should == 0xdad.object_id
       end
       
       it "should notify if block returns false" do
@@ -77,52 +77,52 @@ describe MustBe do
     end
     
     context "when used to proxy" do
-      subject { 0xabaca_facade.must }
+      subject { 230579.must }
       
-      it_should_notify("#{0xabaca_facade}.must.==(#{0xdefaced})") do
-        subject == 0xdefaced
+      it_should_notify("230579.must.==(70581)") do
+        subject == 70581
       end
         
-      it_should_not_notify("#{0xabaca_facade}.must.>(#{0xfaded})") do
-        subject > 0xfaded
+      it_should_not_notify("230579.must.>(411)") do
+        subject > 411
       end
       
-      it_should_not_notify("#{0xabaca_facade}.must.even?") do
-        subject.even?
+      it_should_not_notify("230579.must.odd?") do
+        subject.odd?
       end
       
-      it_should_notify("#{0xabaca_facade}.must.between?(-4, 4)") do
+      it_should_notify("230579.must.between?(-4, 4)") do
         subject.between?(-4, 4)
       end
       
-      it_should_notify("#{0xabaca_facade}.must.respond_to?(:finite?)") do
+      it_should_notify("230579.must.respond_to?(:finite?)") do
         subject.respond_to? :finite?
       end
       
-      it_should_not_notify("#{0xabaca_facade}.must.instance_of?(Fixnum)") do
+      it_should_not_notify("230579.must.instance_of?(Fixnum)") do
         subject.instance_of? Fixnum
       end
       
-      it_should_notify("#{0xabaca_facade}.must.instance_of?(Integer)") do
+      it_should_notify("230579.must.instance_of?(Integer)") do
         subject.instance_of? Integer
       end
       
       it "should have a different #object_id" do
-        subject.should == 0xabaca_facade
-        subject.object_id.should_not == 0xabaca_facade.object_id
+        subject.should == 230579
+        subject.object_id.should_not == 230579.object_id
       end
       
       context "after MustBe.disable" do
         before_disable_after_enable
         
         it "should have the same #object_id" do
-          subject.object_id.should == 0xabaca_facade.object_id
+          subject.object_id.should == 230579.object_id
         end
       end
     end
   end
   
-  describe "#must_not" do
+  describe '#must_not' do
     extend ItShouldNotifyExpectations
         
     context "when called with a block" do
@@ -157,35 +157,35 @@ describe MustBe do
     end
     
     context "when used to proxy" do
-      subject { 0xabaca_facade.must_not }
+      subject { 230579.must_not }
       
-      it_should_not_notify("#{0xabaca_facade}.must_not.==(#{0xdefaced})") do
-        subject == 0xdefaced
+      it_should_not_notify("230579.must_not.==(70581)") do
+        subject == 70581
       end
         
-      it_should_notify("#{0xabaca_facade}.must_not.>(#{0xfaded})") do
-        subject > 0xfaded
+      it_should_notify("230579.must_not.>(411)") do
+        subject > 411
       end
       
-      it_should_notify("#{0xabaca_facade}.must_not.even?") do
-        subject.even?
+      it_should_notify("230579.must_not.odd?") do
+        subject.odd?
       end
       
-      it_should_not_notify("#{0xabaca_facade}.must_not.between?(-4, 4)") do
+      it_should_not_notify("230579.must_not.between?(-4, 4)") do
         subject.between?(-4, 4)
       end
       
       it_should_not_notify(
-          "#{0xabaca_facade}.must_not.respond_to?(:finite?)") do
+          "230579.must_not.respond_to?(:finite?)") do
         subject.respond_to? :finite?
       end
       
-      it_should_notify("#{0xabaca_facade}.must_not.instance_of?(Fixnum)") do
+      it_should_notify("230579.must_not.instance_of?(Fixnum)") do
         subject.instance_of? Fixnum
       end
       
       it_should_not_notify(
-          "#{0xabaca_facade}.must_not.instance_of?(Integer)") do
+          "230579.must_not.instance_of?(Integer)") do
         subject.instance_of? Integer
       end
     end

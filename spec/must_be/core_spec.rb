@@ -17,7 +17,7 @@ describe MustBe do
     end
     
     it "should shorten strings longer than"\
-        " MustBe::SHORT_INSPECT_CUTOFF_LENGTH characters" do
+        " MustBe::SHORT_INSPECT_CUTOFF_LENGTH" do
       s = "x" * MustBe::SHORT_INSPECT_CUTOFF_LENGTH
       s.inspect.length.should == MustBe::SHORT_INSPECT_CUTOFF_LENGTH +
         QUOTATION_MARKS
@@ -83,7 +83,7 @@ describe MustBe do
     context "after disabling" do
       before_disable_and_reenable
       
-      it "should be enabled again" do
+      it "should re-enable" do
         MustBe.should be_enabled
       end
       
@@ -207,14 +207,14 @@ describe MustBe do
     end
   end
   
-  describe "#must_just_return" do
-    it "should return the sender" do
+  describe '#must_just_return' do
+    it "should return the receiver" do
       :gnarly.must_just_return(:args, :ignored).should == :gnarly
       should_not notify
     end
   end
   
-  describe "#must_just_yield" do
+  describe '#must_just_yield' do
     it "should yield" do
       did_yield = false
       must_just_yield { did_yield = true }
@@ -350,7 +350,7 @@ describe MustBe do
     end
   end
   
-  describe "#must_notify" do
+  describe '#must_notify' do
     class <<self
       def it_should_notify(message)
         its(:message) { should == message }
@@ -368,19 +368,19 @@ describe MustBe do
     
     block = lambda { nil }
         
-    context "called with no arguments" do
+    context "when called with no arguments" do
       subject { must_notify }
       it_should_notify("MustBe::Note")
       its_assertion_properties_should_be_nil
     end
     
-    context "called with single (message) argument" do
+    context "when called with single (message) argument" do
       subject { must_notify("message for note") }
       it_should_notify("message for note")
       its_assertion_properties_should_be_nil
     end
     
-    context "called with existing note" do
+    context "when called with existing note" do
       note = Note.new("existing note")
       
       subject { must_notify(note) }
@@ -388,7 +388,7 @@ describe MustBe do
       it { should == note }
     end
     
-    context "called with receiver and assertion" do
+    context "when called with receiver and assertion" do
       subject { must_notify(4890, :must_be_silly) }
       it_should_notify("4890.must_be_silly")
       its(:receiver) { should == 4890 }
@@ -397,7 +397,7 @@ describe MustBe do
       its(:block) { should be_nil }
     end
     
-    context "called with receiver, assertion, and an argument" do
+    context "when called with receiver, assertion, and an argument" do
       subject { must_notify(4890, :must_be_silly, [57]) }
       it_should_notify("4890.must_be_silly(57)")
       its(:receiver) { should == 4890 }
@@ -406,7 +406,7 @@ describe MustBe do
       its(:block) { should be_nil }
     end
     
-    context "called with receiver, assertion, and arguments" do
+    context "when called with receiver, assertion, and arguments" do
       subject { must_notify(4890, :must_be_silly, [57, 71]) }
       it_should_notify("4890.must_be_silly(57, 71)")
       its(:receiver) { should == 4890 }
@@ -415,7 +415,7 @@ describe MustBe do
       its(:block) { should be_nil }
     end
     
-    context "called with receiver, assertion, and block" do
+    context "when called with receiver, assertion, and block" do
       block = lambda { nil }
       
       subject { must_notify(4890, :must_be_silly, nil, block) }
@@ -426,7 +426,7 @@ describe MustBe do
       its(:block) { should == block }
     end
     
-    context "called with receiver, assertion, arguments, and block" do
+    context "when called with receiver, assertion, arguments, and block" do
       subject { must_notify(4890, :must_be_silly, [57, 71], block) }
       it_should_notify("4890.must_be_silly(57, 71) {}")
       its(:receiver) { should == 4890 }
@@ -435,7 +435,7 @@ describe MustBe do
       its(:block) { should == block }
     end
     
-    context "with #additional_message" do
+    context "when called with #additional_message" do
       subject do
         must_notify(5, :must_be, [String], nil, ", but is Fixnum")
       end
@@ -449,7 +449,7 @@ describe MustBe do
     end
   end
   
-  describe "#must_check" do
+  describe '#must_check' do
     context "when its block attempts to notify" do
       it "should return the note without notifying" do
         note = must_check do

@@ -15,7 +15,7 @@ require 'spec_helper'
 #     'same'
 #     'different'
 #
-describe "notify matcher" do
+describe "Notify Matcher" do
   include MustBeExampleHelper
   
   def self.it_should_follow_pattern(note, polarity, message, result)      
@@ -24,7 +24,7 @@ describe "notify matcher" do
       call = "#{polarity} notify#{message_arg}"
       it "should #{result ? "fail" : "succeed"} if expecting #{call}" do
         pattern_notify = lambda do
-          must_notify('same') if note == :note
+          must_notify("same") if note == :note
           send(polarity, notify(message))
         end
       

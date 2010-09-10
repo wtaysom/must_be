@@ -3,7 +3,7 @@ require 'spec_helper'
 describe MustBe, " typical usage" do
   include MustBeExampleHelper
   
-  describe "#must_be", " notifies when receiver doesn't case-equal (===) any"\
+  describe '#must_be', " notifies when receiver doesn't case-equal (===) any"\
       " of its arguments" do
     context "when called with a Class, it notifies unless"\
         " receiver.is_a? Class" do
@@ -41,7 +41,7 @@ describe MustBe, " typical usage" do
     end
     
     context "when called without arguments, it notifies if receiver is"\
-        " nil or false" do
+        " false or nil" do
       notify_example %{5.must_be}
       notify_example %{nil.must_be}, NilClass
       notify_example %{false.must_be}, FalseClass
@@ -54,7 +54,7 @@ describe MustBe, " typical usage" do
     end
   end
   
-  describe "#must" do
+  describe '#must' do
     context "when called with a block, it notifies if the result is"\
         " false or nil" do
       notify_example %{:helm.must("message") {|receiver, message| message ==
@@ -69,8 +69,8 @@ describe MustBe, " typical usage" do
     end
   end
   
-  describe "#must_only_contain" do
-    context "with Array receiver, it should notify unless each item in the"\
+  describe '#must_only_contain' do
+    context "with Array receiver, it should notify unless each member in the"\
         " array case-equals (===) one of the arguments" do
       notify_example %{[1, :hi, "wow"].must_only_contain(Numeric, Symbol,
         String)}
@@ -90,8 +90,8 @@ describe MustBe, " typical usage" do
     end
   end
   
-  describe "#must_only_ever_contain" do
-    context "like #must_only_contain, it notifies unless each item"\
+  describe '#must_only_ever_contain' do
+    context "like #must_only_contain, it notifies unless each member"\
         " case-equals (===) one of the arguments" do
       notify_example %{[1, :hi, "wow"].must_only_ever_contain(Numeric, Symbol,
         String)}
@@ -100,7 +100,7 @@ describe MustBe, " typical usage" do
           " in container [1, :hi, \"wow\"]"
     end
     
-    context "it notifies whenever the container is updated to hold an item"\
+    context "it notifies whenever the container is updated to hold an member"\
         " which does not case-equal (===) one of the arguments" do
       describe "[1, 2, 3].must_only_ever_contain(Numeric)" do
         subject { [1, 2, 3].must_only_ever_contain(Numeric) }
@@ -113,12 +113,12 @@ describe MustBe, " typical usage" do
     end
   end
   
-  describe "#must_notify", " primitive used to define other must_be methods" do
+  describe '#must_notify', " is a primitive used to define other must_be methods" do
     context "when called with a string, it notifies with a string message" do
       notify_example %{must_notify("message")}, "message"
     end
     
-    context "when called with multiple arguments, notifies with method"\
+    context "when called with multiple arguments, it notifies with method"\
         " invocation details" do
       notify_example %{must_notify(:receiver, :method_name, [:arg, :arg, :arg],
         lambda {}, " additional message")}, ":receiver.method_name(:arg, :arg,"\
@@ -126,10 +126,9 @@ describe MustBe, " typical usage" do
     end
   end
   
-  describe "#must_check", " interrupts normal notification" do
+  describe '#must_check', " interrupts normal notification" do
     context "when called with a block, it yields to the block" do
-      example "if the block attempts to notify, then #must_check returns"\
-          " the note" do
+      example "#must_check returns a note if the block calls #must_notify" do
         note = must_check do
           must_notify("message")
         end
@@ -137,7 +136,8 @@ describe MustBe, " typical usage" do
         should_not notify
       end
       
-      example "if the block would not notify, then #must_check returns nil" do
+      example "#must_check returns nil if the block does not call"\
+          " #must_notify" do
         note = must_check do
           :would_not_notify
         end
@@ -147,8 +147,8 @@ describe MustBe, " typical usage" do
     end
     
     context "when called with a proc and a block, #must_check calls the proc" do
-      example "if the proc attempts to notify, then #must_check passes the"\
-          " note to the block and notifies with the result of the block" do
+      example "#must_check passes the note to the block and notifies with"\
+          " the result of the block if the proc calls #must_notify" do
         must_check(lambda do
           must_notify("original message")
         end) do |note|
@@ -158,7 +158,8 @@ describe MustBe, " typical usage" do
         should notify("new message")
       end
       
-      example "if the proc does not notify, then the block is not called" do
+      example "the block is not called if the proc does not call"\
+          " #must_notify" do
         did_call_block = false
         must_check(lambda do
           :would_not_notify

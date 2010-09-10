@@ -86,12 +86,12 @@ module MustBe
     end
   end
   
-  def self.must_check_item_against_cases(container, item, cases, negate = false)
-    item.must_check(lambda do
+  def self.must_check_member_against_cases(container, member, cases, negate = false)
+    member.must_check(lambda do
       if negate
-        item.must_not_be(*cases)
+        member.must_not_be(*cases)
       else
-        item.must_be(*cases)
+        member.must_be(*cases)
       end
     end) do |note|
       note = ContainerNote.new(note, container)
@@ -122,8 +122,8 @@ module MustBe
         end
       end
     else
-      container.each do |item|
-        MustBe.must_check_item_against_cases(container, item, cases,
+      container.each do |member|
+        MustBe.must_check_member_against_cases(container, member, cases,
             negate) do |note|
           note.prefix = prefix
           note
@@ -183,8 +183,8 @@ module MustBe
       
     protected
     
-      def must_check_item(item)
-        MustBe.must_check_item_against_cases(self, item, 
+      def must_check_member(member)
+        MustBe.must_check_member_against_cases(self, member, 
           must_only_ever_contain_cases, must_only_ever_contain_negate)
       end
       
@@ -193,8 +193,8 @@ module MustBe
           must_only_ever_contain_cases, must_only_ever_contain_negate)
       end
       
-      def must_check_contents(items = self)
-        MustBe.must_only_contain(items, must_only_ever_contain_cases,
+      def must_check_contents(members = self)
+        MustBe.must_only_contain(members, must_only_ever_contain_cases,
           must_only_ever_contain_negate)
       end
     end

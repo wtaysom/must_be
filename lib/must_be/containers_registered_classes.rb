@@ -6,7 +6,7 @@ module MustBe::MustOnlyEverContain
     must_check_contents_after :collect!, :map!, :flatten!
     
     def <<(obj)
-      must_check_item(obj)
+      must_check_member(obj)
       super
     end
     
@@ -16,12 +16,12 @@ module MustBe::MustOnlyEverContain
         if value.nil?
           # No check needed.
         elsif value.is_a? Array
-          value.map {|v| must_check_item(v) }
+          value.map {|v| must_check_member(v) }
         else
-          must_check_item(value)
+          must_check_member(value)
         end
       else
-        must_check_item(args[1])
+        must_check_member(args[1])
       end
       super
     end
@@ -39,7 +39,7 @@ module MustBe::MustOnlyEverContain
           must_check_contents
         end
       else
-        must_check_item(args[0])
+        must_check_member(args[0])
         super
       end
     end

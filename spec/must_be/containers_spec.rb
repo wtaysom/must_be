@@ -1,9 +1,11 @@
+require 'spec_helper'
+
 describe MustBe do
   include MustBeExampleHelper
   
   describe ContainerNote do
-    describe "#backtrace" do
-      context "when container must_only_ever_contain" do
+    describe '#backtrace' do
+      context "when #must_only_ever_contain has been called" do
         subject do
           note = ContainerNote.new(Note.new("nothing"),
             [].must_only_ever_contain)
@@ -14,7 +16,7 @@ describe MustBe do
         its(:backtrace) { should include("=== caused by container ===")}
       end
     
-      context "when container has not been set to must_only_ever_contain" do
+      context "when #must_only_ever_contain has not been called" do
         subject do
           note = ContainerNote.new(Note.new("nothing"), [])
           note.set_backtrace([])
@@ -26,8 +28,8 @@ describe MustBe do
     end
   end
   
-  describe "#must_only_contain" do
-    describe Array do
+  describe '#must_only_contain' do
+    context "when called on an array" do
       subject { [11, :sin, 'cos'] }
       
       it "should not notify if every member matches one of the cases" do
@@ -42,19 +44,19 @@ describe MustBe do
       end
     
       context "when there are no cases" do
-        it "should notify if any member is conditionally false" do
+        it "should notify if any member is false or nil" do
           [false, nil].must_only_contain
           should notify
         end
       
-        it "should not notify if every member is conditionally true" do
+        it "should not notify if every member is neither false nor nil" do
           [0, [], ""].must_only_contain
           should_not notify
         end
       end
     end
     
-    describe Hash do
+    describe "when called on a hash" do
       subject { {:key => :value, :another => 'thing', 12 => 43} }
       
       describe "note message" do
@@ -131,8 +133,8 @@ describe MustBe do
     end
   end
   
-  describe "#must_not_contain" do
-    describe Array do
+  describe '#must_not_contain' do
+    context "when called on an array" do
       subject { [11, :sin, 'cos'] }
       
       it "should not notify if no member matches any of the cases" do
@@ -147,24 +149,24 @@ describe MustBe do
       end
     
       context "when there are no cases" do
-        it "should not notify if every member is conditionally false" do
+        it "should not notify if every member is false or nil" do
           [false, nil].must_not_contain
           should_not notify
         end
       
-        it "should notify if any member is conditionally true" do
+        it "should notify if any member is neither false nor nil" do
           [0, [], ""].must_not_contain
           should notify
         end
       end
     end
     
-    describe Hash do
+    context "when called on a hash" do
       subject { {:key => :value, :another => 'thing', 12 => 43} }
       
       context "when called with no arguments" do
         it "should not notifiy if every key and value"\
-            " is conditionally false" do
+            " is false or nil" do
           subject = {nil => false, false => nil}
           subject.must_not_contain
           should_not notify
@@ -268,7 +270,7 @@ describe MustBe do
           end
           
           def contents=(contents)
-            must_check_item(contents)
+            must_check_member(contents)
             super
           end
           
@@ -282,15 +284,15 @@ describe MustBe do
     end
   end
   
-  describe "#must_only_ever_contain" do
-    describe Array do
+  describe '#must_only_ever_contain' do
+    context "when called on an array" do
       subject { [1, 2, 3, 4] }
       
       before do
         subject.must_only_ever_contain
       end
       
-      it "should notify if initially contains a non-matching item" do
+      it "should notify if initially contains a non-matching member" do
         array = [:oops]
         array.must_only_ever_contain(String)
         should notify("must_only_ever_contain: :oops.must_be(String), but is"\
@@ -315,7 +317,7 @@ describe MustBe do
             @enabled_array.singleton_methods.should_not be_empty
           end
           
-          context "after being reenabled" do
+          context "after being re-enabled" do
             before do
               MustBe.enable
             end
@@ -341,7 +343,7 @@ describe MustBe do
             @disabled_array.singleton_methods.should be_empty
           end
           
-          context "after being reenabled" do
+          context "after being re-enabled" do
             before do
               MustBe.enable
             end
@@ -354,7 +356,7 @@ describe MustBe do
         end
       end
       
-      describe "#<<" do
+      describe '#<<' do
         it "should not notify if obj is non-nil" do
           subject << 5
           should_not notify
@@ -368,7 +370,7 @@ describe MustBe do
         end
       end
       
-      describe "#[]=" do
+      describe '#[]=' do
         context "when called with index" do
           it "should not notify if obj is non-nil" do
             subject[2] = 5
@@ -427,7 +429,7 @@ describe MustBe do
         end
       end
       
-      describe "#collect!" do
+      describe '#collect!' do
         it "should not notify if all new values are non-nil" do
           subject.collect! {|v| v }
           should_not notify
@@ -439,7 +441,7 @@ describe MustBe do
         end
       end
       
-      describe "#map!" do
+      describe '#map!' do
         it "should not notify if all new values are non-nil" do
           subject.map! {|v| v }
           should_not notify
@@ -452,19 +454,19 @@ describe MustBe do
         end
       end
       
-      describe "#concat" do
-        it "should not notify if all items in other_array are non-nil" do
+      describe '#concat' do
+        it "should not notify if all members in other_array are non-nil" do
           subject.concat([6, 7, 8, 9])
           should_not notify
         end
         
-        it "should notify if any item in other_array is nil" do
+        it "should notify if any member in other_array is nil" do
           subject.concat([6, 7, nil, 9])
           should notify
         end
       end
       
-      describe "#fill" do
+      describe '#fill' do
         context "when called without a block" do
           it "should not notify if obj is non-nil" do
             subject.fill(3)
@@ -492,21 +494,22 @@ describe MustBe do
         end
       end
       
-      describe "#flatten!" do
-        it "should not notify if does not contain an array with nil items" do
+      describe '#flatten!' do
+        it "should not notify if does not contain an array with"\
+            " nil members" do
           subject << [[6, 7], [8, 9]]
           subject.flatten!          
           should_not notify
         end
         
-        it "should notify if contains an array with any nil items" do
+        it "should notify if contains an array with any nil members" do
           subject << [[6, 7], [nil, 9]]
           subject.flatten!
           should notify
         end
       end
       
-      describe "#insert" do
+      describe '#insert' do
         it "should not notify if all objs are non-nil" do
           subject.insert(2, 6, 7, 8, 9)
           should_not notify
@@ -518,7 +521,7 @@ describe MustBe do
         end
       end
       
-      describe "#push" do
+      describe '#push' do
         it "should not notify if all objs are non-nil" do
           subject.push(6, 7, 8, 9)
           should_not notify
@@ -532,19 +535,19 @@ describe MustBe do
         end
       end
       
-      describe "#replace" do
-        it "should not notify if all items in other_array are non-nil" do
+      describe '#replace' do
+        it "should not notify if all members in other_array are non-nil" do
           subject.replace([6, 7, 8, 9])
           should_not notify
         end
         
-        it "should notify if any items in other_array are nil" do
+        it "should notify if any members in other_array are nil" do
           subject.replace([6, 7, nil, 9])
           should notify
         end
       end
       
-      describe "#unshift" do
+      describe '#unshift' do
         it "should not notify if all objs are non-nil" do
           subject.unshift(6, 7, 8, 9)
           should_not notify
@@ -557,7 +560,7 @@ describe MustBe do
       end
     end
     
-    describe Hash do
+    context "when called on a hash" do
       subject { {} }
       
       context "when called with no arguments" do
@@ -633,7 +636,7 @@ describe MustBe do
         end
       end
       
-      describe "#must_only_ever_contain_cases" do
+      describe '#must_only_ever_contain_cases' do
         before do
           subject.must_only_ever_contain(Symbol => Symbol)
         end
@@ -711,7 +714,7 @@ describe MustBe do
       it_should_behave_like "custom MustOnlyEverContain"
       
       context "without MustOnlyEverContain.registered_class" do
-        describe "#must_only_contain" do
+        describe '#must_only_contain' do
           it "should use each to check the contents" do
             subject.must_only_contain(String)
             subject.should be_each_called
@@ -719,8 +722,8 @@ describe MustBe do
           end
         end
         
-        describe "#must_only_ever_contain" do
-          it "should raise a TypeError" do
+        describe '#must_only_ever_contain' do
+          it "should raise TypeError" do
             expect do
               subject.must_only_ever_contain(Symbol)
             end.should raise_error(TypeError,
@@ -769,7 +772,7 @@ describe MustBe do
           end
         end
         
-        describe "ArgumentError" do
+        describe "when called with bad arguments" do
           it "should raise when trying to register a non-class" do
             expect do
               MustOnlyEverContain.register(:not_a_class)
@@ -786,22 +789,22 @@ describe MustBe do
     end
   end
   
-  describe "#must_never_ever_contain" do
-    describe Array do
+  describe '#must_never_ever_contain' do
+    context "when called on an array" do
       subject { [nil] }
       
       before do
         subject.must_never_ever_contain
       end
       
-      it "should notify if initially contains a matching item" do
+      it "should notify if initially contains a matching member" do
         array = [:oops]
         array.must_never_ever_contain
         should notify("must_never_ever_contain: :oops.must_not_be, but is"\
           " Symbol in container [:oops]")
       end
       
-      describe "#<<" do
+      describe '#<<' do
         it "should not notify if obj is nil" do
           subject << nil
           should_not notify
@@ -815,7 +818,7 @@ describe MustBe do
         end
       end
       
-      describe "#collect!" do
+      describe '#collect!' do
         it "should not notify if all new values are nil" do
           subject.collect! {|v| v }
           should_not notify
@@ -828,7 +831,7 @@ describe MustBe do
       end
     end
     
-    describe Hash do
+    context "when called on a hash" do
       subject { {} }
       
       context "when called with a hash" do
@@ -871,7 +874,7 @@ describe MustBe do
       it_should_behave_like "custom MustOnlyEverContain"
       
       describe "without MustOnlyEverContain.registered_class" do
-        describe "#must_not_contain" do
+        describe '#must_not_contain' do
           it "should use each to check the contents" do
             subject.must_not_contain(Symbol)
             subject.should be_each_called
@@ -879,8 +882,8 @@ describe MustBe do
           end
         end
 
-        describe "#must_never_ever_contain" do
-          it "should raise a TypeError" do
+        describe '#must_never_ever_contain' do
+          it "should raise TypeError" do
             expect do
               subject.must_never_ever_contain(String)
             end.should raise_error(TypeError,

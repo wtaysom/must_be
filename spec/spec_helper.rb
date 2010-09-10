@@ -8,7 +8,7 @@
 ENV['MUST_BE__NOTIFIER'] = nil # to make `rake spec` work.
 ENV['MUST_BE__DO_NOT_AUTOMATICALLY_INCLUDE_IN_OBJECT'] = "" # any string.
 
-require 'lib/must_be.rb'
+require 'lib/must_be'
 
 if Object.include? MustBe
   raise "MustBe should not be automatically included in Object."
@@ -72,13 +72,13 @@ module MustBeExampleHelper
       ### Value Assertion ###
       
       def it_should_have_must_be_value_assertion(method, value, alt = 411)
-        describe "##{method}" do
-          it "should not notify if sender is #{value.inspect}" do
+        describe '##{method}' do
+          it "should not notify if receiver is #{value.inspect}" do
             value.send(method).should == value
             should_not notify
           end
 
-          it "should notify if sender is not #{value.inspect}" do
+          it "should notify if receiver is not #{value.inspect}" do
             alt.send(method).should == alt
             should notify("#{alt.inspect}.#{method}")
           end
@@ -86,13 +86,13 @@ module MustBeExampleHelper
       end
 
       def it_should_have_must_not_be_value_assertion(method, value, alt = 411)
-        describe "##{method}" do
-          it "should notify if sender is #{value.inspect}" do
+        describe '##{method}' do
+          it "should notify if receiver is #{value.inspect}" do
             value.send(method)
             should notify("#{value.inspect}.#{method}")
           end
 
-          it "should not notify if sender is not #{value.inspect}" do
+          it "should not notify if receiver is not #{value.inspect}" do
             alt.send(method)
             should_not notify
           end

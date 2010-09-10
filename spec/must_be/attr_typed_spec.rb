@@ -3,7 +3,7 @@ require 'spec_helper'
 describe MustBe do
   include MustBeExampleHelper
   
-  describe "Module#attr_typed" do
+  describe 'Module#attr_typed' do
     context "when updating" do
       module ModuleWhoUsesAttrTyped
         attr_typed :int, Bignum, Fixnum
@@ -107,7 +107,7 @@ describe MustBe do
       end
     end
     
-    context "when called twice for the same symbol" do
+    context "when called twice with the same symbol" do
       class AttrTypedCalledTwiceForSameSymbol
         attr_typed :twice, Symbol
         attr_typed :twice, String
@@ -125,7 +125,7 @@ describe MustBe do
     context "when called with bad arguments" do
       subject { Class.new }
       
-      describe "(symbol)" do
+      context "when symbol is bad" do
         it "should raise if symbol cannot be converted #to_sym" do
           expect do
             subject.attr_typed [], Object
@@ -145,8 +145,8 @@ describe MustBe do
         end
       end
       
-      describe "(types)" do
-        it "should raise if any type is an Array" do
+      context "when types is bad" do
+        it "should raise if any type is an array" do
           expect do
             subject.attr_typed :prop, [Array, Object]
           end.should raise_error(TypeError, "class or module required")
@@ -176,7 +176,7 @@ describe MustBe do
           should_not notify
         end
         
-        context "after being reenabled" do
+        context "after being re-enabled" do
           before do
             MustBe.enable
           end
@@ -202,7 +202,7 @@ describe MustBe do
           should_not notify
         end
         
-        context "after being reenabled" do
+        context "after being re-enabled" do
           before do
             MustBe.enable
           end
@@ -212,7 +212,7 @@ describe MustBe do
             should_not notify
           end
           
-          it ".attr_typed should be reenabled" do
+          it ".attr_typed should be re-enabled" do
             @disabled_class.attr_typed :prop, Symbol
             @disabled_instance.prop = 91
             should notify("attribute `prop' is typed as Symbol,"\
