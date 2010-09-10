@@ -515,12 +515,12 @@ describe MustBe do
     
     it "should notify if receiver is much greater" do
       200.0.must_be_close(2.0, 20.0).should == 200.0
-      should notify("200.0.must_be_close(2.0, 20.0)")
+      should notify("200.0.must_be_close(2.0, 20.0), difference is 198.0")
     end
     
     it "should notify if receiver is much less" do
       -200.0.must_be_close(2.0, 20.0).should == -200.0
-      should notify("-200.0.must_be_close(2.0, 20.0)")
+      should notify("-200.0.must_be_close(2.0, 20.0), difference is 202.0")
     end
   end
   

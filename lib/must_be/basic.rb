@@ -92,8 +92,10 @@ public
   end
   
   def must_be_close(expected, delta = 0.1)
-    unless (self - expected).abs < delta
-      must_notify(self, __method__, [expected, delta])
+    difference = (self - expected).abs
+    unless difference < delta
+      must_notify(self, __method__, [expected, delta], nil,
+        ", difference is #{difference}")
     end
     self
   end

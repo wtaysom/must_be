@@ -11,7 +11,7 @@ Begin with customary oblations:
 	require 'rubygems'
 	require 'must_be'
 
-Now `Object` is modified with a number of `must`* methods.  Let's see a few, two examples of each.  The first passes with flying colors.  The second notifies with a `MustBe::Note` error whose message is listed on the comment line (`#=>`):
+Now `Object` has a number of `must`* and `must_not`* methods.  Here are several examples of each.  When an example notifies, the message corresponding to its `MustBe::Note` error is listed on the following comment line (`#=>` or `#~>` for a regexp match).
 
 	!! paste it in here
 
