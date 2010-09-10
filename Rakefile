@@ -1,26 +1,27 @@
-require 'rubygems'
-require 'rake'
-require 'echoe'
+require 'spec/rake/spectask'
 
-ENV['MUST_BE__NOTIFIER'] = "disable"
-require 'lib/must_be'
-
-Echoe.new('must_be', MustBe::VERSION) do |p|
-  p.description = "MustBe Runtime Assertions"
-  p.url = "http://github.com/#?{Where we want to put it.}"
-  p.author = "William Taysom"
-  p.email = "wtaysom@gmail.com"
-  p.ignore_pattern = ["tmp/*", "script/*"]
-  p.development_dependencies = []
+begin
+  require 'jeweler'
+  Jeweler::Tasks.new do |gemspec|
+    gemspec.name = "must_be"
+    gemspec.summary = "must_be Runtime Assertions"
+    gemspec.description = "must_be provides runtime assertions which can easily be disabled in production environments.  Likewise, the notifier can be customized to raise errors, log failure, enter the debugger, or anything else."
+    gemspec.email = "wtaysom@gmail.com"
+    gemspec.homepage = "http://github.com/wtaysom/must_be"
+    gemspec.authors = ["William Taysom"]
+  end
+  Jeweler::GemcutterTasks.new
+rescue LoadError
+  puts "Jeweler not available. Install it with: gem install jeweler"
 end
 
 desc "Run the spec suite against rcov"
-Spec::Rake::SpecTask.new('spec_cov_helper') do |t|
+Spec::Rake::SpecTask.new(:rcov_helper) do |t|
   t.rcov = true
   t.rcov_opts = ['--exclude', '/Library/Ruby/Gems/']
 end
 
-desc "Run the spec suite against rcov and open conerage results"
-task :spec_cov => :spec_cov_helper do
+desc "Run the spec suite against rcov and open coverage results"
+task :rcov => :rcov_helper do
   `open coverage/index.html`
 end
