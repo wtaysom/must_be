@@ -84,7 +84,7 @@ private
   
   @@must_throw__installed = false
   
-  def must_throw__body(method, args, &block)
+  def must_throw__body(method, args, &block)    
     if args.size > 2
       raise ArgumentError, "wrong number of arguments (#{args.size} for 2)"
     end
@@ -93,9 +93,9 @@ private
     
     unless @@must_throw__installed
       original_throw = Kernel.instance_method(:throw)
-      Kernel.send(:define_method, :throw) do |*args|
-        Thread.current[:must_throw__args] = args
-        original_throw.bind(self)[*args]
+      Kernel.send(:define_method, :throw) do |*arguments|
+        Thread.current[:must_throw__args] = arguments
+        original_throw.bind(self)[*arguments]
       end
       @@must_throw__installed = true
     end

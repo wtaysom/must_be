@@ -480,11 +480,19 @@ describe MustBe do
           MustBe.notifier = @notifier
         end
         
-        it "should exit without trouble" do
+        it "should raise without transparently" do
           expect do
             :it.must_throw { raise }
           end.should raise_error(Note,
             ":it.must_throw {}, but raised RuntimeError")
+        end
+        
+        it "should notify with proper message (Ruby 1.8 regession)" do
+          # Otherwise, the problem does not show up.
+          MustBe.send(:class_variable_set, :@@must_throw__installed, false)
+          expect do
+            :it.must_throw { throw :ball }
+          end.should raise_error(Note, /:it.must_throw \{\}, but raised/)
         end
       end
     end
