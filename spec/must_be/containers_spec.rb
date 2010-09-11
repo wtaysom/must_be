@@ -364,8 +364,8 @@ describe MustBe do
         
         it "should notify if obj is nil" do
           subject << nil
-          should notify("must_only_ever_contain: Array#<<(nil)"\
-            "\nnil.must_be, but matches NilClass in container"\
+          should notify("must_only_ever_contain: Array#<<(nil):"\
+            " nil.must_be, but matches NilClass in container"\
             " [1, 2, 3, 4, nil]")
         end
       end
@@ -401,7 +401,7 @@ describe MustBe do
           it "should notify if obj is array containing nil" do
             subject[2, 2] = [8, nil, 0]
             should notify("must_only_ever_contain:"\
-              " Array#[]=(2, 2, [8, nil, 0])\nnil.must_be,"\
+              " Array#[]=(2, 2, [8, nil, 0]): nil.must_be,"\
               " but matches NilClass in"\
               " container [1, 2, 8, nil, 0]")
           end
@@ -449,8 +449,8 @@ describe MustBe do
         
         it "should notify if any new values are nil" do
           subject.map! {|v| v == 3 ? nil : v }
-          should notify("must_only_ever_contain: Array#map! {}"\
-            "\nnil.must_be, but matches NilClass in container [1, 2, nil, 4]")
+          should notify("must_only_ever_contain: Array#map! {}:"\
+            " nil.must_be, but matches NilClass in container [1, 2, nil, 4]")
         end
       end
       
@@ -475,8 +475,8 @@ describe MustBe do
 
           it "should notify if obj is nil" do
             subject.fill(nil)
-            should notify("must_only_ever_contain: Array#fill(nil)"\
-              "\nnil.must_be, but matches NilClass in container"\
+            should notify("must_only_ever_contain: Array#fill(nil):"\
+              " nil.must_be, but matches NilClass in container"\
               " [nil, nil, nil, nil]")
           end
         end
@@ -529,8 +529,8 @@ describe MustBe do
         
         it "should notify if any objs are nil" do
           subject.push(6, 7, nil, 9)
-          should notify("must_only_ever_contain: Array#push(6, 7, nil, 9)"\
-            "\nnil.must_be, but matches NilClass in container"\
+          should notify("must_only_ever_contain: Array#push(6, 7, nil, 9):"\
+            " nil.must_be, but matches NilClass in container"\
             " [6, 7, nil, 9]")
         end
       end
@@ -579,8 +579,8 @@ describe MustBe do
         
         it "should notify if inserting a false key" do
           subject[false] = :false
-          should notify("must_only_ever_contain: Hash#[]=(false, :false)"\
-            "\npair {false=>:false} does not match [] in container"\
+          should notify("must_only_ever_contain: Hash#[]=(false, :false):"\
+            " pair {false=>:false} does not match [] in container"\
             " {false=>:false}")
         end
         
@@ -598,8 +598,8 @@ describe MustBe do
         it "should notify if inserting a non-matching key" do
           subject["six"] = 6
           subject["six"].should == 6
-          should notify("must_only_ever_contain: Hash#[]=(\"six\", 6)"\
-            "\npair {\"six\"=>6} does not match"\
+          should notify("must_only_ever_contain: Hash#[]=(\"six\", 6):"\
+            " pair {\"six\"=>6} does not match"\
             " [{Symbol=>Integer, Integer=>Symbol}] in container {\"six\"=>6}")
         end
         
@@ -625,8 +625,8 @@ describe MustBe do
         
         it "should notify if merged with an unacceptable hash" do
           subject.merge!({3 => 1})
-          should notify("must_only_ever_contain: Hash#merge!({3=>1})"\
-            "\npair {3=>1} does not match"\
+          should notify("must_only_ever_contain: Hash#merge!({3=>1}):"\
+            " pair {3=>1} does not match"\
             " [{Symbol=>Integer, Integer=>Symbol}] in container {3=>1}")
         end
         
@@ -658,8 +658,8 @@ describe MustBe do
         
         it "should notify if inserting Integer => Integer pair" do
           subject[3984] = 970
-          should notify("must_only_ever_contain: Hash#[]=(3984, 970)"\
-            "\npair {3984=>970} does not match [{Symbol=>Symbol}] in"\
+          should notify("must_only_ever_contain: Hash#[]=(3984, 970):"\
+            " pair {3984=>970} does not match [{Symbol=>Symbol}] in"\
             " container {3984=>970}")
         end
         
@@ -812,8 +812,8 @@ describe MustBe do
 
         it "should notify if obj is non-nil" do
           subject << 5
-          should notify("must_never_ever_contain: Array#<<(5)"\
-            "\n5.must_not_be, but matches Fixnum in container"\
+          should notify("must_never_ever_contain: Array#<<(5):"\
+            " 5.must_not_be, but matches Fixnum in container"\
             " [nil, 5]")
         end
       end

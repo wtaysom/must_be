@@ -235,7 +235,7 @@ module MustBe
             note.prefix = nil
             call_s = Note.new(self.class, method_name, args, block).message
             call_s.sub!(".", "#")
-            note.prefix = "#{must_only_ever_contain_prefix}#{call_s}\n"
+            note.prefix = "#{must_only_ever_contain_prefix}#{call_s}: "
             note
           end
         end

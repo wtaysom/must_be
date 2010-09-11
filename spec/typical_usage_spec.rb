@@ -108,7 +108,7 @@ describe MustBe, " typical usage" do
         
         notify_example %{subject << 3.14}
         notify_example %{subject << nil}, "must_only_ever_contain:"\
-          " Array#<<(nil)\nnil.must_be(Numeric), but matches NilClass in"\
+          " Array#<<(nil): nil.must_be(Numeric), but matches NilClass in"\
           " container [1, 2, 3, nil]"
       end
     end
