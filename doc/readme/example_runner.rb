@@ -10,7 +10,6 @@ MustBe.notifier = lambda do |note|
     $note = note
     raise UnexpectedNoteError
   end
-  #!! raise rescue and contine in order to get some of the messages we expect
   true
 end
 
@@ -37,7 +36,7 @@ example_text.gsub!(/^(.*)\n#=> (.*)$/, "check_note(%{\\2}) {\n\\1}")
 example_text.gsub!(/^(.*)\n#~> (.*)$/, "check_note(%r{\\2}) {\n\\1}")
 
 begin
-  eval example_text
+  eval(example_text)
   puts "Examples are okay."
 rescue UnexpectedNoteError => ex
   eval_frame = ex.backtrace.last

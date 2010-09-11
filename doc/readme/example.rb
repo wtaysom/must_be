@@ -34,7 +34,6 @@ nil.must_be_boolean
 2.must_be_close(9.0, 6)
 #=> 2.must_be_close(9.0, 6), difference is 7.0
 
-# Uses case (===) equality.
 34.must_be(Integer, :all)
 :all.must_be(Integer, :all)
 :none.must_be(Integer, :all)
@@ -84,7 +83,6 @@ t.n = 4.1
 
 ## Containers
 
-# Also uses case (===) equality.
 ["okay", :ready, "go"].must_only_contain(Symbol, String)
 ["okay", :ready, 4].must_only_contain(Symbol, String)
 #=> must_only_contain: 4.must_be(Symbol, String), but matches Fixnum in container ["okay", :ready, 4]
@@ -111,9 +109,9 @@ t.n = 4.1
 
 {:welcome => :home}.must_only_contain(Symbol => Symbol)
 {:symbol => :s, :fixnum => 5}.must_only_contain(Symbol => [Symbol, Fixnum])
-{:s => :s, :s => 5, 5 => :s, 5 => 5}.must_only_contain([Symbol, Fixnum] => [Symbol, Fixnum])
-{:s => :s, :s => 5, 5 => :s, 5 => 5}.must_only_contain(Symbol => Fixnum, Fixnum => Symbol)
-#=> must_only_contain: pair {5=>5} does not match [{Symbol=>Fixnum, Fixnum=>Symbol}] in container {5=>5, :s=>5}
+{5 => :s, 6 => 5, :t => 5, :s => :s}.must_only_contain([Symbol, Fixnum] => [Symbol, Fixnum])
+{6 => 5}.must_only_contain(Symbol => Fixnum, Fixnum => Symbol)
+#=> must_only_contain: pair {6=>5} does not match [{Symbol=>Fixnum, Fixnum=>Symbol}] in container {6=>5}
 
 {:welcome => nil}.must_not_contain(nil => Object)
 {nil => :welcome}.must_not_contain(nil => Object)
@@ -183,30 +181,77 @@ box.empty!
 
 ## Proxy
 
-#!!
-#must {}
-#must ==
-#must >
-#must even?
+7.must {|x| x > 3}
+7.must {|x| x < 3}
+#=> 7.must {}
 
-#must_not {}
-#must_not ==
-#must_not <
-#must_not odd?
+7.must_not {|x| x < 3}
+7.must_not {|x| x > 3}
+#=> 7.must_not {}
+
+7.must == 7
+7.must > 3
+7.must.even?
+#=> 7.must.even?
+
+7.must_not == 8
+7.must_not < 3
+7.must_not.odd?
+#=> 7.must_not.odd?
 
 ## Core
 
-#must_notify(string)
-#must_notify(object, message, args, block, other message)
-#must_notify(note)
+must_notify("message")
+#=> message
 
-#must_check {}
-#must_check(proc) {}
+must_notify(:receiver, :method, [:args], nil, ", additional message")
+#=> :receiver.method(:args), additional message
+
+note = MustBe::Note.new("message")
+must_notify(note)
+#=> message
+
+note = must_check {}
+note.must == nil
+
+note = must_check { :it.must_not_be }
+must_notify(note)
+#=> :it.must_not_be, but matches Symbol
+
+def add_more_if_notifies
+  must_check(lambda do
+    yield
+  end) do |note|
+    MustBe::Note.new(note.message+" more")
+  end
+end
+
+result = add_more_if_notifies { 5 }
+result.must == 5
+
+add_more_if_notifies { must_notify("learn") }
+#=> learn more
 
 ## Nonstandard Control Flow
 
-#!!
-#must_raise(Error, /match/) {}
-#must_not_raise {}
-#must_throw()
-#must_not_throw(:this, "object") {}
+def rescuing
+  yield
+rescue
+  raise if $!.is_a? MustBe::Note
+end
+
+rescuing { must_raise(/match/) { raise ArgumentError, "should match" } }
+must_raise { "But it doesn't!" }
+#=> main.must_raise {}, but nothing was raised
+
+must_not_raise { "I'm fine."}
+rescuing { must_not_raise { raise } }
+#=> main.must_not_raise {}, but raised RuntimeError
+
+catch(:ball) { must_throw { throw :ball } }
+catch(:ball) { must_throw(:party) { throw :ball } }
+#=> main.must_throw(:party) {}, but threw :ball
+
+catch(:ball) { must_not_throw(:ball, :fiercely) { throw :ball, :gently } }
+catch(:ball) { must_not_throw { throw :ball } }
+#=> main.must_not_throw {}, but threw :ball
