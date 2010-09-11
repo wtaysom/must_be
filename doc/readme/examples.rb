@@ -65,6 +65,26 @@ nil.must_not_be
 :nope.must_not_be(lambda {|v| v == :nope})
 #~> :nope.must_not_be\(#<Proc:0x[^.]+?>\), but matches Symbol
 
+## Proxy
+
+7.must {|x| x > 3}
+7.must {|x| x < 3}
+#=> 7.must {}
+
+7.must_not {|x| x < 3}
+7.must_not {|x| x > 3}
+#=> 7.must_not {}
+
+7.must == 7
+7.must > 3
+7.must.even?
+#=> 7.must.even?
+
+7.must_not == 8
+7.must_not < 3
+7.must_not.odd?
+#=> 7.must_not.odd?
+
 ## `Module#attr_typed`
 
 class Typed
@@ -183,26 +203,6 @@ box = Box[2].must_never_ever_contain(nil)
 box.contents = 64
 box.empty!
 #=> must_never_ever_contain: Box#empty!: nil.must_not_be(nil), but matches NilClass in container Box[nil]
-
-## Proxy
-
-7.must {|x| x > 3}
-7.must {|x| x < 3}
-#=> 7.must {}
-
-7.must_not {|x| x < 3}
-7.must_not {|x| x > 3}
-#=> 7.must_not {}
-
-7.must == 7
-7.must > 3
-7.must.even?
-#=> 7.must.even?
-
-7.must_not == 8
-7.must_not < 3
-7.must_not.odd?
-#=> 7.must_not.odd?
 
 ## Core
 
