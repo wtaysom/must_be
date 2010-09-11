@@ -462,7 +462,34 @@ describe MustBe do
       end
     end
     
-    context "when block raises exception" do
+    context "when block throws exception" do
+      it "should notify and reraise" do
+        expect do
+          :it.must_throw { raise }
+        end.should raise_error(RuntimeError, "")
+        should notify(":it.must_throw {}, but raised RuntimeError")
+      end
+      
+      context "when MustBe.notifier raises" do
+        before do
+          @notifier = MustBe.notifier
+          MustBe.notifier = lambda {|note| true }
+        end
+        
+        after do
+          MustBe.notifier = @notifier
+        end
+        
+        it "should exit without trouble" do
+          expect do
+            :it.must_throw { raise }
+          end.should raise_error(Note,
+            ":it.must_throw {}, but raised RuntimeError")
+        end
+      end
+    end
+    
+    context "when block throws uncaught symbol" do
       it "should notify and reraise" do
         expect do
           :it.must_throw { throw :uncaught }

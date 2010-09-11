@@ -107,11 +107,11 @@ private
       returned_normaly = true    
       result
     rescue Exception => ex
+      raised = true
       if method == :must_throw
         must_notify(self, :must_throw, args, block,
           ", but raised #{ex.class}")
       end
-      raised = true
       raise
     ensure
       if raised
