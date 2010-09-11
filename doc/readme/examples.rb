@@ -70,6 +70,7 @@ nil.must_not_be
 class Typed
   attr_typed :v, Symbol
   attr_typed :n, Fixnum, Bignum
+  attr_typed :o, &:odd?
 end
 
 t = Typed.new
@@ -80,6 +81,10 @@ t.v = "world"
 t.n = 411
 t.n = 4.1
 #=> attribute `n' must be a Fixnum or Bignum, but value 4.1 is a Float
+
+t.o = 7
+t.o = 8
+#=> attribute `o' cannot be 8
 
 ## Containers
 

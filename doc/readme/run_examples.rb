@@ -31,7 +31,7 @@ ensure
   $expecting_note = false
 end
 
-example_text = IO.read(File.dirname(__FILE__)+"/example.rb")
+example_text = IO.read(File.dirname(__FILE__)+"/examples.rb")
 example_text.gsub!(/^(.*)\n#=> (.*)$/, "check_note(%{\\2}) {\n\\1}")
 example_text.gsub!(/^(.*)\n#~> (.*)$/, "check_note(%r{\\2}) {\n\\1}")
 
