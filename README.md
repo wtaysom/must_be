@@ -304,5 +304,39 @@ Last, but not least, we have must-assertions for raising and throwing.
 
 # Configuration
 
-	!! ENV['MUST_BE__NOTIFIER'], 
-	!! ENV['MUST_BE__DO_NOT_AUTOMATICALLY_INCLUDE_IN_OBJECT']
+Set `MustBe.notifier` as needed.  It takes a `MustBe::Note` as an argument and raises an exception unless its return value is false or nil:
+
+	MustBe.notifier = lambda do |note|
+	  puts note
+	  false
+	end
+
+You can freely `MustBe.disable` and `MustBe.enable` as needed:
+
+	MustBe.disable
+	
+	3.must == 4
+	# no message
+	
+	MustBe.enable
+	
+	3.must == 4
+	#=> 3.must.==(4)
+
+Before requiring must_be, you can use `ENV['MUST_BE__NOTIFIER']` to set the notifier:
+
+	# Default: just raises the note.
+	ENV['MUST_BE__NOTIFIER'] = :raise
+	
+	# Puts the note together with its backtrace.
+	ENV['MUST_BE__NOTIFIER'] = :log
+	
+	# Invokes ruby-debug.
+	ENV['MUST_BE__NOTIFIER'] = :debug
+	
+	# Calls MustBe.disable.
+	ENV['MUST_BE__NOTIFIER'] = :disable
+
+By default `MustBe` is mixed into `Object`.  If you want to mix `MustBe` selectively, set:
+
+	ENV['MUST_BE__DO_NOT_AUTOMATICALLY_INCLUDE_IN_OBJECT'] = "anything"
