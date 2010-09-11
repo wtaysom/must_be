@@ -34,7 +34,7 @@ nil.must_be_boolean
 2.must_be_close(9.0, 6)
 #=> 2.must_be_close(9.0, 6), difference is 7.0
 
-# must_be uses case (===) equality.
+# Uses case (===) equality.
 34.must_be(Integer, :all)
 :all.must_be(Integer, :all)
 :none.must_be(Integer, :all)
@@ -84,11 +84,59 @@ t.n = 4.1
 
 ## Containers
 
-#!!
-#must_only_contain
-#must_not_contain
-#must_only_ever_contain
-#must_never_ever_contain
+# Also uses case (===) equality.
+["okay", :ready, "go"].must_only_contain(Symbol, String)
+["okay", :ready, 4].must_only_contain(Symbol, String)
+#=> must_only_contain: 4.must_be(Symbol, String), but matches Fixnum in container ["okay", :ready, 4]
+
+["okay", :ready, "go"].must_not_contain(Numeric)
+["okay", :ready, 4].must_not_contain(Numeric)
+#=> must_not_contain: 4.must_not_be(Numeric), but matches Fixnum in container ["okay", :ready, 4]
+
+[].must_only_contain(:yes, :no)
+[:yep].must_only_contain(:yes, :no)
+#=> must_only_contain: :yep.must_be(:yes, :no), but matches Symbol in container [:yep]
+
+[].must_not_contain(:yes, :no)
+[:yes, :no].must_not_contain(:yes, :no)
+#=> must_not_contain: :yes.must_not_be(:yes, :no), but matches Symbol in container [:yes, :no]
+
+[0, [], ""].must_only_contain
+[nil].must_only_contain
+#=> must_only_contain: nil.must_be, but matches NilClass in container [nil]
+
+[nil, false].must_not_contain
+[0].must_not_contain
+#=> must_not_contain: 0.must_not_be, but matches Fixnum in container [0]
+
+{:welcome => :home}.must_only_contain(Symbol => Symbol)
+{:symbol => :s, :fixnum => 5}.must_only_contain(Symbol => [Symbol, Fixnum])
+{:s => :s, :s => 5, 5 => :s, 5 => 5}.must_only_contain([Symbol, Fixnum] => [Symbol, Fixnum])
+{:s => :s, :s => 5, 5 => :s, 5 => 5}.must_only_contain(Symbol => Fixnum, Fixnum => Symbol)
+#=> must_only_contain: pair {5=>5} does not match [{Symbol=>Fixnum, Fixnum=>Symbol}] in container {5=>5, :s=>5}
+
+{:welcome => nil}.must_not_contain(nil => Object)
+{nil => :welcome}.must_not_contain(nil => Object)
+#=> must_not_contain: pair {nil=>:welcome} matches [{nil=>Object}] in container {nil=>:welcome}
+
+{:welcome => :home}.must_only_contain
+{:welcome => nil}.must_only_contain
+#=> must_only_contain: pair {:welcome=>nil} does not match [] in container {:welcome=>nil}
+
+{nil => false, false => nil}.must_not_contain
+{nil => 0}.must_not_contain
+#=> must_not_contain: pair {nil=>0} matches [] in container {nil=>0}
+
+numbers = [].must_only_ever_contain(Numeric)
+numbers << 3
+numbers << :float
+#=> must_only_ever_contain: Array#<<(:float): :float.must_be(Numeric), but matches Symbol in container [3, :float]
+
+financials = [1, 4, 9].must_never_ever_contain(Float)
+financials.map!{|x| Math.sqrt(x)}
+#=> must_never_ever_contain: Array#map! {}: 3.0.must_not_be(Float), but matches Float in container [1.0, 2.0, 3.0]
+
+#!! custom
 
 ## Proxy
 

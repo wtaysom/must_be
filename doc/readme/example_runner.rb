@@ -6,24 +6,26 @@ class UnexpectedNoteError < StandardError; end
 class MismatchedNoteError < StandardError; end
 
 MustBe.notifier = lambda do |note|
-  $note = note
   unless $expecting_note
+    $note = note
     raise UnexpectedNoteError
   end
-  false
+  #!! raise rescue and contine in order to get some of the messages we expect
+  true
+end
+
+def log(message, details)
+  puts "expected: #{message.is_a?(Regexp) ? message.inspect : message}"
+  puts details
 end
 
 def check_note(message)
   $expecting_note = true
-  $note = nil
   yield
-  unless $note and message === $note.message
-    puts "expected: #{message.is_a?(Regexp) ? message.inspect : message}"
-    if $note
-      puts "   found: #{$note.message}"
-    else
-      puts "but did not notify"
-    end
+  log(message, "but did not notify")
+rescue Note => note
+  unless message === note.message
+    log(message, "   found: #{note.message}")
     raise MismatchedNoteError
   end
 ensure
