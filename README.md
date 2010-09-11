@@ -112,7 +112,7 @@ Sometimes close is good enough:
 	7.must_not.odd?
 	#=> 7.must_not.odd?
 
-## `Module#attr_typed`
+## Module#attr_typed
 
 `attr_typed` is like `attr_accessor` but with type checking:
 
@@ -340,3 +340,5 @@ Before requiring must_be, you can use `ENV['MUST_BE__NOTIFIER']` to set the noti
 By default `MustBe` is mixed into `Object`.  If you want to mix `MustBe` selectively, set:
 
 	ENV['MUST_BE__DO_NOT_AUTOMATICALLY_INCLUDE_IN_OBJECT'] = "anything"
+
+# Enjoy must_be.
