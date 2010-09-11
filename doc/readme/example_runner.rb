@@ -43,6 +43,6 @@ rescue UnexpectedNoteError => ex
   eval_frame = ex.backtrace.last
   eval_frame =~ /:(\d+)$/
   eval_line = $1.to_i
-  puts "example.rb:#{eval_line}: unexpected note: #{$note}"
+  puts "example.rb:#{eval_line}: unexpected note: #=> #{$note}"
 rescue MismatchedNoteError
 end

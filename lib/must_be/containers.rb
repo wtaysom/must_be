@@ -207,6 +207,7 @@ module MustBe
     # The module will be mixed into an objects of type `klass' when
     # `must_only_ever_contain' is called.  The module should override methods 
     # of`klass' which modify the contents of the object.
+    #
     # If the module has a class method
     # `must_only_contain_check(object, cases, negate = false)',
     # then this method is used by `MustBe.must_only_contain'

@@ -136,7 +136,50 @@ financials = [1, 4, 9].must_never_ever_contain(Float)
 financials.map!{|x| Math.sqrt(x)}
 #=> must_never_ever_contain: Array#map! {}: 3.0.must_not_be(Float), but matches Float in container [1.0, 2.0, 3.0]
 
-#!! custom
+## MustBe::MustOnlyEverContain.register
+
+class Box  
+  attr_accessor :contents
+  
+  def self.[](contents = nil)
+    new(contents)
+  end
+  
+  def initialize(contents = nil)
+    @contents = nil
+  end
+  
+  def each
+    yield(contents) unless contents.nil?
+  end
+  
+  def empty!
+    self.contents = nil
+  end
+  
+  def inspect
+    "Box[#{contents.inspect}]"
+  end
+end
+
+MustOnlyEverContain.register(Box) do
+  def contents=(contents)
+    must_check_member(contents)
+    super
+  end
+  
+  must_check_contents_after :empty!
+end
+
+box = Box[:hello].must_only_ever_contain(Symbol)
+box.contents = :world
+box.contents = 987
+#=> must_only_ever_contain: Box#contents=(987): 987.must_be(Symbol), but matches Fixnum in container Box[987]
+
+box = Box[2].must_never_ever_contain(nil)
+box.contents = 64
+box.empty!
+#=> must_never_ever_contain: Box#empty!: nil.must_not_be(nil), but matches NilClass in container Box[nil]
 
 ## Proxy
 
