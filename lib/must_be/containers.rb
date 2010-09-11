@@ -21,9 +21,9 @@ module MustBe
     
     def to_s
       if assertion
-        super+" in container #{MustBe.short_inspect(container)}"
+        @original_note.to_s+" in container #{MustBe.short_inspect(container)}"
       else
-        super
+        @original_note.to_s
       end
     end
     

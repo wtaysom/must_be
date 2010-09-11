@@ -4,6 +4,15 @@ describe MustBe do
   include MustBeExampleHelper
   
   describe ContainerNote do
+    describe '#to_s' do
+      context "when original_note has no assertion" do
+        it "should just use original_note's message" do
+          note = ContainerNote.new(Note.new("message"))
+          note.to_s.should == Note.new("message").to_s
+        end
+      end
+    end
+    
     describe '#backtrace' do
       context "when #must_only_ever_contain has been called" do
         subject do
@@ -634,6 +643,11 @@ describe MustBe do
           subject.update({:yes => 1})
           should_not notify
         end
+        
+        it "should notify if storing a matching key" do
+          subject.store(2.3, :float)
+          should notify
+        end
       end
       
       describe '#must_only_ever_contain_cases' do
@@ -836,7 +850,8 @@ describe MustBe do
       
       context "when called with a hash" do
         before do
-          subject.must_never_ever_contain(Symbol => Integer, Integer => Symbol)
+          subject.must_never_ever_contain(Symbol => Integer,
+            Integer => Symbol)
         end
         
         it "should notify if inserting a non-matching value" do
