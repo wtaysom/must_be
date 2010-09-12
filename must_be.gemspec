@@ -30,6 +30,7 @@ Gem::Specification.new do |s|
      "lib/must_be/core.rb",
      "lib/must_be/nonstandard_control_flow.rb",
      "lib/must_be/proxy.rb",
+     "must_be.gemspec",
      "spec/must_be/attr_typed_spec.rb",
      "spec/must_be/basic_spec.rb",
      "spec/must_be/containers_spec.rb",
