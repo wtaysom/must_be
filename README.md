@@ -6,6 +6,10 @@ You can configure must_be to notify you of trouble in any way imaginable.  Just 
 
 # Examples
 
+After installing:
+
+	> sudo gem install must_be
+
 Begin with customary oblations:
 
 	require 'rubygems'
