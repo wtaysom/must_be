@@ -231,6 +231,61 @@ describe MustBe do
     end
   end
   
+  describe "other built-in notifiers" do
+    before do
+      @original_notifier = MustBe.notifier
+      MustBe.notifier = notifier
+      
+      @original_stdout = $stdout
+      $stdout = StringIO.new
+    end
+    
+    after do
+      MustBe.notifier = @original_notifier
+      $stdout = @original_stdout
+    end
+    
+    describe 'LogNotifier' do
+      let(:notifier) { LogNotifier }
+      
+      it "should puts message and backtrace" do
+        3.must_be(4)
+        
+        $stdout.string.should match(
+          /3.must_be\(4\), but matches Fixnum\n\t.*core_spec.rb:\d+.*\n\t/)
+      end
+    end
+    
+    describe 'DebugNotifier' do
+      let(:notifier) { DebugNotifier }
+      
+      before do
+        $" << 'ruby-debug' # to keep ruby-debug from being loaded.
+        
+        $must_be__did_call_debugger = false
+        def MustBe.debugger
+          $must_be__did_call_debugger = true
+        end
+      end
+      
+      after do
+        class <<MustBe
+          remove_method :debugger
+        end
+      end
+      
+      it "should puts a message, store the note in $must_be__note,"\
+          " and call the debugger" do
+        3.must_be(4)
+        
+        $stdout.string.should == "3.must_be(4), but matches Fixnum\n"\
+          "Starting debugger ($must_be__note stores the note)...\n"
+        $must_be__note.message.should == "3.must_be(4), but matches Fixnum"
+        $must_be__did_call_debugger.should be_true
+      end
+    end
+  end
+  
   describe ".set_notifier_from_env" do
     before do
       $notifier = MustBe.notifier
