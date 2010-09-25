@@ -1,4 +1,4 @@
-require 'lib/must_be'
+require './lib/must_be'
 
 $expecting_note = false
 

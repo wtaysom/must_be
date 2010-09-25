@@ -27,8 +27,8 @@ nil.must_be_boolean
 
 2.must_be_close(2.0)
 2.must_be_close(2.01)
-2.must_be_close(2.1)
-#=> 2.must_be_close(2.1, 0.1), difference is 0.1
+2.must_be_close(2.25)
+#=> 2.must_be_close(2.25, 0.1), difference is 0.25
 
 2.must_be_close(2.1, 6)
 2.must_be_close(9.0, 6)
@@ -136,7 +136,7 @@ t.o = 8
 {:symbol => :s, :fixnum => 5}.must_only_contain(Symbol => [Symbol, Fixnum])
 {5 => :s, 6 => 5, :t => 5, :s => :s}.must_only_contain([Symbol, Fixnum] => [Symbol, Fixnum])
 {6 => 5}.must_only_contain(Symbol => Fixnum, Fixnum => Symbol)
-#=> must_only_contain: pair {6=>5} does not match [{Symbol=>Fixnum, Fixnum=>Symbol}] in container {6=>5}
+#~> must_only_contain: pair \{6=>5\} does not match .* in container \{6=>5\}
 
 {:welcome => nil}.must_not_contain(nil => Object)
 {nil => :welcome}.must_not_contain(nil => Object)
