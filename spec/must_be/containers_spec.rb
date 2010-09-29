@@ -607,9 +607,7 @@ describe MustBe do
         it "should notify if inserting a non-matching key" do
           subject["six"] = 6
           subject["six"].should == 6
-          should notify("must_only_ever_contain: Hash#[]=(\"six\", 6):"\
-            " pair {\"six\"=>6} does not match"\
-            " [{Symbol=>Integer, Integer=>Symbol}] in container {\"six\"=>6}")
+          should notify
         end
         
         it "should notify if inserting a matching value" do
@@ -634,9 +632,7 @@ describe MustBe do
         
         it "should notify if merged with an unacceptable hash" do
           subject.merge!({3 => 1})
-          should notify("must_only_ever_contain: Hash#merge!({3=>1}):"\
-            " pair {3=>1} does not match"\
-            " [{Symbol=>Integer, Integer=>Symbol}] in container {3=>1}")
+          should notify
         end
         
         it "should not notify if updated with an acceptable hash" do

@@ -36,7 +36,7 @@ module MustBe
         if message
           must_notify(message)
         else
-          must_notify(self, __method__, nil, block)
+          must_notify(self, :must, nil, block)
         end
       end
       self
@@ -51,7 +51,7 @@ module MustBe
         if message
           must_notify(message)
         else
-          must_notify(self, __method__, nil, block)
+          must_notify(self, :must_not, nil, block)
         end
       end
       self

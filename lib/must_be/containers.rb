@@ -152,13 +152,15 @@ module MustBe
       module ClassMethods
         def must_check_contents_after(*methods)
           methods.each do |method|
-            define_method(method) do |*args, &block|
-              begin
-                super(*args, &block)
-              ensure
-                must_check_contents
+            module_eval %Q{
+              def #{method}(*args)
+                begin
+                  super
+                ensure
+                  must_check_contents
+                end
               end
-            end
+            }
           end
         end
       end
@@ -231,15 +233,18 @@ module MustBe
       
       mutator_advice = Module.new
       mod.instance_methods(false).each do |method_name|
-        mutator_advice.send(:define_method, method_name) do |*args, &block|
-          must_check(lambda { super(*args, &block) }) do |note|
-            note.prefix = nil
-            call_s = Note.new(self.class, method_name, args, block).message
-            call_s.sub!(".", "#")
-            note.prefix = "#{must_only_ever_contain_prefix}#{call_s}: "
-            note
+        mutator_advice.module_eval %Q{
+          def #{method_name}(*args, &block)
+            must_check(lambda { super(*args, &block) }) do |note|
+              note.prefix = nil
+              call_s = Note.new(self.class, #{method_name.inspect}, args,
+                block).message
+              call_s.sub!(".", "#")
+              note.prefix = "\#{must_only_ever_contain_prefix}\#{call_s}: "
+              note
+            end
           end
-        end
+        }
       end
       mod.const_set(:MutatorAdvice, mutator_advice)
       mod.instance_eval do

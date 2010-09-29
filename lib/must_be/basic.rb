@@ -6,14 +6,14 @@ module MustBe
   
   def must_be(*cases)
     unless cases.empty? ? self : MustBe.match_any_case?(self, cases)
-      must_notify(self, __method__, cases, nil, ", but matches #{self.class}")
+      must_notify(self, :must_be, cases, nil, ", but matches #{self.class}")
     end
     self
   end
 
   def must_not_be(*cases)
     if cases.empty? ? self : MustBe.match_any_case?(self, cases)
-      must_notify(self, __method__, cases, nil, ", but matches #{self.class}")
+      must_notify(self, :must_not_be, cases, nil, ", but matches #{self.class}")
     end
     self
   end
@@ -41,17 +41,17 @@ private
 public
   
   def must_be_a(*modules)
-    must_be_a__body(modules, :none?, __method__)
+    must_be_a__body(modules, :none?, :must_be_a)
   end
   
   def must_not_be_a(*modules)
-    must_be_a__body(modules, :any?, __method__)
+    must_be_a__body(modules, :any?, :must_not_be_a)
   end
   
   def must_be_in(*collection)
     cs = collection.size == 1 ? collection[0] : collection
     unless cs.include? self
-      must_notify(self, __method__, collection)
+      must_notify(self, :must_be_in, collection)
     end
     self
   end
@@ -59,34 +59,34 @@ public
   def must_not_be_in(*collection)
     cs = collection.size == 1 ? collection[0] : collection
     if cs.include? self
-      must_notify(self, __method__, collection)
+      must_notify(self, :must_not_be_in, collection)
     end
     self
   end
   
   def must_be_nil
-    must_notify(self, __method__) unless nil?
+    must_notify(self, :must_be_nil) unless nil?
     self
   end
   
   def must_not_be_nil
-    must_notify(self, __method__) if nil?
+    must_notify(self, :must_not_be_nil) if nil?
     self
   end
   
   def must_be_true
-    must_notify(self, __method__) unless self == true
+    must_notify(self, :must_be_true) unless self == true
     self
   end
   
   def must_be_false
-    must_notify(self, __method__) unless self == false
+    must_notify(self, :must_be_false) unless self == false
     self
   end
   
   def must_be_boolean
     unless self == true or self == false
-      must_notify(self, __method__)
+      must_notify(self, :must_be_boolean)
     end
     self
   end
@@ -94,7 +94,7 @@ public
   def must_be_close(expected, delta = 0.1)
     difference = (self - expected).abs
     unless difference < delta
-      must_notify(self, __method__, [expected, delta], nil,
+      must_notify(self, :must_be_close, [expected, delta], nil,
         ", difference is #{difference}")
     end
     self
@@ -102,7 +102,7 @@ public
   
   def must_not_be_close(expected, delta = 0.1)
     if (self - expected).abs < delta
-      must_notify(self, __method__, [expected, delta])
+      must_notify(self, :must_not_be_close, [expected, delta])
     end
     self
   end
