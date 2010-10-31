@@ -16,7 +16,7 @@ rescue LoadError
 end
 
 desc "Run the spec suite against rcov"
-Spec::Rake::SpecTask.new(:rcov_helper) do |t|
+RSpec::Core::RakeTask.new(:rcov_helper) do |t|
   t.rcov = true
   t.rcov_opts = ['--exclude', '/Library/Ruby/Gems/']
 end

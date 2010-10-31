@@ -29,7 +29,7 @@ describe "Notify Matcher" do
         end
       
         pattern_notify.send(result ? :should : :should_not, raise_error(
-          Spec::Expectations::ExpectationNotMetError, result))
+          RSpec::Expectations::ExpectationNotMetError, result))
       end
     end
   end
