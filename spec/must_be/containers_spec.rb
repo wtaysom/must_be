@@ -719,10 +719,8 @@ describe MustBe do
         end
       end
     end
-        
-    describe "custom" do
-      it_should_behave_like "custom MustOnlyEverContain"
-      
+    
+    it_should_behave_like "custom MustOnlyEverContain" do
       context "without MustOnlyEverContain.registered_class" do
         describe '#must_only_contain' do
           it "should use each to check the contents" do
@@ -881,9 +879,7 @@ describe MustBe do
       end
     end
     
-    describe "custom" do
-      it_should_behave_like "custom MustOnlyEverContain"
-      
+    it_should_behave_like "custom MustOnlyEverContain" do
       describe "without MustOnlyEverContain.registered_class" do
         describe '#must_not_contain' do
           it "should use each to check the contents" do
