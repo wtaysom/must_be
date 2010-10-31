@@ -1,4 +1,4 @@
-require 'spec/rake/spectask'
+require 'rspec/core/rake_task'
 
 begin
   require 'jeweler'
@@ -18,7 +18,7 @@ end
 desc "Run the spec suite against rcov"
 RSpec::Core::RakeTask.new(:rcov_helper) do |t|
   t.rcov = true
-  t.rcov_opts = ['--exclude', '/Library/Ruby/Gems/']
+  t.rcov_opts = %q{--exclude "gems/,spec/"}
 end
 
 desc "Run the spec suite against rcov and open coverage results"
