@@ -55,6 +55,8 @@ end
 
 ### MustBeExampleHelper ###
 
+require 'rspec'
+
 module MustBeExampleHelper
   
   $default_must_be_notifier = MustBe.notifier
