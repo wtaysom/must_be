@@ -145,7 +145,12 @@ module MustBeExampleHelper
   
   ### Notify Matcher ###
   
-  RSpec::Matchers.define :notify do |message|
+  RSpec::Matchers.define :notify do |*message|
+    if (count = message.size) > 1
+      raise ArgumentError, "wrong number of arguments (#{count} for 1)"
+    end
+    message = message[0]
+    
     def does(message)
       @message = message
       true
