@@ -634,13 +634,13 @@ describe MustBe do
                     throw :ball, :gently
                   end
                 ensure
-                  note = @note
-                  @note = nil
+                  note = $note
+                  $note = nil
                 end
               end
             ensure
-              outer_note = @note
-              @note = nil
+              outer_note = $note
+              $note = nil
             end
           end
         end.should throw_symbol(:ball)
@@ -825,13 +825,13 @@ describe MustBe do
                     throw :ball, :gently
                   end
                 ensure
-                  note = @note
-                  @note = nil
+                  note = $note
+                  $note = nil
                 end
               end
             ensure
-              outer_note = @note
-              @note = nil
+              outer_note = $note
+              $note = nil
             end
           end
         end.should throw_symbol(:ball)

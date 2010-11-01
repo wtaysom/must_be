@@ -29,14 +29,14 @@ describe MustBe do
   module ItShouldNotifyExpectations
     def it_should_notify(message, &implementation)
       example "#{message} should notify" do
-        instance_eval &implementation
+        instance_eval(&implementation)
         should notify(message)
       end
     end
   
     def it_should_not_notify(message, &implementation)
       example "#{message} should not notify" do
-        instance_eval &implementation
+        instance_eval(&implementation)
         should_not notify
       end
     end

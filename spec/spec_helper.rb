@@ -55,6 +55,8 @@ end
 
 ### MustBeExampleHelper ###
 
+require 'rspec'
+
 module MustBeExampleHelper
   
   $default_must_be_notifier = MustBe.notifier
@@ -62,9 +64,13 @@ module MustBeExampleHelper
   def self.included(example_group)
     example_group.before do
       MustBe.notifier = lambda do |note|
-        @note = note
+        $note = note
         false
       end
+    end
+    
+    example_group.after do
+      $note = nil
     end
 
     class <<example_group
@@ -141,40 +147,54 @@ module MustBeExampleHelper
   
   ### Notify Matcher ###
   
-  def notify(message = nil)
-    simple_matcher do |given, matcher|
-      result, message =
-        if @note
-          if message
-            if message === @note.message
-              [true,
-                "did NOT expect note with message: #{message.inspect}\n"\
-                "           got note with message: #{@note.message.inspect}"]
-            else
-              [false,
-                "expected note with message: #{message.inspect}\n"\
-                "     got note with message: #{@note.message.inspect}"]
-            end
+  RSpec::Matchers.define :notify do |*message|
+    if (count = message.size) > 1
+      raise ArgumentError, "wrong number of arguments (#{count} for 1)"
+    end
+    message = message[0]
+    
+    def does(message)
+      @message = message
+      true
+    end
+    
+    def does_not(message)
+      @message = message
+      false
+    end
+        
+    match do |given|
+      if $note
+        if message
+          if message === $note.message
+            does(
+              "did NOT expect note with message: #{message.inspect}\n"\
+              "           got note with message: #{$note.message.inspect}")
           else
-            [true,
-              "expected no note\n"\
-              "got note with message: #{@note.message.inspect}"]
+            does_not(
+              "expected note with message: #{message.inspect}\n"\
+              "     got note with message: #{$note.message.inspect}")
           end
         else
-          [false, if message
-            "expected a note with message: #{message.inspect}"
-          else
-            "expected a note"
-          end]
+          does(
+            "expected no note\n"\
+            "got note with message: #{$note.message.inspect}")
         end
-    
-      if result
-        matcher.negative_failure_message = message
       else
-        matcher.failure_message = message
+        does_not(if message
+          "expected a note with message: #{message.inspect}"
+        else
+          "expected a note"
+        end)
       end
+    end
     
-      result
+    failure_message_for_should do |given|
+      @message
+    end
+    
+    failure_message_for_should_not do |given|
+      @message
     end
   end
 end

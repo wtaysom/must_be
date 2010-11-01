@@ -29,8 +29,17 @@ describe "Notify Matcher" do
         end
       
         pattern_notify.send(result ? :should : :should_not, raise_error(
-          Spec::Expectations::ExpectationNotMetError, result))
+          RSpec::Expectations::ExpectationNotMetError, result))
       end
+    end
+  end
+  
+  context "when called with more than one argument" do
+    it "should raise ArgumentError" do
+      expect do
+        :it.should notify("one", "two")
+      end.should raise_error(ArgumentError,
+        "wrong number of arguments (2 for 1)")
     end
   end
 
