@@ -1,4 +1,9 @@
-# dynamic_variable 1.0.2 2010-09-29
+# must_be 1.0.3 2010-11-01
+
+* Update to use RSpec-2.
+* Add development dependencies.
+
+# must_be 1.0.2 2010-09-29
 
 * Update for compatibility with Ruby 1.8.6.
 

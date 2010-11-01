@@ -9,6 +9,9 @@ begin
     gemspec.email = "wtaysom@gmail.com"
     gemspec.homepage = "http://github.com/wtaysom/must_be"
     gemspec.authors = ["William Taysom"]
+    
+    gemspec.add_development_dependency('jeweler', '~> 1.4')
+    gemspec.add_development_dependency('rspec', '~> 2.0')
   end
   Jeweler::GemcutterTasks.new
 rescue LoadError
