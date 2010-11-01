@@ -54,12 +54,12 @@ class Module
       end
     ))
     
-    module_eval %Q{
+    module_eval(<<-END, __FILE__, __LINE__ + 1)
       def #{name}=(value)
         #{check_method_name}(value)
         @#{name} = value
       end
-    }
+    END
   end
   
   MustBe.register_disabled_handler do |enabled|

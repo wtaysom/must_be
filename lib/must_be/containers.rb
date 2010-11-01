@@ -152,7 +152,7 @@ module MustBe
       module ClassMethods
         def must_check_contents_after(*methods)
           methods.each do |method|
-            module_eval %Q{
+            module_eval(<<-END, __FILE__, __LINE__ + 1)
               def #{method}(*args)
                 begin
                   super
@@ -160,7 +160,7 @@ module MustBe
                   must_check_contents
                 end
               end
-            }
+            END
           end
         end
       end
@@ -229,11 +229,11 @@ module MustBe
       
       REGISTERED_CLASSES[klass] = mod = Module.new
       mod.send(:include, Base)
-      mod.class_eval &body
+      mod.class_eval(&body)
       
       mutator_advice = Module.new
       mod.instance_methods(false).each do |method_name|
-        mutator_advice.module_eval %Q{
+        mutator_advice.module_eval(<<-END, __FILE__, __LINE__ + 1)
           def #{method_name}(*args, &block)
             must_check(lambda { super(*args, &block) }) do |note|
               note.prefix = nil
@@ -244,7 +244,7 @@ module MustBe
               note
             end
           end
-        }
+        END
       end
       mod.const_set(:MutatorAdvice, mutator_advice)
       mod.instance_eval do
