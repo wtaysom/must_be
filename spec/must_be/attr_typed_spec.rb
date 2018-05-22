@@ -141,7 +141,7 @@ describe MustBe do
         it "should be fine if symbol is a String" do
           expect do
             subject.attr_typed "string", Object
-          end.to_not raise_error
+          end.to_not raise_error(TypeError)
         end
       end
       

@@ -1,4 +1,4 @@
-# must_be 1.2.0 2018-05-23
+# must_be 1.1.0 2018-05-22
 
 * Update to Ruby 2.5.
 * Use a Gemfile.
