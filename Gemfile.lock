@@ -16,7 +16,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  rspec-its
+  rspec-its (~> 1.2)
 
 BUNDLED WITH
    1.16.1
