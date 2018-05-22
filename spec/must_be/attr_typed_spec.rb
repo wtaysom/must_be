@@ -6,8 +6,8 @@ describe MustBe do
   describe 'Module#attr_typed' do
     context "when updating" do
       module ModuleWhoUsesAttrTyped
-        attr_typed :int, Bignum, Fixnum
-        attr_typed :positive_int, Bignum, Fixnum do |n|
+        attr_typed :int, Integer
+        attr_typed :positive_int, Integer do |n|
           n > 0
         end
         attr_typed :non_nil
@@ -33,7 +33,7 @@ describe MustBe do
         it "should notify if new value does not have the type" do
           subject.float = 23
           should notify("attribute `float' must be a Float,"\
-            " but value 23 is a Fixnum")
+            " but value 23 is a Integer")
         end
       end
       
@@ -45,7 +45,7 @@ describe MustBe do
         
         it "should notify if new value does not match either constraint " do
           subject.int = 56.6
-          should notify("attribute `int' must be a Bignum or Fixnum,"\
+          should notify("attribute `int' must be a Integer,"\
             " but value 56.6 is a Float")
         end
       end
@@ -84,8 +84,8 @@ describe MustBe do
         
         it "should notify if new value does not match one of the types" do
           subject.positive_int = 87.6
-          should notify("attribute `positive_int' must be a Bignum"\
-            " or Fixnum, but value 87.6 is a Float")
+          should notify("attribute `positive_int' must be a Integer,"\
+            " but value 87.6 is a Float")
         end
         
         it "should notify if block[value] is not true" do
@@ -129,19 +129,19 @@ describe MustBe do
         it "should raise if symbol cannot be converted #to_sym" do
           expect do
             subject.attr_typed [], Object
-          end.should raise_error(TypeError, "[] is not a symbol")
+          end.to raise_error(TypeError, "[] is not a symbol nor a string")
         end
         
-        it "should raise if symbol is a Fixnum" do
+        it "should raise if symbol is a Integer" do
           expect do
             subject.attr_typed 111, Object
-          end.should raise_error(TypeError, "111 is not a symbol")
+          end.to raise_error(TypeError, "111 is not a symbol")
         end
         
         it "should be fine if symbol is a String" do
           expect do
             subject.attr_typed "string", Object
-          end.should_not raise_error
+          end.to_not raise_error
         end
       end
       
@@ -149,13 +149,13 @@ describe MustBe do
         it "should raise if any type is an array" do
           expect do
             subject.attr_typed :prop, [Array, Object]
-          end.should raise_error(TypeError, "class or module required")
+          end.to raise_error(TypeError, "class or module required")
         end
         
         it "should raise if any type is a String" do
           expect do
             subject.attr_typed :prop, "string"
-          end.should raise_error(TypeError, "class or module required")
+          end.to raise_error(TypeError, "class or module required")
         end
       end
     end
@@ -184,7 +184,7 @@ describe MustBe do
           it "should notify again" do
             @enabled_instance.prop = 91
             should notify("attribute `prop' must be a Symbol,"\
-              " but value 91 is a Fixnum")
+              " but value 91 is a Integer")
           end
         end
       end
@@ -216,7 +216,7 @@ describe MustBe do
             @disabled_class.attr_typed :prop, Symbol
             @disabled_instance.prop = 91
             should notify("attribute `prop' must be a Symbol,"\
-              " but value 91 is a Fixnum")
+              " but value 91 is a Integer")
           end
         end
       end

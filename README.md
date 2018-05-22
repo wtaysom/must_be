@@ -23,11 +23,11 @@ For your everyday, average sanity:
 
 	87.must_be_a(Float, Integer)
 	87.must_be_a(Symbol, String)
-	#=> 87.must_be_a(Symbol, String), but is a Fixnum
+	#=> 87.must_be_a(Symbol, String), but is a Integer
 	
 	87.must_not_be_a(Symbol, String, "message")
 	87.must_not_be_a(Float, Integer, "message")
-	#=> 87.must_not_be_a(Float, Integer, "message"), but is a Fixnum
+	#=> 87.must_not_be_a(Float, Integer, "message"), but is a Integer
 
 `must_be_in` uses `include?` to check.  Multiple arguments are grouped together as an array:
 
@@ -70,11 +70,11 @@ Sometimes close is good enough:
 	
 	5.must_be(1..5)
 	5.must_be(1...5)
-	#=> 5.must_be(1...5), but matches Fixnum
+	#=> 5.must_be(1...5), but matches Integer
 	
 	5.must_not_be(1...5)
 	3.must_not_be(1...5)
-	#=> 3.must_not_be(1...5), but matches Fixnum
+	#=> 3.must_not_be(1...5), but matches Integer
 	
 	true.must_be
 	nil.must_be
@@ -122,7 +122,7 @@ Sometimes close is good enough:
 
 	class Typed
 	  attr_typed :v, Symbol
-	  attr_typed :n, Fixnum, Bignum
+	  attr_typed :n, String, Integer
 	  attr_typed :o, &:odd?
 	end
 	
@@ -133,7 +133,7 @@ Sometimes close is good enough:
 	
 	t.n = 411
 	t.n = 4.1
-	#=> attribute `n' must be a Fixnum or Bignum, but value 4.1 is a Float
+	#=> attribute `n' must be a String or Integer, but value 4.1 is a Float
 	
 	t.o = 7
 	t.o = 8
@@ -145,11 +145,11 @@ It's good to be sure that an array or hash contains the right stuff:
 
 	["okay", :ready, "go"].must_only_contain(Symbol, String)
 	["okay", :ready, 4].must_only_contain(Symbol, String)
-	#=> must_only_contain: 4.must_be(Symbol, String), but matches Fixnum in container ["okay", :ready, 4]
+	#=> must_only_contain: 4.must_be(Symbol, String), but matches Integer in container ["okay", :ready, 4]
 	
 	["okay", :ready, "go"].must_not_contain(Numeric)
 	["okay", :ready, 4].must_not_contain(Numeric)
-	#=> must_not_contain: 4.must_not_be(Numeric), but matches Fixnum in container ["okay", :ready, 4]
+	#=> must_not_contain: 4.must_not_be(Numeric), but matches Integer in container ["okay", :ready, 4]
 	
 	[].must_only_contain(:yes, :no)
 	[:yep].must_only_contain(:yes, :no)
@@ -165,13 +165,13 @@ It's good to be sure that an array or hash contains the right stuff:
 	
 	[nil, false].must_not_contain
 	[0].must_not_contain
-	#=> must_not_contain: 0.must_not_be, but matches Fixnum in container [0]
+	#=> must_not_contain: 0.must_not_be, but matches Integer in container [0]
 	
 	{:welcome => :home}.must_only_contain(Symbol => Symbol)
-	{:symbol => :s, :fixnum => 5}.must_only_contain(Symbol => [Symbol, Fixnum])
-	{5 => :s, 6 => 5, :t => 5, :s => :s}.must_only_contain([Symbol, Fixnum] => [Symbol, Fixnum])
-	{6 => 5}.must_only_contain(Symbol => Fixnum, Fixnum => Symbol)
-	#=> must_only_contain: pair {6=>5} does not match [{Symbol=>Fixnum, Fixnum=>Symbol}] in container {6=>5}
+	{:symbol => :s, :Integer => 5}.must_only_contain(Symbol => [Symbol, Integer])
+	{5 => :s, 6 => 5, :t => 5, :s => :s}.must_only_contain([Symbol, Integer] => [Symbol, Integer])
+	{6 => 5}.must_only_contain(Symbol => Integer, Integer => Symbol)
+	#=> must_only_contain: pair {6=>5} does not match [{Symbol=>Integer, Integer=>Symbol}] in container {6=>5}
 	
 	{:welcome => nil}.must_not_contain(nil => Object)
 	{nil => :welcome}.must_not_contain(nil => Object)
@@ -236,7 +236,7 @@ It's best to be sure that your custom container contains the right stuff:
 	box = Box[:hello].must_only_ever_contain(Symbol)
 	box.contents = :world
 	box.contents = 987
-	#=> must_only_ever_contain: Box#contents=(987): 987.must_be(Symbol), but matches Fixnum in container Box[987]
+	#=> must_only_ever_contain: Box#contents=(987): 987.must_be(Symbol), but matches Integer in container Box[987]
 	
 	box = Box[2].must_never_ever_contain(nil)
 	box.contents = 64

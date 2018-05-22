@@ -38,7 +38,7 @@ describe "Notify Matcher" do
     it "should raise ArgumentError" do
       expect do
         :it.should notify("one", "two")
-      end.should raise_error(ArgumentError,
+      end.to raise_error(ArgumentError,
         "wrong number of arguments (2 for 1)")
     end
   end

@@ -8,7 +8,7 @@ describe MustBe, " typical usage" do
     context "when called with a Class, it notifies unless"\
         " receiver.is_a? Class" do
       notify_example %{4.must_be(Numeric)}
-      notify_example %{4.must_be(Float)}, Fixnum
+      notify_example %{4.must_be(Float)}, Integer
     end
     
     context "when called with a regexp, it notifies unless"\
@@ -20,13 +20,13 @@ describe MustBe, " typical usage" do
     context "when called with a range, it notifies unless"\
         " range.include? receiver" do
       notify_example %{5.must_be(1..5)}
-      notify_example %{5.must_be(1...5)}, Fixnum
+      notify_example %{5.must_be(1...5)}, Integer
     end
     
     context "when called with an array, it notifies unless"\
         " array == receiver" do
       notify_example %{[3, 5].must_be([3, 5])}
-      notify_example %{3.must_be([3, 5])}, Fixnum
+      notify_example %{3.must_be([3, 5])}, Integer
     end
     
     context "when called with a proc, it notifies unless proc[receiver]" do
@@ -50,7 +50,7 @@ describe MustBe, " typical usage" do
     context "when called with multiple arguments, it notifies unless"\
         " receiver case-equals (===) one of them" do
       notify_example %{:happy.must_be(String, Symbol)}
-      notify_example %{934.must_be(String, Symbol)}, Fixnum
+      notify_example %{934.must_be(String, Symbol)}, Integer
     end
   end
   
@@ -169,7 +169,7 @@ describe MustBe, " typical usage" do
         end) do |note|
           did_call_block = true
         end
-        did_call_block.should be_false
+        did_call_block.should be false
       end
     end
   end

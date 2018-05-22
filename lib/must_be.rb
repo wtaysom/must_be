@@ -34,7 +34,7 @@ if RUBY_VERSION < "1.8.7"
   end
   
   unless 3.respond_to? :odd?
-    class Fixnum
+    class Integer
       def odd?
         self % 2 == 1
       end
@@ -42,7 +42,7 @@ if RUBY_VERSION < "1.8.7"
   end
   
   unless 3.respond_to? :even?
-    class Fixnum
+    class Integer
       def even?
         self % 2 == 0
       end

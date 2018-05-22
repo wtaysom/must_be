@@ -1,6 +1,6 @@
 class Module
   def attr_typed(symbol, *types, &test)
-    raise TypeError, "#{symbol} is not a symbol" if symbol.is_a? Fixnum
+    raise TypeError, "#{symbol} is not a symbol" if symbol.is_a? Integer
     
     types.each do |type|
       raise TypeError, "class or module required" unless type.is_a? Module

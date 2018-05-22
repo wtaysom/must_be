@@ -154,7 +154,7 @@ describe MustBe do
       it "should notify if any member matches one of the cases" do
         subject.must_not_contain(Range, Numeric).should == subject
         should notify("must_not_contain: 11.must_not_be(Range, Numeric),"\
-          " but matches Fixnum in container [11, :sin, \"cos\"]")
+          " but matches Integer in container [11, :sin, \"cos\"]")
       end
     
       context "when there are no cases" do
@@ -310,7 +310,7 @@ describe MustBe do
       
       context "after disabling" do
         before do
-          @enabled_array = [].must_only_ever_contain(Fixnum)
+          @enabled_array = [].must_only_ever_contain(Integer)
         end
         
         before_disable_after_enable
@@ -340,7 +340,7 @@ describe MustBe do
         
         context "when #must_only_ever_contain is called" do
           before do 
-            @disabled_array = [].must_only_ever_contain(Fixnum)
+            @disabled_array = [].must_only_ever_contain(Integer)
           end
           
           it "should not notify" do
@@ -734,7 +734,7 @@ describe MustBe do
           it "should raise TypeError" do
             expect do
               subject.must_only_ever_contain(Symbol)
-            end.should raise_error(TypeError,
+            end.to raise_error(TypeError,
               /No MustOnlyEverContain.registered_class for .*Box/)
           end
         end
@@ -751,7 +751,7 @@ describe MustBe do
                 end
               end
               subject.must_only_ever_contain(Symbol)
-            end.should raise_error(ArgumentError,
+            end.to raise_error(ArgumentError,
               /must_only_ever_contain adds singleton methods but receiver .*/)
           end
         end
@@ -784,13 +784,13 @@ describe MustBe do
           it "should raise when trying to register a non-class" do
             expect do
               MustOnlyEverContain.register(:not_a_class)
-            end.should raise_error(ArgumentError)
+            end.to raise_error(ArgumentError)
           end
           
           it "should raise when trying to register a class more than once" do
             expect do
               MustOnlyEverContain.register(Box)
-            end.should raise_error(ArgumentError)
+            end.to raise_error(ArgumentError)
           end
         end
       end
@@ -821,7 +821,7 @@ describe MustBe do
         it "should notify if obj is non-nil" do
           subject << 5
           should notify("must_never_ever_contain: Array#<<(5):"\
-            " 5.must_not_be, but matches Fixnum in container"\
+            " 5.must_not_be, but matches Integer in container"\
             " [nil, 5]")
         end
       end
@@ -893,7 +893,7 @@ describe MustBe do
           it "should raise TypeError" do
             expect do
               subject.must_never_ever_contain(String)
-            end.should raise_error(TypeError,
+            end.to raise_error(TypeError,
               /No MustOnlyEverContain.registered_class for .*Box/)
           end
         end
@@ -910,7 +910,7 @@ describe MustBe do
                 end
               end
               subject.must_never_ever_contain(Symbol)
-            end.should raise_error(ArgumentError,
+            end.to raise_error(ArgumentError,
               /must_never_ever_contain adds singleton methods but .*/)
           end
         end

@@ -60,20 +60,21 @@ Gem::Specification.new do |s|
      "spec/typical_usage_spec.rb"
   ]
 
+  #!!! fix this
   if s.respond_to? :specification_version then
     current_version = Gem::Specification::CURRENT_SPECIFICATION_VERSION
     s.specification_version = 3
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
       s.add_development_dependency(%q<jeweler>, ["~> 1.4"])
-      s.add_development_dependency(%q<rspec>, ["~> 2.0"])
+      s.add_development_dependency(%q<rspec-its>, ["~> 1.2"])
     else
       s.add_dependency(%q<jeweler>, ["~> 1.4"])
-      s.add_dependency(%q<rspec>, ["~> 2.0"])
+      s.add_dependency(%q<rspec-its>, ["~> 1.2"])
     end
   else
     s.add_dependency(%q<jeweler>, ["~> 1.4"])
-    s.add_dependency(%q<rspec>, ["~> 2.0"])
+    s.add_dependency(%q<rspec-its>, ["~> 1.2"])
   end
 end
 

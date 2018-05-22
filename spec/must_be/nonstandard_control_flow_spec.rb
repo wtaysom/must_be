@@ -9,7 +9,7 @@ describe MustBe do
       it "should raise TypeError" do
         expect do
           :it.send(the_method_name, RangeError, :not_nil_string_or_regexp) {}
-        end.should raise_error(TypeError, "nil, string, or regexp required")
+        end.to raise_error(TypeError, "nil, string, or regexp required")
       end
     end
     
@@ -17,7 +17,7 @@ describe MustBe do
       it "should raise ArgumentError" do
         expect do
           :it.send(the_method_name, RangeError, "message", "trouble") {}
-        end.should raise_error(ArgumentError,
+        end.to raise_error(ArgumentError,
           "wrong number of arguments (3 for 2)")
       end
     end
@@ -26,7 +26,7 @@ describe MustBe do
       it "should raise TypeError" do
         expect do
           :it.send(the_method_name, "message", "second_message") {}
-        end.should raise_error(TypeError, "exception class expected")
+        end.to raise_error(TypeError, "exception class expected")
       end
     end
     
@@ -34,7 +34,7 @@ describe MustBe do
       it "should raise TypeError" do
         expect do
           :it.send(the_method_name, Range) {}
-        end.should raise_error(TypeError, "exception class expected")
+        end.to raise_error(TypeError, "exception class expected")
       end
     end
     
@@ -43,7 +43,7 @@ describe MustBe do
       it "should raise TypeError" do
         expect do
           :it.send(the_method_name, :not_an_error_type) {}
-        end.should raise_error(TypeError,
+        end.to raise_error(TypeError,
           "exception class expected")
       end
     end
@@ -57,14 +57,14 @@ describe MustBe do
       it "should not notify if any exception is raised" do
         expect do
           :it.must_raise { raise Exception }
-        end.should raise_error(Exception)
+        end.to raise_error(Exception)
         should_not notify
       end
       
       it "should notify if no exception is raised" do
         called = false
         :it.must_raise{called = true; :result}.should == :result
-        called.should be_true
+        called.should be true
         should notify(":it.must_raise {}, but nothing was raised")
       end
     end
@@ -73,7 +73,7 @@ describe MustBe do
       it "should not notify if an exception of the same type is raised" do
         expect do
           :it.must_raise(TypeError) { raise TypeError }
-        end.should raise_error
+        end.to raise_error(TypeError)
         should_not notify
       end
       
@@ -85,7 +85,7 @@ describe MustBe do
       it "should notify if a different exception type is raised" do
         expect do
           :it.must_raise(TypeError) { raise ArgumentError }
-        end.should raise_error
+        end.to raise_error(ArgumentError)
         should notify(":it.must_raise(TypeError) {},"\
           " but ArgumentError was raised")
       end
@@ -96,7 +96,7 @@ describe MustBe do
           " raised" do
         expect do
           :it.must_raise("message") { raise "message" }
-        end.should raise_error
+        end.to raise_error(RuntimeError)
         should_not notify
       end
       
@@ -109,7 +109,7 @@ describe MustBe do
       it "should notify if an exception with a different message is raised" do
         expect do
           :it.must_raise("message") { raise "wrong" }
-        end.should raise_error
+        end.to raise_error(RuntimeError)
         should notify(":it.must_raise(\"message\") {},"\
           " but RuntimeError with message \"wrong\" was raised")
       end
@@ -120,7 +120,7 @@ describe MustBe do
           " raised" do
         expect do
           :it.must_raise(/message/) { raise "some message" }
-        end.should raise_error
+        end.to raise_error(RuntimeError)
         should_not notify
       end
       
@@ -133,7 +133,7 @@ describe MustBe do
           " is raised" do
         expect do
           :it.must_raise(/message/) { raise "mess" }
-        end.should raise_error
+        end.to raise_error(RuntimeError)
         should notify(":it.must_raise(/message/) {},"\
           " but RuntimeError with message \"mess\" was raised")
       end
@@ -143,7 +143,7 @@ describe MustBe do
       it "should not notify if any exception is raised" do
         expect do
           :it.must_raise(nil) { raise Exception }
-        end.should raise_error(Exception)
+        end.to raise_error(Exception)
         should_not notify
       end
       
@@ -158,7 +158,7 @@ describe MustBe do
           " the same message is raised" do
         expect do
           :it.must_raise(TypeError, "oops") { raise TypeError, "oops" }
-        end.should raise_error
+        end.to raise_error(TypeError)
         should_not notify
       end
       
@@ -171,7 +171,7 @@ describe MustBe do
       it "should notify if an exception of a different type is raised" do
         expect do
           :it.must_raise(TypeError, "oops") { raise ArgumentError, "wrong" }
-        end.should raise_error
+        end.to raise_error(ArgumentError)
         should notify(":it.must_raise(TypeError, \"oops\") {},"\
           " but ArgumentError was raised")
       end
@@ -180,7 +180,7 @@ describe MustBe do
           " but with a different message is raised" do
         expect do
           :it.must_raise(TypeError, "oops") { raise TypeError, "wrong" }
-        end.should raise_error
+        end.to raise_error(TypeError)
         should notify(":it.must_raise(TypeError, \"oops\") {},"\
           " but TypeError with message \"wrong\" was raised")
       end
@@ -191,7 +191,7 @@ describe MustBe do
           " matching message is raised" do
         expect do
           :it.must_raise(TypeError, /oops/) { raise TypeError, "oops" }
-        end.should raise_error
+        end.to raise_error(TypeError)
         should_not notify
       end
       
@@ -204,7 +204,7 @@ describe MustBe do
       it "should notify if an exception of a different type is raised" do
         expect do
           :it.must_raise(TypeError, /oops/) { raise ArgumentError, "wrong" }
-        end.should raise_error
+        end.to raise_error(ArgumentError)
         should notify(":it.must_raise(TypeError, /oops/) {},"\
           " but ArgumentError was raised")
       end
@@ -213,7 +213,7 @@ describe MustBe do
           " but with a non-matching message is raised" do
         expect do
           :it.must_raise(TypeError, /oops/) { raise TypeError, "wrong" }
-        end.should raise_error
+        end.to raise_error(TypeError)
         should notify(":it.must_raise(TypeError, /oops/) {},"\
           " but TypeError with message \"wrong\" was raised")
       end
@@ -223,7 +223,7 @@ describe MustBe do
       it "should not notify if an exception of the same type is raised" do
         expect do
           :it.must_raise(TypeError, nil) { raise TypeError }
-        end.should raise_error
+        end.to raise_error(TypeError)
         should_not notify
       end
       
@@ -236,7 +236,7 @@ describe MustBe do
       it "should notify if a different exception type is raised" do
         expect do
           :it.must_raise(TypeError, nil) { raise ArgumentError }
-        end.should raise_error
+        end.to raise_error(ArgumentError)
         should notify(":it.must_raise(TypeError, nil) {},"\
           " but ArgumentError was raised")
       end
@@ -248,7 +248,7 @@ describe MustBe do
       it "should just yield" do
         did_yield = false
         :it.must_raise { did_yield = true }
-        did_yield.should be_true
+        did_yield.should be true
       end
     end
   end
@@ -261,14 +261,14 @@ describe MustBe do
       it "should notify if any exception is raised" do
         expect do
           :it.must_not_raise { raise Exception }
-        end.should raise_error(Exception)
+        end.to raise_error(Exception)
         should notify(":it.must_not_raise {}, but raised Exception")
       end
       
       it "should not notify if no exception is raised" do
         called = false
         :it.must_not_raise {called = true; :result}.should == :result
-        called.should be_true
+        called.should be true
         should_not notify
       end
     end
@@ -277,7 +277,7 @@ describe MustBe do
       it "should notify if an exception of the same type is raised" do
         expect do
           :it.must_not_raise(TypeError) { raise TypeError }
-        end.should raise_error
+        end.to raise_error(TypeError)
         should notify(":it.must_not_raise(TypeError) {},"\
           " but raised TypeError")
       end
@@ -290,7 +290,7 @@ describe MustBe do
       it "should not notify if a different exception type is raised" do
         expect do
           :it.must_not_raise(TypeError) { raise ArgumentError }
-        end.should raise_error
+        end.to raise_error(ArgumentError)
         should_not notify
       end
     end
@@ -299,7 +299,7 @@ describe MustBe do
       it "should notify if an exception with the same message is raised" do
         expect do
           :it.must_not_raise("message") { raise "message" }
-        end.should raise_error
+        end.to raise_error(RuntimeError)
         should notify(":it.must_not_raise(\"message\") {},"\
           " but raised RuntimeError with message \"message\"")
       end
@@ -313,7 +313,7 @@ describe MustBe do
           " raised" do
         expect do
           :it.must_not_raise("message") { raise "wrong" }
-        end.should raise_error
+        end.to raise_error(RuntimeError)
         should_not notify
       end
     end
@@ -322,7 +322,7 @@ describe MustBe do
       it "should notify if an exception with matching message is raised" do
         expect do
           :it.must_not_raise(/message/) { raise "some message" }
-        end.should raise_error
+        end.to raise_error(RuntimeError)
         should notify(":it.must_not_raise(/message/) {},"\
           " but raised RuntimeError with message \"some message\"")
       end
@@ -336,7 +336,7 @@ describe MustBe do
           " is raised" do
         expect do
           :it.must_not_raise(/message/) { raise "mess" }
-        end.should raise_error
+        end.to raise_error(RuntimeError)
         should_not notify
       end
     end
@@ -345,7 +345,7 @@ describe MustBe do
       it "should notify if any exception is raised" do
         expect do
           :it.must_not_raise(nil) { raise Exception }
-        end.should raise_error(Exception)
+        end.to raise_error(Exception)
         should notify(":it.must_not_raise(nil) {}, but raised Exception")
       end
       
@@ -360,7 +360,7 @@ describe MustBe do
           " the same message is raised" do
         expect do
           :it.must_not_raise(TypeError, "oops") { raise TypeError, "oops" }
-        end.should raise_error
+        end.to raise_error(TypeError)
         should notify(":it.must_not_raise(TypeError, \"oops\") {},"\
           " but raised TypeError with message \"oops\"")
       end
@@ -373,7 +373,7 @@ describe MustBe do
       it "should not notify if an exception of a different type is raised" do
         expect do
           :it.must_not_raise(TypeError, "oops") { raise ArgumentError, "grr" }
-        end.should raise_error
+        end.to raise_error(ArgumentError)
         should_not notify
       end
       
@@ -381,7 +381,7 @@ describe MustBe do
           " but with a different message is raised" do
         expect do
           :it.must_not_raise(TypeError, "oops") { raise TypeError, "wrong" }
-        end.should raise_error
+        end.to raise_error(TypeError)
         should_not notify
       end
     end
@@ -391,7 +391,7 @@ describe MustBe do
           " matching message is raised" do
         expect do
           :it.must_not_raise(TypeError, /oops/) { raise TypeError, "oops" }
-        end.should raise_error
+        end.to raise_error(TypeError)
         should notify(":it.must_not_raise(TypeError, /oops/) {},"\
           " but raised TypeError with message \"oops\"")
       end
@@ -404,7 +404,7 @@ describe MustBe do
       it "should not notify if an exception of a different type is raised" do
         expect do
           :it.must_not_raise(TypeError, /oops/) { raise ArgumentError, "grr" }
-        end.should raise_error
+        end.to raise_error(ArgumentError)
         should_not notify
       end
       
@@ -412,7 +412,7 @@ describe MustBe do
           " but with a non-matching message is raised" do
         expect do
           :it.must_not_raise(TypeError, /oops/) { raise TypeError, "wrong" }
-        end.should raise_error
+        end.to raise_error(TypeError)
         should_not notify
       end
     end
@@ -421,7 +421,7 @@ describe MustBe do
       it "should notify if an exception of the same type is raised" do
         expect do
           :it.must_not_raise(TypeError, nil) { raise TypeError }
-        end.should raise_error
+        end.to raise_error(TypeError)
         should notify(":it.must_not_raise(TypeError, nil) {},"\
           " but raised TypeError")
       end
@@ -434,7 +434,7 @@ describe MustBe do
       it "should not notify if a different exception type is raised" do
         expect do
           :it.must_not_raise(TypeError, nil) { raise ArgumentError }
-        end.should raise_error
+        end.to raise_error(ArgumentError)
         should_not notify
       end
     end
@@ -445,7 +445,7 @@ describe MustBe do
       it "should raise ArgumentError" do
         expect do
           :it.send(the_method_name, :symbol, :object, :other) {}
-        end.should raise_error(ArgumentError,
+        end.to raise_error(ArgumentError,
           "wrong number of arguments (3 for 2)")
       end
     end
@@ -466,7 +466,7 @@ describe MustBe do
       it "should notify and reraise" do
         expect do
           :it.must_throw { raise }
-        end.should raise_error(RuntimeError, "")
+        end.to raise_error(RuntimeError, "")
         should notify(":it.must_throw {}, but raised RuntimeError")
       end
       
@@ -483,7 +483,7 @@ describe MustBe do
         it "should raise without transparently" do
           expect do
             :it.must_throw { raise }
-          end.should raise_error(Note,
+          end.to raise_error(Note,
             ":it.must_throw {}, but raised RuntimeError")
         end
         
@@ -492,7 +492,7 @@ describe MustBe do
           MustBe.send(:class_variable_set, :@@must_throw__installed, false)
           expect do
             :it.must_throw { throw :ball }
-          end.should raise_error(Note, /:it.must_throw \{\}, but raised/)
+          end.to raise_error(Note, /:it.must_throw \{\}, but raised/)
         end
       end
     end
@@ -501,11 +501,13 @@ describe MustBe do
       it "should notify and reraise" do
         expect do
           :it.must_throw { throw :uncaught }
-        end.should raise_error(/uncaught throw/)
+        end.to raise_error(/uncaught throw/)
         if RUBY_VERSION < "1.9"
           should notify(":it.must_throw {}, but raised NameError")
-        else
+        elsif RUBY_VERSION < "2.4"
           should notify(":it.must_throw {}, but raised ArgumentError")
+        else
+          should notify(":it.must_throw {}, but raised UncaughtThrowError")
         end
       end
     end
@@ -515,7 +517,7 @@ describe MustBe do
         it "should not notify" do
           expect do
             :it.must_throw { throw :ball }
-          end.should throw_symbol(:ball)
+          end.to throw_symbol(:ball)
           should_not notify
         end
       end
@@ -524,14 +526,14 @@ describe MustBe do
         it "should not notify if tag equals thrown tag" do
           expect do
             :it.must_throw(:ball) { throw :ball }
-          end.should throw_symbol(:ball)
+          end.to throw_symbol(:ball)
           should_not notify
         end
         
         it "should notify if tag does not equal thrown tag" do
           expect do
             :it.must_throw(:pie) { throw :ball }
-          end.should throw_symbol(:ball)
+          end.to throw_symbol(:ball)
           should notify(":it.must_throw(:pie) {}, but threw :ball")
         end
         
@@ -539,7 +541,7 @@ describe MustBe do
           it "should notify" do
             expect do
               :it.must_throw(:ball, :fiercely) { throw :ball }
-            end.should throw_symbol(:ball)
+            end.to throw_symbol(:ball)
             should notify(":it.must_throw(:ball, :fiercely) {},"\
               " but threw :ball")
           end
@@ -547,7 +549,7 @@ describe MustBe do
           it "should notify even if checked object is nil" do
             expect do
               :it.must_throw(:ball, nil) { throw :ball }
-            end.should throw_symbol(:ball)
+            end.to throw_symbol(:ball)
             should notify(":it.must_throw(:ball, nil) {},"\
               " but threw :ball")
           end
@@ -559,14 +561,14 @@ describe MustBe do
             " object equals thrown object" do
           expect do
             :it.must_throw(:ball, :gently) { throw :ball, :gently }
-          end.should throw_symbol(:ball, :gently)
+          end.to throw_symbol(:ball, :gently)
           should_not notify
         end
         
         it "should notify if tag does not equal thrown tag" do
           expect do
             :it.must_throw(:pie, :gently) { throw :ball, :gently }
-          end.should throw_symbol(:ball, :gently)
+          end.to throw_symbol(:ball, :gently)
           should notify(":it.must_throw(:pie, :gently) {},"\
             " but threw :ball, :gently")
         end
@@ -574,7 +576,7 @@ describe MustBe do
         it "should notify if object does not equal thrown object" do
           expect do
             :it.must_throw(:ball, :fiercely) { throw :ball, :gently }
-          end.should throw_symbol(:ball, :gently)
+          end.to throw_symbol(:ball, :gently)
           should notify(":it.must_throw(:ball, :fiercely) {},"\
             " but threw :ball, :gently")
         end
@@ -583,14 +585,14 @@ describe MustBe do
           it "should not notify if thrown object is nil" do
             expect do
               :it.must_throw(:ball, nil) { throw :ball, nil }
-            end.should throw_symbol(:ball)
+            end.to throw_symbol(:ball)
             should_not notify
           end
           
           it "should notify if thrown object is not nil" do
             expect do
               :it.must_throw(:ball, nil) { throw :ball, :gently }
-            end.should throw_symbol(:ball)
+            end.to throw_symbol(:ball)
             should notify(":it.must_throw(:ball, nil) {},"\
               " but threw :ball, :gently")
           end
@@ -604,7 +606,7 @@ describe MustBe do
       it "should just yield" do
         did_yield = false
         :it.must_throw { did_yield = true }
-        did_yield.should be_true
+        did_yield.should be true
       end
     end
     
@@ -643,7 +645,7 @@ describe MustBe do
               $note = nil
             end
           end
-        end.should throw_symbol(:ball)
+        end.to throw_symbol(:ball)
         note.message.should == ":it.must_throw(:ball, :fiercely) {},"\
           " but threw :ball, :gently"
         outer_note.message.should == ":it.must_throw(:party) {},"\
@@ -699,7 +701,7 @@ describe MustBe do
           end
           fiber.resume
           
-          got_to_end.should be_true
+          got_to_end.should be true
           should notify(":it.must_throw {}, but did not throw")
         end
       end
@@ -721,7 +723,7 @@ describe MustBe do
       it "should not notify and should reraise" do
         expect do
           :it.must_not_throw { throw :uncaught }
-        end.should raise_error(/uncaught throw/)
+        end.to raise_error(/uncaught throw/)
         should_not notify
       end
     end
@@ -731,7 +733,7 @@ describe MustBe do
         it "should notify" do
           expect do
             :it.must_not_throw { throw :ball }
-          end.should throw_symbol(:ball)
+          end.to throw_symbol(:ball)
           should notify(":it.must_not_throw {}, but threw :ball")
         end
       end
@@ -740,14 +742,14 @@ describe MustBe do
         it "should notify if tag equals thrown tag" do
           expect do
             :it.must_not_throw(:ball) { throw :ball }
-          end.should throw_symbol(:ball)
+          end.to throw_symbol(:ball)
           should notify(":it.must_not_throw(:ball) {}, but threw :ball")
         end
         
         it "should not notify if tag does not equal thrown tag" do
           expect do
             :it.must_not_throw(:pie) { throw :ball }
-          end.should throw_symbol(:ball)
+          end.to throw_symbol(:ball)
           should_not notify
         end
         
@@ -755,7 +757,7 @@ describe MustBe do
           it "should not notify" do
             expect do
               :it.must_not_throw(:ball, :fiercely) { throw :ball }
-            end.should throw_symbol(:ball)
+            end.to throw_symbol(:ball)
             should_not notify(":it.must_not_throw(:ball, :fiercely) {},"\
               " but threw :ball")
           end
@@ -763,7 +765,7 @@ describe MustBe do
           it "should not notify even if checked object is nil" do
             expect do
               :it.must_not_throw(:ball, nil) { throw :ball }
-            end.should throw_symbol(:ball)
+            end.to throw_symbol(:ball)
             should_not notify
           end
         end
@@ -774,7 +776,7 @@ describe MustBe do
             " object equals thrown object" do
           expect do
             :it.must_not_throw(:ball, :gently) { throw :ball, :gently }
-          end.should throw_symbol(:ball, :gently)
+          end.to throw_symbol(:ball, :gently)
           should notify(":it.must_not_throw(:ball, :gently) {},"\
             " but threw :ball, :gently")
         end
@@ -782,14 +784,14 @@ describe MustBe do
         it "should not notify if tag does not equal thrown tag" do
           expect do
             :it.must_not_throw(:pie, :gently) { throw :ball, :gently }
-          end.should throw_symbol(:ball, :gently)
+          end.to throw_symbol(:ball, :gently)
           should_not notify
         end
         
         it "should not notify if object does not equal thrown object" do
           expect do
             :it.must_not_throw(:ball, :fiercely) { throw :ball, :gently }
-          end.should throw_symbol(:ball, :gently)
+          end.to throw_symbol(:ball, :gently)
           should_not notify
         end
         
@@ -797,7 +799,7 @@ describe MustBe do
           it "should notify if thrown object is nil" do
             expect do
               :it.must_not_throw(:ball, nil) { throw :ball, nil }
-            end.should throw_symbol(:ball)
+            end.to throw_symbol(:ball)
             should notify(":it.must_not_throw(:ball, nil) {},"\
               " but threw :ball, nil")
           end
@@ -805,7 +807,7 @@ describe MustBe do
           it "should not notify if thrown object is not nil" do
             expect do
               :it.must_not_throw(:ball, nil) { throw :ball, :gently }
-            end.should throw_symbol(:ball)
+            end.to throw_symbol(:ball)
             should_not notify
           end
         end
@@ -834,7 +836,7 @@ describe MustBe do
               $note = nil
             end
           end
-        end.should throw_symbol(:ball)
+        end.to throw_symbol(:ball)
         note.message.should == ":it.must_not_throw(:ball, :gently) {},"\
           " but threw :ball, :gently"
         outer_note.should == nil

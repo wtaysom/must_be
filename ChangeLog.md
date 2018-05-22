@@ -1,3 +1,8 @@
+# must_be 1.2.0 2018-05-23
+
+* Update to Ruby 2.5.
+* Use a Gemfile.
+
 # must_be 1.0.3 2010-11-01
 
 * Update to use RSpec-2.

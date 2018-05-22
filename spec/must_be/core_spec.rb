@@ -63,7 +63,7 @@ describe MustBe do
     example "#must_check should not yield to its block" do
       yielded = false
       must_check { yielded = true }
-      yielded.should be_false
+      yielded.should be false
     end
     
     example "#must should return receiver (not a proxy)" do
@@ -90,7 +90,7 @@ describe MustBe do
       
       example "#must_be should notify" do
         5799.must_be(:lolly).should == 5799
-        should notify("5799.must_be(:lolly), but matches Fixnum")
+        should notify("5799.must_be(:lolly), but matches Integer")
       end
 
       example "#must_notify should return a note" do
@@ -101,7 +101,7 @@ describe MustBe do
       example "#must_check should yield to its block" do
         yielded = false
         must_check { yielded = true }
-        yielded.should be_true
+        yielded.should be true
       end
 
       example "#must should return a proxy" do
@@ -180,7 +180,7 @@ describe MustBe do
         before_disable_after_enable
         
         example "handler should be called" do
-          @handler_called.should be_false
+          @handler_called.should be false
         end
       end
     end
@@ -193,7 +193,7 @@ describe MustBe do
       end
       
       example "handler should be called immediately" do
-        @handler_called.should be_false
+        @handler_called.should be false
       end
       
       context "when enabled" do
@@ -202,7 +202,7 @@ describe MustBe do
         end
         
         example "handler should be called" do
-          @handler_called.should be_true
+          @handler_called.should be true
         end
       end
     end
@@ -219,7 +219,7 @@ describe MustBe do
     it "should yield" do
       did_yield = false
       must_just_yield { did_yield = true }
-      did_yield.should be_true
+      did_yield.should be true
       should_not notify
     end
   end
@@ -253,7 +253,7 @@ describe MustBe do
         3.must_be(4)
         
         $stdout.string.should match(
-          /3.must_be\(4\), but matches Fixnum\n\t.*core_spec.rb:\d+.*\n\t/)
+          /3.must_be\(4\), but matches Integer\n\t.*core_spec.rb:\d+.*\n\t/)
       end
     end
     
@@ -279,10 +279,10 @@ describe MustBe do
           " and call the debugger" do
         3.must_be(4)
         
-        $stdout.string.should == "3.must_be(4), but matches Fixnum\n"\
+        $stdout.string.should == "3.must_be(4), but matches Integer\n"\
           "Starting debugger ($must_be__note stores the note)...\n"
-        $must_be__note.message.should == "3.must_be(4), but matches Fixnum"
-        $must_be__did_call_debugger.should be_true
+        $must_be__note.message.should == "3.must_be(4), but matches Integer"
+        $must_be__did_call_debugger.should be true
       end
     end
   end
@@ -310,13 +310,13 @@ describe MustBe do
     it "should raise NoMethodError when argument does not respond to :to_sym" do
       expect do
         MustBe.set_notifier_from_env(nil)
-      end.should raise_error(NoMethodError)
+      end.to raise_error(NoMethodError)
     end
     
     it "should raise ArgumentError when unknown notifier name provided" do
       expect do
         MustBe.set_notifier_from_env(:unknown)
-      end.should raise_error(ArgumentError)
+      end.to raise_error(ArgumentError)
     end
         
     it "should treat 'disable' as a special case" do
@@ -373,7 +373,7 @@ describe MustBe do
     it "should raise Note" do
       expect do
           must_notify("funny bunny")
-      end.should(raise_error(Note, "funny bunny") do |note|
+      end.to(raise_error(Note, "funny bunny") do |note|
         note.backtrace[0].should_not match(/`must_notify'/)
       end)
     end
@@ -493,15 +493,15 @@ describe MustBe do
     
     context "when called with #additional_message" do
       subject do
-        must_notify(5, :must_be, [String], nil, ", but matches Fixnum")
+        must_notify(5, :must_be, [String], nil, ", but matches Integer")
       end
       
-      it_should_notify("5.must_be(String), but matches Fixnum")
+      it_should_notify("5.must_be(String), but matches Integer")
       its(:receiver) { should == 5 }
       its(:assertion) { should == :must_be }
       its(:args) { should == [String] }
       its(:block) { should be_nil }
-      its(:additional_message) { should == ", but matches Fixnum"}
+      its(:additional_message) { should == ", but matches Integer"}
     end
   end
   
@@ -523,7 +523,7 @@ describe MustBe do
       it "should return nil" do
         did_yield = false
         note = must_check { did_yield = true }
-        did_yield.should be_true
+        did_yield.should be true
         should_not notify
         note.should == nil
       end
@@ -535,7 +535,7 @@ describe MustBe do
         must_check(lambda {}) do
           did_call_block = true
         end
-        did_call_block.should be_false
+        did_call_block.should be false
       end
       
       it "should call its block and notify if the proc notifies" do
@@ -545,7 +545,7 @@ describe MustBe do
           note.message.should == "check"
           Note.new("mate")
         end
-        did_call_block.should be_true
+        did_call_block.should be true
         should notify("mate")
       end
       
@@ -556,7 +556,7 @@ describe MustBe do
           note.message.should == "check"
           "mate"
         end
-        did_call_block.should be_true
+        did_call_block.should be true
         should notify("mate")
       end
     end
@@ -608,7 +608,7 @@ describe MustBe do
           must_check do
             raise
           end
-        end.should raise_error
+        end.to raise_error(RuntimeError)
       
         must_notify
         should notify

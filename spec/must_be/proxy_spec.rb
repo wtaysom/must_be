@@ -10,7 +10,7 @@ describe MustBe do
       it "should raise ArgumentError" do
         expect do
           Proxy.new(:moxie, :must_could)
-        end.should raise_error(ArgumentError,
+        end.to raise_error(ArgumentError,
           "assertion (:must_could) must be :must or :must_not")
       end
     end
@@ -95,16 +95,16 @@ describe MustBe do
         subject.between?(-4, 4)
       end
       
-      it_should_notify("230579.must.respond_to?(:finite?)") do
-        subject.respond_to? :finite?
+      it_should_notify("230579.must.respond_to?(:nan?)") do
+        subject.respond_to? :nan?
       end
       
-      it_should_not_notify("230579.must.instance_of?(Fixnum)") do
-        subject.instance_of? Fixnum
-      end
-      
-      it_should_notify("230579.must.instance_of?(Integer)") do
+      it_should_not_notify("230579.must.instance_of?(Integer)") do
         subject.instance_of? Integer
+      end
+      
+      it_should_notify("230579.must.instance_of?(Float)") do
+        subject.instance_of? Float
       end
       
       it "should have a different #object_id" do
@@ -176,17 +176,17 @@ describe MustBe do
       end
       
       it_should_not_notify(
-          "230579.must_not.respond_to?(:finite?)") do
-        subject.respond_to? :finite?
+          "230579.must_not.respond_to?(:nan?)") do
+        subject.respond_to? :nan?
       end
       
-      it_should_notify("230579.must_not.instance_of?(Fixnum)") do
-        subject.instance_of? Fixnum
+      it_should_notify("230579.must_not.instance_of?(Integer)") do
+        subject.instance_of? Integer
       end
       
       it_should_not_notify(
-          "230579.must_not.instance_of?(Integer)") do
-        subject.instance_of? Integer
+          "230579.must_not.instance_of?(Float)") do
+        subject.instance_of? Float
       end
     end
   end

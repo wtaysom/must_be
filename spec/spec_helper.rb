@@ -55,7 +55,15 @@ end
 
 ### MustBeExampleHelper ###
 
-require 'rspec'
+require 'rspec/its'
+
+# Some old syntax.
+RSpec.configure do |config|
+  config.expect_with(:rspec){|c| c.syntax = [:should, :expect]}
+end
+
+# Some old semantics.
+RSpec::Expectations.configuration.on_potential_false_positives = :nothing
 
 module MustBeExampleHelper
   
@@ -189,11 +197,11 @@ module MustBeExampleHelper
       end
     end
     
-    failure_message_for_should do |given|
+    failure_message do |given|
       @message
     end
     
-    failure_message_for_should_not do |given|
+    failure_message_when_negated do |given|
       @message
     end
   end

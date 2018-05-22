@@ -34,7 +34,7 @@ describe MustBe do
       context "when called with Float" do
         it "should notify" do
           51.must_be(Float).should == 51
-          should notify("51.must_be(Float), but matches Fixnum")
+          should notify("51.must_be(Float), but matches Integer")
         end
       end
       
@@ -48,7 +48,7 @@ describe MustBe do
       context "when called with Enumerable" do
         it "should notify" do
           51.must_be(Enumerable).should == 51
-          should notify("51.must_be(Enumerable), but matches Fixnum")
+          should notify("51.must_be(Enumerable), but matches Integer")
         end
       end
       
@@ -62,14 +62,14 @@ describe MustBe do
       context "when called with String, Time, Array" do
         it "should notify" do
           51.must_be(String, Time, Array).should == 51
-          should notify("51.must_be(String, Time, Array), but matches Fixnum")
+          should notify("51.must_be(String, Time, Array), but matches Integer")
         end
       end
       
       context "when called with [1, 51]" do
         it "should notify" do
           51.must_be([1, 51]).should == 51
-          should notify("51.must_be([1, 51]), but matches Fixnum")
+          should notify("51.must_be([1, 51]), but matches Integer")
         end
       end
       
@@ -118,14 +118,14 @@ describe MustBe do
       context "when called with no arguments" do
         it "should notify" do
           51.must_not_be.should == 51
-          should notify("51.must_not_be, but matches Fixnum")
+          should notify("51.must_not_be, but matches Integer")
         end
       end
       
       context "when called with Numeric" do
         it "should notify" do
           51.must_not_be(Numeric)
-          should notify("51.must_not_be(Numeric), but matches Fixnum")
+          should notify("51.must_not_be(Numeric), but matches Integer")
         end
       end
       
@@ -139,7 +139,7 @@ describe MustBe do
       context "when called with Comparable" do
         it "should notify" do
           51.must_not_be(Comparable)
-          should notify("51.must_not_be(Comparable), but matches Fixnum")
+          should notify("51.must_not_be(Comparable), but matches Integer")
         end
       end
       
@@ -154,7 +154,7 @@ describe MustBe do
         it "should notify" do
           51.must_not_be(Hash, Kernel, Object).should == 51
           should notify("51.must_not_be(Hash, Kernel, Object),"\
-            " but matches Fixnum")
+            " but matches Integer")
         end
       end
       
@@ -205,7 +205,7 @@ describe MustBe do
       it "should raise ArgumentError" do
         expect do
           51.send(the_method_name)
-        end.should raise_error(ArgumentError,
+        end.to raise_error(ArgumentError,
           "wrong number of arguments (0 for 1)")
       end
     end
@@ -214,7 +214,7 @@ describe MustBe do
       it "should raise TypeError" do
         expect do
           51.send(the_method_name, Object, :extra_message, :usual_message)
-        end.should raise_error(TypeError, "class or module required")
+        end.to raise_error(TypeError, "class or module required")
       end
     end
     
@@ -223,7 +223,7 @@ describe MustBe do
       it "should raise TypeError" do
         expect do
           51.send(the_method_name, Object, :not_a_module, Kernel)
-        end.should raise_error(TypeError, "class or module required")
+        end.to raise_error(TypeError, "class or module required")
       end
     end
     
@@ -231,7 +231,7 @@ describe MustBe do
       it "should raise TypeError" do
         expect do
           51.send(the_method_name, :not_a_module)
-        end.should raise_error(TypeError, "class or module required")
+        end.to raise_error(TypeError, "class or module required")
       end
     end    
   end
@@ -244,7 +244,7 @@ describe MustBe do
       context "when called with Float" do
         it "should notify" do
           51.must_be_a(Float)
-          should notify("51.must_be_a(Float), but is a Fixnum")
+          should notify("51.must_be_a(Float), but is a Integer")
         end
       end
       
@@ -276,7 +276,7 @@ describe MustBe do
       context "when called with Float, :message" do
         it "should notify" do
           51.must_be_a(Float, :message)
-          should notify("51.must_be_a(Float, :message), but is a Fixnum")
+          should notify("51.must_be_a(Float, :message), but is a Integer")
         end
       end
     end
@@ -298,7 +298,7 @@ describe MustBe do
         it "should notify" do
           51.must_not_be_a(Kernel, Comparable)
           should notify("51.must_not_be_a(Kernel, Comparable),"\
-            " but is a Fixnum")
+            " but is a Integer")
         end
       end
       
@@ -306,7 +306,7 @@ describe MustBe do
         it "should notify" do
           51.must_not_be_a(Float, Integer)
           should notify("51.must_not_be_a(Float, Integer),"\
-            " but is a Fixnum")
+            " but is a Integer")
         end
       end
       
@@ -314,7 +314,7 @@ describe MustBe do
         it "should notify" do
           51.must_not_be_a(Numeric, :message)
           should notify("51.must_not_be_a(Numeric, :message),"\
-            " but is a Fixnum")
+            " but is a Integer")
         end
       end
     end
@@ -325,7 +325,7 @@ describe MustBe do
       it "should raise NoMethodError" do
         expect do
           "hi".send(the_method_name, :does_not_respond_to_include?)
-        end.should raise_error(NoMethodError)
+        end.to raise_error(NoMethodError)
       end
     end
   end
@@ -470,27 +470,27 @@ describe MustBe do
     it "should raise ArgumentError if delta cannot be compared" do
       expect do
         200.0.send(the_method_name, 2.0, :a_little)
-      end.should raise_error(ArgumentError)
+      end.to raise_error(ArgumentError)
     end
     
     it "should raise TypeError if expected cannot be subtracted from"\
         " receiver" do
       expect do
         200.0.send(the_method_name, :some)
-      end.should raise_error(TypeError)
+      end.to raise_error(TypeError)
     end
 
     it "should raise NoMethodError if receiver does not respond to :-" do
       expect do
         :lots.send(the_method_name, 2.0)
-      end.should raise_error(NoMethodError)
+      end.to raise_error(NoMethodError)
     end
 
     it "should rasie NoMethodError if (receiver - expected) does not"\
         " respond to :abs" do
       expect do
         Time.new.send(the_method_name, 2.0, :five)
-      end.should raise_error(NoMethodError)
+      end.to raise_error(NoMethodError)
     end
   end
   
