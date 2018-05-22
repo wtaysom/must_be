@@ -26,6 +26,16 @@ describe MustBe do
       si.length.should == MustBe::SHORT_INSPECT_CUTOFF_LENGTH
     end
     
+    it "should not mutate #inspect strings" do
+      o = Object.new
+      class <<o
+        def inspect
+          ("x" * (MustBe::SHORT_INSPECT_CUTOFF_LENGTH + 10)).freeze
+        end
+      end
+      MustBe.short_inspect(o)
+    end
+    
     it "should break at word boundries if possible" do
       side_length = MustBe::SHORT_INSPECT_CUTOFF_LENGTH / 2
       padding = "x" * (side_length - 7)

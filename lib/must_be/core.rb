@@ -23,6 +23,7 @@ module MustBe
       right_word_break = right_word_break_area.index(/\s\b/)
       stop = right_word_break ? right_start + right_word_break : right_side
       
+      s = s.dup
       s[start...stop] = SHORT_INSPECT_ELLIPSES
     end
     s
